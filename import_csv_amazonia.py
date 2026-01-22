@@ -6,7 +6,7 @@ PULSE AMAZÔNIA - IMPORTADOR CSV → SUPABASE
 ============================================
 Data: 21/01/2026
 Desenvolvedor: Liezio Abrantes
-Versão: 1.0.1 (FIX: removido argumento proxy)
+Versão: 1.0.2 (FIX CONFIRMADO: sem proxy)
 
 OBJETIVO:
 Importar dados coletados manualmente do Google Trends (CSV) para o Supabase.
