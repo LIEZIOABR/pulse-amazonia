@@ -22,11 +22,11 @@ jobs:
         with:
           python-version: '3.11'
       
-      # 3. Instalar dependências Python
+      # 3. Instalar dependências Python (SEM CACHE)
       - name: 📦 Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install supabase==2.3.0
+          python -m pip install --upgrade pip --no-cache-dir
+          pip install supabase==2.3.0 --no-cache-dir --force-reinstall
       
       # 4. Executar script de importação
       - name: 🚀 Run import script
