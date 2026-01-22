@@ -6,27 +6,10 @@ PULSE AMAZÔNIA - IMPORTADOR CSV → SUPABASE
 ============================================
 Data: 21/01/2026
 Desenvolvedor: Liezio Abrantes
-Versão: 1.0.0
+Versão: 1.0.1 (FIX: removido argumento proxy)
 
 OBJETIVO:
 Importar dados coletados manualmente do Google Trends (CSV) para o Supabase.
-
-ARQUITETURA:
-1. Validação rigorosa do CSV (formato, tipos, ranges)
-2. Transformação de dados (pivoting, normalização)
-3. Inserção/atualização no Supabase (upsert)
-4. Logging estruturado (GitHub Actions compatível)
-5. Rollback automático em caso de erro crítico
-
-TABELA SUPABASE:
-- Nome: pulse_amazonia
-- Colunas: destino_id, data_coleta, interesse, origem_1, origem_1_pct, origem_2, origem_2_pct, origem_3, origem_3_pct
-- Primary Key: (destino_id, data_coleta)
-- Upsert: ON CONFLICT (destino_id, data_coleta) DO UPDATE
-
-CSV ESPERADO:
-- 15 destinos (linhas)
-- Colunas: destino_id, data_coleta, interesse, origem_1, origem_1_pct, origem_2, origem_2_pct, origem_3, origem_3_pct
 """
 
 import os
@@ -51,7 +34,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     print("💡 Configure no GitHub: Settings → Secrets → Actions")
     sys.exit(1)
 
-# Cliente Supabase
+# Cliente Supabase (SEM argumento proxy)
 try:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("✅ Conexão Supabase estabelecida")
@@ -78,26 +61,17 @@ COLUNAS_ESPERADAS = [
 # ============================================================================
 
 def validar_data(data_str: str) -> Tuple[bool, Optional[str], Optional[str]]:
-    """
-    Valida formato de data DD/MM/AAAA.
-    
-    Returns:
-        (valido, data_iso, erro_msg)
-    """
+    """Valida formato de data DD/MM/AAAA."""
     pattern = r'^\d{2}/\d{2}/\d{4}$'
     
     if not re.match(pattern, data_str):
         return False, None, f"Formato inválido: '{data_str}' (esperado: DD/MM/AAAA)"
     
     try:
-        # Parse DD/MM/AAAA
         dia, mes, ano = data_str.split('/')
         data_obj = datetime(int(ano), int(mes), int(dia))
-        
-        # Converte para ISO (AAAA-MM-DD)
         data_iso = data_obj.strftime('%Y-%m-%d')
         
-        # Valida range razoável (não pode ser futuro, nem anterior a 2020)
         hoje = datetime.now()
         if data_obj > hoje:
             return False, None, f"Data futura: {data_str}"
@@ -112,12 +86,7 @@ def validar_data(data_str: str) -> Tuple[bool, Optional[str], Optional[str]]:
 
 
 def validar_interesse(valor: str) -> Tuple[bool, Optional[int], Optional[str]]:
-    """
-    Valida interesse (0-100).
-    
-    Returns:
-        (valido, valor_int, erro_msg)
-    """
+    """Valida interesse (0-100)."""
     try:
         valor_int = int(valor)
         
@@ -131,12 +100,7 @@ def validar_interesse(valor: str) -> Tuple[bool, Optional[int], Optional[str]]:
 
 
 def validar_percentual(valor: str) -> Tuple[bool, Optional[float], Optional[str]]:
-    """
-    Valida percentual (0-100).
-    
-    Returns:
-        (valido, valor_float, erro_msg)
-    """
+    """Valida percentual (0-100)."""
     try:
         valor_float = float(valor)
         
@@ -150,15 +114,10 @@ def validar_percentual(valor: str) -> Tuple[bool, Optional[float], Optional[str]
 
 
 def validar_linha(linha: Dict[str, str], num_linha: int) -> Tuple[bool, Optional[Dict], List[str]]:
-    """
-    Valida uma linha do CSV completamente.
-    
-    Returns:
-        (valido, dados_processados, erros)
-    """
+    """Valida uma linha do CSV completamente."""
     erros = []
     
-    # 1. Validar destino_id
+    # Validar destino_id
     destino_id = linha.get('destino_id', '').strip().lower()
     
     if not destino_id:
@@ -166,21 +125,21 @@ def validar_linha(linha: Dict[str, str], num_linha: int) -> Tuple[bool, Optional
     elif destino_id not in DESTINOS_VALIDOS:
         erros.append(f"Linha {num_linha}: destino_id inválido '{destino_id}'")
     
-    # 2. Validar data_coleta
+    # Validar data_coleta
     data_str = linha.get('data_coleta', '').strip()
     valido_data, data_iso, erro_data = validar_data(data_str)
     
     if not valido_data:
         erros.append(f"Linha {num_linha}: {erro_data}")
     
-    # 3. Validar interesse
+    # Validar interesse
     interesse_str = linha.get('interesse', '').strip()
     valido_interesse, interesse_val, erro_interesse = validar_interesse(interesse_str)
     
     if not valido_interesse:
         erros.append(f"Linha {num_linha}: {erro_interesse}")
     
-    # 4. Validar origens (obrigatório: origem_1 e origem_1_pct)
+    # Validar origens (obrigatório: origem_1 e origem_1_pct)
     origem_1 = linha.get('origem_1', '').strip()
     origem_1_pct_str = linha.get('origem_1_pct', '').strip()
     
@@ -191,7 +150,7 @@ def validar_linha(linha: Dict[str, str], num_linha: int) -> Tuple[bool, Optional
     if not valido_pct1:
         erros.append(f"Linha {num_linha}: origem_1_pct {erro_pct1}")
     
-    # 5. Validar origens opcionais (2 e 3)
+    # Validar origens opcionais (2 e 3)
     origem_2 = linha.get('origem_2', '').strip() or None
     origem_2_pct = None
     
@@ -210,11 +169,9 @@ def validar_linha(linha: Dict[str, str], num_linha: int) -> Tuple[bool, Optional
         if not valido_pct3:
             erros.append(f"Linha {num_linha}: origem_3_pct {erro_pct3}")
     
-    # Se há erros, retorna inválido
     if erros:
         return False, None, erros
     
-    # Monta dados processados
     dados = {
         'destino_id': destino_id,
         'data_coleta': data_iso,
@@ -235,16 +192,10 @@ def validar_linha(linha: Dict[str, str], num_linha: int) -> Tuple[bool, Optional
 # ============================================================================
 
 def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
-    """
-    Lê e valida CSV completo.
-    
-    Returns:
-        (sucesso, dados_validos, erros)
-    """
+    """Lê e valida CSV completo."""
     erros = []
     dados_validos = []
     
-    # Verifica existência do arquivo
     if not os.path.exists(caminho):
         erros.append(f"Arquivo não encontrado: {caminho}")
         return False, [], erros
@@ -253,29 +204,23 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
     
     try:
         with open(caminho, 'r', encoding='utf-8') as f:
-            # Detecta dialeto
             sample = f.read(1024)
             f.seek(0)
             
             try:
                 dialect = csv.Sniffer().sniff(sample)
             except csv.Error:
-                # Fallback: assume vírgula
                 dialect = csv.excel
             
             reader = csv.DictReader(f, dialect=dialect)
             
-            # Valida cabeçalho
             colunas_encontradas = reader.fieldnames
             
             if not colunas_encontradas:
                 erros.append("CSV vazio ou sem cabeçalho")
                 return False, [], erros
             
-            # Normaliza nomes de colunas (strip, lowercase)
             colunas_norm = [col.strip().lower() for col in colunas_encontradas]
-            
-            # Verifica colunas obrigatórias
             faltando = set(COLUNAS_ESPERADAS) - set(colunas_norm)
             
             if faltando:
@@ -284,16 +229,11 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             
             print(f"✅ Cabeçalho válido: {len(colunas_norm)} colunas")
             
-            # Processa linhas
-            num_linha = 1  # Cabeçalho é linha 0
+            num_linha = 1
             
             for row in reader:
                 num_linha += 1
-                
-                # Normaliza keys do dicionário
                 row_norm = {k.strip().lower(): v for k, v in row.items()}
-                
-                # Valida linha
                 valido, dados, erros_linha = validar_linha(row_norm, num_linha)
                 
                 if valido:
@@ -307,12 +247,10 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             if erros:
                 print(f"⚠️  Erros encontrados: {len(erros)}")
             
-            # Validação final: deve ter exatamente 15 destinos
             if len(dados_validos) != 15:
                 erros.append(f"CRÍTICO: Esperado 15 destinos, encontrado {len(dados_validos)}")
                 return False, [], erros
             
-            # Validação: não pode haver destinos duplicados para a mesma data
             chaves_unicas = set()
             for dado in dados_validos:
                 chave = (dado['destino_id'], dado['data_coleta'])
@@ -335,24 +273,17 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
 # ============================================================================
 
 def inserir_supabase(dados: List[Dict]) -> Tuple[bool, List[str]]:
-    """
-    Insere dados no Supabase usando UPSERT.
-    
-    Returns:
-        (sucesso, erros)
-    """
+    """Insere dados no Supabase usando UPSERT."""
     erros = []
     
     print(f"\n📤 Inserindo {len(dados)} registros no Supabase...")
     
     try:
-        # Upsert: INSERT ... ON CONFLICT (destino_id, data_coleta) DO UPDATE
         response = supabase.table('pulse_amazonia').upsert(
             dados,
             on_conflict='destino_id,data_coleta'
         ).execute()
         
-        # Valida resposta
         if hasattr(response, 'data') and response.data:
             registros_inseridos = len(response.data)
             print(f"✅ Supabase: {registros_inseridos} registros inseridos/atualizados")
@@ -381,7 +312,6 @@ def main():
     print(f"🔗 Supabase: {SUPABASE_URL[:30]}...")
     print("="*70 + "\n")
     
-    # 1. Ler e validar CSV
     sucesso_csv, dados, erros_csv = ler_csv(CSV_PATH)
     
     if not sucesso_csv:
@@ -395,7 +325,6 @@ def main():
     
     print(f"\n✅ CSV validado com sucesso: {len(dados)} registros\n")
     
-    # 2. Inserir no Supabase
     sucesso_db, erros_db = inserir_supabase(dados)
     
     if not sucesso_db:
@@ -407,7 +336,6 @@ def main():
         print("="*70 + "\n")
         sys.exit(1)
     
-    # 3. Sucesso total
     print("\n" + "="*70)
     print("✅ IMPORTAÇÃO CONCLUÍDA COM SUCESSO")
     print("="*70)
