@@ -1,147 +1,489 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DEMAND PULSE AMAZÔNIA — ABR</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEMAND PULSE AMAZÔNIA — ABR</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Evita 404 de favicon no console -->
+  <link rel="icon" href="data:," />
 
-<style>
-:root{
-  --accent:#00c6ff;--bg:#000;--panel:rgba(15,18,22,.75);
-  --border:rgba(255,255,255,.1);--txt:#eaf3ff;--dim:#9ca3af
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:Poppins,sans-serif}
-.container{max-width:1400px;margin:auto;padding:20px}
-header{text-align:center;margin-bottom:30px}
-h1{color:var(--accent);font-weight:800}
-.subtitle{color:var(--dim)}
-.panel{background:var(--panel);border:1px solid var(--border);
-border-radius:20px;padding:20px;margin-bottom:20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.card{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:16px;padding:14px}
-.card h3{font-size:.9rem;color:var(--accent)}
-.card span{font-size:1.4rem;font-weight:700}
-pre{white-space:pre-wrap;font-family:'Fira Code',monospace;color:#bcdcff}
-canvas{width:100%;height:360px}
-</style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --accent:#00c6ff;
+      --bg:#000;
+      --panel:rgba(15,18,22,.75);
+      --panel-border:rgba(255,255,255,.10);
+      --text-main:#eaf3ff;
+      --text-dim:#9ca3af;
+      --ok:#39ff14;
+      --bad:#ff3131;
+      --shadow:0 14px 40px rgba(0,0,0,.85)
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
+
+    body{
+      background:var(--bg);
+      color:var(--text-main);
+      font-family:'Poppins',sans-serif;
+      min-height:100vh;
+      overflow-x:hidden
+    }
+
+    #matrix-canvas{position:fixed;inset:0;z-index:0;opacity:.30}
+
+    .container{
+      max-width:1600px;
+      margin:0 auto;
+      padding:20px;
+      position:relative;
+      z-index:1
+    }
+
+    header{
+      text-align:center;
+      margin-bottom:22px;
+      padding-top:10px;
+      position:relative
+    }
+
+    .header-nav{
+      position:absolute;
+      top:10px;
+      left:0;
+      display:flex;
+      gap:10px;
+      z-index:10
+    }
+
+    .btn-nav{
+      border:1px solid var(--accent);
+      padding:8px 16px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:700;
+      text-transform:uppercase;
+      background:rgba(0,0,0,.75);
+      color:var(--accent);
+      cursor:pointer;
+      transition:.25s;
+      text-decoration:none
+    }
+    .btn-nav:hover{background:rgba(0,198,255,.15);box-shadow:0 0 18px rgba(0,198,255,.35)}
+
+    .logo{
+      width:230px;
+      max-width:70vw;
+      margin:10px auto 12px;
+      display:block;
+      filter:drop-shadow(0 0 14px rgba(0,198,255,.28))
+    }
+
+    h1{
+      font-size:1.65rem;
+      font-weight:800;
+      letter-spacing:2px;
+      color:var(--accent)
+    }
+    .subtitle{
+      color:var(--text-dim);
+      font-size:.95rem;
+      max-width:860px;
+      margin:6px auto 0;
+      line-height:1.5
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--panel-border);
+      border-radius:24px;
+      padding:22px;
+      backdrop-filter:blur(16px);
+      box-shadow:var(--shadow)
+    }
+
+    .bi-section{margin:18px 0 18px}
+
+    .dashboard-grid{
+      display:flex;
+      gap:18px;
+      align-items:flex-start
+    }
+
+    .comparison-section{
+      flex:3;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px
+    }
+
+    .sidebar{
+      flex:1;
+      position:sticky;
+      top:14px
+    }
+
+    .card{
+      border-radius:22px;
+      padding:18px;
+      background:rgba(12,14,18,.60);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 12px 30px rgba(0,0,0,.55)
+    }
+
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px
+    }
+    .dest-name{
+      font-weight:800;
+      font-size:.95rem;
+      color:var(--text-main);
+      line-height:1.2
+    }
+    .badge{
+      font-family:'Fira Code', monospace;
+      font-size:.75rem;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.25);
+      color:var(--text-dim);
+      white-space:nowrap
+    }
+    .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
+    .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
+
+    .metric{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      margin-top:8px
+    }
+    .metric-label{color:var(--text-dim);font-size:.78rem}
+    .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
+
+    .boletim-title{
+      font-weight:900;
+      letter-spacing:1px;
+      color:var(--accent);
+      margin-bottom:10px
+    }
+    #boletim-texto{
+      white-space:pre-wrap;
+      font-family:'Fira Code', monospace;
+      font-size:.80rem;
+      color:#cfe6ff;
+      opacity:.95;
+      line-height:1.45
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:.78rem;
+      color:var(--text-dim);
+      opacity:.9
+    }
+
+    footer{
+      margin-top:26px;
+      padding:18px 0;
+      text-align:center;
+      opacity:.55;
+      font-size:.75rem;
+      border-top:1px solid var(--panel-border)
+    }
+
+    @media(max-width:1024px){
+      .dashboard-grid{flex-direction:column}
+      .comparison-section{grid-template-columns:repeat(2,1fr)}
+      .sidebar{position:relative;top:auto}
+    }
+    @media(max-width:768px){
+      .comparison-section{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
-  <header>
-    <h1>DEMAND PULSE AMAZÔNIA</h1>
-    <p class="subtitle">Radar de Inteligência Turística — 15 destinos</p>
-  </header>
+  <canvas id="matrix-canvas"></canvas>
 
-  <section class="panel">
-    <canvas id="chart"></canvas>
-  </section>
+  <div class="container">
+    <header>
+      <div class="header-nav">
+        <a href="index.html" class="btn-nav">← Voltar HUB</a>
+      </div>
 
-  <section class="cards" id="cards"></section>
+      <img src="abr-logo.png" class="logo" alt="ABR Logo">
+      <h1>DEMAND PULSE AMAZÔNIA</h1>
+      <p class="subtitle">Radar de Inteligência Turística do Pará — 15 destinos monitorados</p>
+    </header>
 
-  <section class="panel">
-    <pre id="boletim"></pre>
-  </section>
-</div>
+    <!-- ÁREA BI -->
+    <section class="panel bi-section">
+      <canvas id="biChart" style="width:100%;height:380px;"></canvas>
+      <div class="hint" id="status-msg"></div>
+    </section>
 
-<script>
-/* ========= SUPABASE ========= */
-const supabase = window.supabase.createClient(
-  'https://jeoxnzjmfbgnoqqxz.supabase.co',
-  'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh'
-);
+    <div class="dashboard-grid">
+      <!-- CARDS -->
+      <section class="comparison-section" id="cards-container"></section>
 
-/* ========= ESTADO ========= */
-let RAW = [];
-let BY_DEST = {};
+      <!-- BOLETIM -->
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="boletim-title">BOLETIM ESTRATÉGICO</div>
+          <pre id="boletim-texto">Carregando…</pre>
+        </section>
+      </aside>
+    </div>
 
-/* ========= FETCH ========= */
-async function fetchData(){
-  const { data, error } = await supabase
-    .from('pulse_amazonia')
-    .select('*');
+    <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
+  </div>
 
-  if(error){
-    console.error(error);
-    return;
-  }
-  RAW = data || [];
-  normalize();
-}
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-/* ========= NORMALIZA ========= */
-function normalize(){
-  BY_DEST = {};
-  RAW.forEach(r=>{
-    if(!BY_DEST[r.destino_id]){
-      BY_DEST[r.destino_id]={nome:r.destino_nome,series:[]};
+  <script>
+    /* ================= SUPABASE (PRODUÇÃO) ================= */
+    const SUPABASE_URL = "https://jeoxnzjmfbgnoqqxz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* ================= ESTADO ================= */
+    let PULSE_DATA_REAL = [];
+    let PULSE_BY_DESTINO = {};
+    let chartInstance = null;
+
+    function setStatus(msg){
+      const el = document.getElementById("status-msg");
+      if (el) el.textContent = msg || "";
     }
-    BY_DEST[r.destino_id].series.push({
-      data:r.data_coleta,
-      valor:r.interesse
-    });
-  });
-}
 
-/* ========= CHART ========= */
-function renderChart(){
-  const destinos = Object.values(BY_DEST);
-  if(!destinos.length) return;
+    /* ================= FETCH ================= */
+    async function fetchPulseAmazonia(){
+      setStatus("Conectando ao Supabase…");
+      const { data, error } = await supabaseClient
+        .from("pulse_amazonia")
+        .select("*")
+        .order("data_coleta", { ascending: true });
 
-  const labels = destinos[0].series.map(s=>s.data);
-  const colors = ['#00c6ff','#39ff14','#ff3131','#ffea00','#ff00ff'];
+      if (error){
+        console.error("Erro Supabase:", error);
+        setStatus("Falha ao carregar dados (ver console).");
+        return false;
+      }
 
-  const datasets = destinos.slice(0,5).map((d,i)=>({
-    label:d.nome,
-    data:d.series.map(s=>s.valor),
-    borderColor:colors[i],
-    tension:.3
-  }));
+      PULSE_DATA_REAL = Array.isArray(data) ? data : [];
+      setStatus(PULSE_DATA_REAL.length ? Dados carregados: ${PULSE_DATA_REAL.length} linhas. : "Sem dados na tabela.");
+      return true;
+    }
 
-  new Chart(document.getElementById('chart'),{
-    type:'line',
-    data:{labels,datasets},
-    options:{responsive:true,maintainAspectRatio:false}
-  });
-}
+    /* ================= NORMALIZA ================= */
+    function normalizarDados(){
+      PULSE_BY_DESTINO = {};
 
-/* ========= CARDS ========= */
-function renderCards(){
-  const el=document.getElementById('cards');
-  el.innerHTML='';
-  Object.values(BY_DEST).forEach(d=>{
-    const last=d.series.at(-1);
-    el.innerHTML+=`
-      <div class="card">
-        <h3>${d.nome}</h3>
-        <span>${last.valor.toFixed(1)}</span>
-      </div>`;
-  });
-}
+      for (const row of PULSE_DATA_REAL){
+        const id = row.destino_id;
+        if (!id) continue;
 
-/* ========= BOLETIM ========= */
-function renderBoletim(){
-  let txt='BOLETIM ESTRATÉGICO\n\n';
-  Object.values(BY_DEST).forEach(d=>{
-    const last=d.series.at(-1);
-    txt+=${d.nome}: ${last.valor.toFixed(1)} pts\n;
-  });
-  document.getElementById('boletim').innerText=txt;
-}
+        if (!PULSE_BY_DESTINO[id]){
+          PULSE_BY_DESTINO[id] = {
+            destino_id: id,
+            nome: row.destino_nome || id,
+            timeline: []
+          };
+        }
 
-/* ========= START ========= */
-async function start(){
-  await fetchData();
-  renderChart();
-  renderCards();
-  renderBoletim();
-}
-document.addEventListener('DOMContentLoaded',start);
-</script>
+        PULSE_BY_DESTINO[id].timeline.push({
+          data: row.data_coleta,
+          interesse: Number(row.interesse ?? 0)
+        });
+      }
+
+      // Garante timeline ordenada por data
+      for (const k of Object.keys(PULSE_BY_DESTINO)){
+        PULSE_BY_DESTINO[k].timeline.sort((a,b)=> String(a.data).localeCompare(String(b.data)));
+      }
+    }
+
+    /* ================= CHART ================= */
+    function renderChart(){
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length){
+        setStatus("Sem destinos para desenhar o gráfico.");
+        return;
+      }
+
+      const base = destinos[0].timeline;
+      const labels = base.map(t => t.data);
+
+      const palette = ["#00c6ff","#39ff14","#ff3131","#ffea00","#ff00ff"];
+      const datasets = destinos.slice(0,5).map((dest, idx) => ({
+        label: dest.nome,
+        data: dest.timeline.map(t => t.interesse),
+        borderColor: palette[idx % palette.length],
+        backgroundColor: palette[idx % palette.length] + "22",
+        tension: 0.25,
+        fill: true,
+        pointRadius: 3
+      }));
+
+      const ctx = document.getElementById("biChart");
+      if (!ctx) return;
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: "#9ca3af", font: { family:"Poppins", size:11 } } }
+          },
+          scales: {
+            y: { ticks:{ color:"#9ca3af" }, grid:{ color:"rgba(255,255,255,0.05)" } },
+            x: { ticks:{ color:"#9ca3af" }, grid:{ display:false } }
+          }
+        }
+      });
+    }
+
+    /* ================= CARDS ================= */
+    function renderCards(){
+      const container = document.getElementById("cards-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length){
+        container.innerHTML = <div class="card">Nenhum dado para exibir.</div>;
+        return;
+      }
+
+      for (const dest of destinos){
+        const t = dest.timeline;
+        const last = t[t.length - 1] || { interesse: 0 };
+        const prev = t[t.length - 2] || last;
+
+        const prevVal = Number(prev.interesse || 0);
+        const lastVal = Number(last.interesse || 0);
+        const change = prevVal === 0 ? 0 : ((lastVal - prevVal) / prevVal) * 100;
+
+        const cls = change > 5 ? "up" : (change < -5 ? "down" : "");
+
+        container.insertAdjacentHTML("beforeend", `
+          <div class="card">
+            <div class="card-top">
+              <div class="dest-name">${escapeHtml(dest.nome)}</div>
+              <div class="badge ${cls}">
+                ${change >= 0 ? "+" : ""}${change.toFixed(1)}%
+              </div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Interesse atual</div>
+              <div class="metric-value">${lastVal.toFixed(0)}</div>
+            </div>
+
+            <div class="hint">Última coleta: ${escapeHtml(String(last.data ?? "—"))}</div>
+          </div>
+        `);
+      }
+    }
+
+    /* ================= BOLETIM ================= */
+    function renderBoletim(){
+      const el = document.getElementById("boletim-texto");
+      if (!el) return;
+
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length){
+        el.textContent = "Sem dados para boletim.";
+        return;
+      }
+
+      let txt = "";
+      txt += "PULSE AMAZÔNIA — LEITURA RÁPIDA\n\n";
+
+      for (const dest of destinos){
+        const t = dest.timeline;
+        const last = t[t.length - 1];
+        const val = Number(last?.interesse ?? 0);
+        txt += ${dest.nome}: ${val.toFixed(0)} pts\n;
+      }
+
+      el.textContent = txt;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ================= MATRIX EFFECT ================= */
+    (function matrix(){
+      const canvas = document.getElementById("matrix-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+
+      const cols = Math.floor(w / 16);
+      let drops = Array(cols).fill(1);
+
+      function draw(){
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.fillStyle = "rgba(0,198,255,0.45)";
+        ctx.font = "16px monospace";
+
+        for (let i = 0; i < drops.length; i++){
+          const text = String.fromCharCode(0x30A0 + Math.random() * 96);
+          ctx.fillText(text, i * 16, drops[i] * 16);
+
+          if (drops[i] * 16 > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+
+      setInterval(draw, 90);
+
+      window.addEventListener("resize", () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        const newCols = Math.floor(w / 16);
+        drops = Array(newCols).fill(1);
+      });
+    })();
+
+    /* ================= PIPELINE ÚNICO ================= */
+    async function startRadar(){
+      const ok = await fetchPulseAmazonia();
+      if (!ok) return;
+
+      normalizarDados();
+      renderChart();
+      renderCards();
+      renderBoletim();
+    }
+
+    document.addEventListener("DOMContentLoaded", startRadar);
+  </script>
 </body>
 </html>
