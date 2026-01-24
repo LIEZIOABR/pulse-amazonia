@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DEMAND PULSE AMAZÔNIA — ABR</title>
 
-  <!-- Evita 404 de favicon no console -->
+  <!-- evita erro de favicon no console -->
   <link rel="icon" href="data:," />
 
+  <!-- fontes oficiais -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root{
@@ -19,45 +19,45 @@
       --panel-border:rgba(255,255,255,.10);
       --text-main:#eaf3ff;
       --text-dim:#9ca3af;
-      --ok:#39ff14;
-      --bad:#ff3131;
-      --shadow:0 14px 40px rgba(0,0,0,.85);
+      --shadow:0 14px 40px rgba(0,0,0,.85)
     }
 
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
+    *{margin:0;padding:0;box-sizing:border-box}
 
     body{
       background:var(--bg);
       color:var(--text-main);
       font-family:'Poppins',sans-serif;
       min-height:100vh;
-      overflow-x:hidden;
+      overflow-x:hidden
     }
 
-    #matrix-canvas{position:fixed;inset:0;z-index:0;opacity:.30}
+    /* MATRIX */
+    #matrix-canvas{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      opacity:.30
+    }
 
     .container{
       max-width:1600px;
       margin:0 auto;
       padding:20px;
       position:relative;
-      z-index:1;
+      z-index:1
     }
 
     header{
       text-align:center;
-      margin-bottom:18px;
-      padding-top:10px;
-      position:relative;
+      margin-bottom:24px;
+      position:relative
     }
 
     .header-nav{
       position:absolute;
       top:10px;
-      left:0;
-      display:flex;
-      gap:10px;
-      z-index:10;
+      left:0
     }
 
     .btn-nav{
@@ -65,36 +65,31 @@
       padding:8px 16px;
       border-radius:999px;
       font-size:.75rem;
-      font-weight:800;
-      text-transform:uppercase;
+      font-weight:700;
       background:rgba(0,0,0,.75);
       color:var(--accent);
-      cursor:pointer;
-      transition:.25s;
-      text-decoration:none;
+      text-decoration:none
     }
-    .btn-nav:hover{background:rgba(0,198,255,.15);box-shadow:0 0 18px rgba(0,198,255,.35)}
 
     .logo{
       width:230px;
       max-width:70vw;
-      margin:10px auto 12px;
-      display:block;
-      filter:drop-shadow(0 0 14px rgba(0,198,255,.28));
+      margin:10px auto;
+      display:block
     }
 
     h1{
-      font-size:1.65rem;
+      font-size:1.6rem;
       font-weight:800;
       letter-spacing:2px;
-      color:var(--accent);
+      color:var(--accent)
     }
+
     .subtitle{
       color:var(--text-dim);
       font-size:.95rem;
-      max-width:860px;
-      margin:6px auto 0;
-      line-height:1.5;
+      max-width:820px;
+      margin:6px auto 0
     }
 
     .panel{
@@ -103,112 +98,23 @@
       border-radius:24px;
       padding:22px;
       backdrop-filter:blur(16px);
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow)
     }
 
-    .bi-section{margin:18px 0 18px}
-
-    .dashboard-grid{
-      display:flex;
-      gap:18px;
-      align-items:flex-start;
-    }
-
-    .comparison-section{
-      flex:3;
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:14px;
-    }
-
-    .sidebar{
-      flex:1;
-      position:sticky;
-      top:14px;
-    }
-
-    .card{
-      border-radius:22px;
-      padding:18px;
-      background:rgba(12,14,18,.60);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 12px 30px rgba(0,0,0,.55);
-      min-height:118px;
-    }
-
-    .card-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .dest-name{
-      font-weight:900;
-      font-size:.95rem;
-      color:var(--text-main);
-      line-height:1.2;
-    }
-    .badge{
-      font-family:'Fira Code', monospace;
-      font-size:.75rem;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.25);
+    .placeholder{
+      text-align:center;
+      padding:40px 10px;
       color:var(--text-dim);
-      white-space:nowrap;
-    }
-    .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
-    .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
-
-    .metric{
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      margin-top:8px;
-    }
-    .metric-label{color:var(--text-dim);font-size:.78rem}
-    .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
-
-    .boletim-title{
-      font-weight:900;
-      letter-spacing:1px;
-      color:var(--accent);
-      margin-bottom:10px;
-    }
-    #boletim-texto{
-      white-space:pre-wrap;
-      font-family:'Fira Code', monospace;
-      font-size:.80rem;
-      color:#cfe6ff;
-      opacity:.95;
-      line-height:1.45;
-    }
-
-    .hint{
-      margin-top:10px;
-      font-size:.78rem;
-      color:var(--text-dim);
-      opacity:.9;
+      font-size:.9rem
     }
 
     footer{
-      margin-top:26px;
+      margin-top:30px;
       padding:18px 0;
       text-align:center;
-      opacity:.55;
+      opacity:.6;
       font-size:.75rem;
-      border-top:1px solid var(--panel-border);
-    }
-
-    @media(max-width:1024px){
-      .dashboard-grid{flex-direction:column}
-      .comparison-section{grid-template-columns:repeat(2,1fr)}
-      .sidebar{position:relative;top:auto}
-    }
-    @media(max-width:768px){
-      .comparison-section{grid-template-columns:1fr}
+      border-top:1px solid var(--panel-border)
     }
   </style>
 </head>
@@ -224,358 +130,53 @@
 
       <img src="abr-logo.png" class="logo" alt="ABR Logo">
       <h1>DEMAND PULSE AMAZÔNIA</h1>
-      <p class="subtitle">Radar de Inteligência Turística do Pará — 15 destinos monitorados</p>
+      <p class="subtitle">
+        Radar de Inteligência Turística do Pará — base estável
+      </p>
     </header>
 
-    <!-- ÁREA BI -->
-    <section class="panel bi-section">
-      <div style="height:380px">
-        <canvas id="biChart"></canvas>
+    <section class="panel">
+      <div class="placeholder">
+        Estrutura base carregada com sucesso.<br>
+        Próximo passo: ativar dados e BI.
       </div>
-      <div class="hint" id="status-msg"></div>
     </section>
 
-    <div class="dashboard-grid">
-      <!-- CARDS -->
-      <section class="comparison-section" id="cards-container"></section>
-
-      <!-- BOLETIM -->
-      <aside class="sidebar">
-        <section class="panel">
-          <div class="boletim-title">BOLETIM ESTRATÉGICO</div>
-          <pre id="boletim-texto">Carregando…</pre>
-        </section>
-      </aside>
-    </div>
-
-    <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
+    <footer>
+      ABR — Demand Pulse Amazônia • Base Estável
+    </footer>
   </div>
 
-  <!-- SUPABASE (carregar ANTES de usar) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <!-- MATRIX SCRIPT (ISOLADO, ESTÁVEL) -->
   <script>
-    /* ================= CONFIG ================= */
-    const SUPABASE_URL = "https://jeoxnzjmfbgnoqqxz.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
-    const TABLE_NAME = "pulse_amazonia";
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
 
-    /* ================= ESTADO ================= */
-    let supabaseClient = null;
-    let PULSE_DATA_REAL = [];
-    let PULSE_BY_DESTINO = {};
-    let chartInstance = null;
-
-    const elStatus = document.getElementById("status-msg");
-    const elBoletim = document.getElementById("boletim-texto");
-    const elCards = document.getElementById("cards-container");
-
-    function setStatus(msg){
-      if (elStatus) elStatus.textContent = msg || "";
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
+    resize();
+    window.addEventListener('resize', resize);
 
-    /* ================= MATRIX EFFECT ================= */
-    (function initMatrix(){
-      const canvas = document.getElementById("matrix-canvas");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    const cols = Math.floor(canvas.width / 16);
+    const drops = Array(cols).fill(1);
 
-      let w = canvas.width = window.innerWidth;
-      let h = canvas.height = window.innerHeight;
+    function drawMatrix(){
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = 'rgba(0,198,255,0.45)';
+      ctx.font = '16px monospace';
 
-      function resize(){
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-        cols = Math.max(1, Math.floor(w / fontSize));
-        drops = Array(cols).fill(1);
-      }
-
-      const fontSize = 16;
-      let cols = Math.max(1, Math.floor(w / fontSize));
-      let drops = Array(cols).fill(1);
-
-      function draw(){
-        ctx.fillStyle = "rgba(0,0,0,0.08)";
-        ctx.fillRect(0, 0, w, h);
-
-        ctx.fillStyle = "rgba(0,198,255,0.45)";
-        ctx.font = fontSize + "px monospace";
-
-        for (let i = 0; i < drops.length; i++){
-          const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-          if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-          drops[i]++;
-        }
-      }
-
-      const timer = setInterval(draw, 90);
-      window.addEventListener("resize", resize);
-
-      // segurança: se página for descarregada
-      window.addEventListener("beforeunload", () => clearInterval(timer));
-    })();
-
-    /* ================= SUPABASE INIT ================= */
-    function initSupabase(){
-      if (!window.supabase || typeof window.supabase.createClient !== "function"){
-        setStatus("⚠️ Falha ao carregar Supabase (CDN). Verifique conexão.");
-        return false;
-      }
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return true;
-    }
-
-    /* ================= FETCH ================= */
-    async function fetchPulseAmazonia(){
-      if (!supabaseClient) return;
-
-      setStatus("Carregando dados do Supabase…");
-
-      const { data, error } = await supabaseClient
-        .from(TABLE_NAME)
-        .select("destino_id,destino_nome,data_coleta,interesse")
-        .order("data_coleta", { ascending: true });
-
-      if (error){
-        console.error("Erro Supabase:", error);
-        setStatus("⚠️ Supabase bloqueou (Policy/RLS) ou erro de consulta. Veja Console.");
-        return;
-      }
-
-      PULSE_DATA_REAL = Array.isArray(data) ? data : [];
-      setStatus(PULSE_DATA_REAL.length ? ("OK: " + PULSE_DATA_REAL.length + " registros carregados.") : "⚠️ Sem registros na tabela.");
-      normalizarDados();
-    }
-
-    /* ================= NORMALIZA ================= */
-    function normalizarDados(){
-      PULSE_BY_DESTINO = {};
-
-      for (const row of PULSE_DATA_REAL){
-        if (!row || row.destino_id == null) continue;
-        const interesseNum = Number(row.interesse);
-        if (!Number.isFinite(interesseNum)) continue;
-
-        if (!PULSE_BY_DESTINO[row.destino_id]){
-          PULSE_BY_DESTINO[row.destino_id] = {
-            id: row.destino_id,
-            nome: row.destino_nome || ("Destino " + row.destino_id),
-            timeline: []
-          };
-        }
-
-        PULSE_BY_DESTINO[row.destino_id].timeline.push({
-          data: row.data_coleta,
-          interesse: interesseNum
-        });
-      }
-
-      // ordena timeline por data (caso venha fora)
-      for (const k of Object.keys(PULSE_BY_DESTINO)){
-        PULSE_BY_DESTINO[k].timeline.sort((a,b) => String(a.data).localeCompare(String(b.data)));
-      }
-    }
-
-    /* ================= RENDER CHART ================= */
-    function renderChart(){
-      const canvas = document.getElementById("biChart");
-      if (!canvas) return;
-
-      const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length){
-        // limpa chart se existia
-        if (chartInstance){
-          chartInstance.destroy();
-          chartInstance = null;
-        }
-        return;
-      }
-
-      // pega labels do maior timeline (mais robusto)
-      let base = destinos[0];
-      for (const d of destinos){
-        if (d.timeline.length > base.timeline.length) base = d;
-      }
-      const labels = base.timeline.map(t => t.data);
-
-      const colors = ["#00c6ff","#39ff14","#ff3131","#ffea00","#ff00ff","#00ffea","#ff7a00"];
-      const datasets = [];
-
-      destinos.slice(0, 5).forEach((dest, idx) => {
-        // alinhar valores no mesmo eixo de labels (por data)
-        const map = new Map(dest.timeline.map(t => [String(t.data), t.interesse]));
-        const series = labels.map(l => map.has(String(l)) ? map.get(String(l)) : null);
-
-        datasets.push({
-          label: dest.nome,
-          data: series,
-          borderColor: colors[idx % colors.length],
-          backgroundColor: (colors[idx % colors.length] + "22"),
-          tension: 0.25,
-          fill: true,
-          pointRadius: 2,
-          spanGaps: true
-        });
-      });
-
-      if (chartInstance){
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-
-      chartInstance = new Chart(canvas, {
-        type: "line",
-        data: { labels, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: "#9ca3af", font: { family: "Poppins", size: 11 } }
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = ctx.parsed.y;
-                  return ctx.dataset.label + ": " + (Number.isFinite(v) ? v.toFixed(1) : "—");
-                }
-              }
-            }
-          },
-          scales: {
-            y: { ticks:{color:"#9ca3af"}, grid:{color:"rgba(255,255,255,0.05)"} },
-            x: { ticks:{color:"#9ca3af"}, grid:{display:false} }
-          }
-        }
+      drops.forEach((y,i)=>{
+        const char = String.fromCharCode(0x30A0 + Math.random()*96);
+        ctx.fillText(char, i*16, y*16);
+        if(y*16 > canvas.height && Math.random()>0.975) drops[i]=0;
+        drops[i]++;
       });
     }
 
-    /* ================= RENDER CARDS ================= */
-    function renderCards(){
-      if (!elCards) return;
-      elCards.innerHTML = "";
-
-      const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length) return;
-
-      // ordena por interesse atual desc (mais útil)
-      destinos.sort((a,b) => {
-        const la = a.timeline[a.timeline.length-1]?.interesse ?? -Infinity;
-        const lb = b.timeline[b.timeline.length-1]?.interesse ?? -Infinity;
-        return lb - la;
-      });
-
-      for (const dest of destinos){
-        const t = dest.timeline;
-        if (!t.length) continue;
-        const last = t[t.length - 1];
-        const prev = t[t.length - 2] || last;
-
-        const prevVal = Number(prev.interesse);
-        const lastVal = Number(last.interesse);
-
-        let pct = 0;
-        if (Number.isFinite(prevVal) && prevVal !== 0 && Number.isFinite(lastVal)){
-          pct = ((lastVal - prevVal) / prevVal) * 100;
-        } else if (Number.isFinite(lastVal) && Number.isFinite(prevVal) && prevVal === 0){
-          pct = (lastVal > 0) ? 100 : 0;
-        }
-
-        const badgeClass = pct >= 5 ? "up" : (pct <= -5 ? "down" : "");
-        const sign = pct >= 0 ? "+" : "";
-        const pctText = Number.isFinite(pct) ? (sign + pct.toFixed(1) + "%") : "—";
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="card-top">
-            <div class="dest-name">${escapeHtml(dest.nome)}</div>
-            <div class="badge ${badgeClass}">${pctText}</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Interesse atual</div>
-            <div class="metric-value">${Number.isFinite(lastVal) ? lastVal.toFixed(1) : "—"}</div>
-          </div>
-        `;
-        elCards.appendChild(card);
-      }
-    }
-
-    /* ================= BOLETIM ================= */
-    function renderBoletim(){
-      if (!elBoletim) return;
-
-      const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length){
-        elBoletim.textContent = "Sem dados para boletim.";
-        return;
-      }
-
-      // calcula variação
-      const rows = destinos.map(d => {
-        const t = d.timeline;
-        const last = t[t.length-1]?.interesse ?? null;
-        const prev = t[t.length-2]?.interesse ?? last;
-        const lastVal = Number(last);
-        const prevVal = Number(prev);
-        let pct = 0;
-        if (Number.isFinite(prevVal) && prevVal !== 0 && Number.isFinite(lastVal)){
-          pct = ((lastVal - prevVal) / prevVal) * 100;
-        }
-        return { nome: d.nome, last: lastVal, pct };
-      }).filter(r => Number.isFinite(r.last));
-
-      // top altas e baixas
-      const topUp = [...rows].sort((a,b) => (b.pct - a.pct)).slice(0, 5);
-      const topDown = [...rows].sort((a,b) => (a.pct - b.pct)).slice(0, 5);
-
-      let txt = "";
-      txt += "PULSE AMAZÔNIA — RESUMO\n";
-      txt += "Atualizado via Supabase\n\n";
-
-      txt += "TOP ALTAS (última variação)\n";
-      for (const r of topUp){
-        const sign = r.pct >= 0 ? "+" : "";
-        txt += • ${r.nome}: ${r.last.toFixed(1)} pts (${sign}${r.pct.toFixed(1)}%)\n;
-      }
-
-      txt += "\nTOP QUEDAS (última variação)\n";
-      for (const r of topDown){
-        const sign = r.pct >= 0 ? "+" : "";
-        txt += • ${r.nome}: ${r.last.toFixed(1)} pts (${sign}${r.pct.toFixed(1)}%)\n;
-      }
-
-      elBoletim.textContent = txt;
-    }
-
-    /* ================= HELPERS ================= */
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#39;");
-    }
-
-    /* ================= START ================= */
-    async function startRadar(){
-      // Supabase init
-      const ok = initSupabase();
-      if (!ok) return;
-
-      // fetch + render
-      await fetchPulseAmazonia();
-      renderChart();
-      renderCards();
-      renderBoletim();
-    }
-
-    document.addEventListener("DOMContentLoaded", startRadar);
+    setInterval(drawMatrix, 90);
   </script>
 </body>
 </html>
-```0
