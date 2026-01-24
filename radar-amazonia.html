@@ -1,372 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DEMAND PULSE AMAZÔNIA — ABR</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DEMAND PULSE AMAZÔNIA — ABR</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    :root {
-      --accent:#00c6ff;
-      --bg:#000;
-      --panel:rgba(15,18,22,.75);
-      --panel-border:rgba(255,255,255,.1);
-      --text-main:#eaf3ff;
-      --text-dim:#9ca3af;
-      --accent-green:#39ff14;
-      --accent-red:#ff3131;
-      --shadow:0 14px 40px rgba(0,0,0,.85)
-    }
-
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
-
-    body{
-      background:var(--bg);
-      color:var(--text-main);
-      font-family:'Poppins',sans-serif;
-      min-height:100vh;
-      overflow-x:hidden
-    }
-
-    #matrix-canvas{
-      position:fixed;
-      inset:0;
-      z-index:0;
-      opacity:.3
-    }
-
-    .container{
-      max-width:1600px;
-      margin:0 auto;
-      padding:20px;
-      position:relative;
-      z-index:1
-    }
-
-    header{
-      text-align:center;
-      margin-bottom:40px;
-      padding-top:20px;
-      position:relative
-    }
-
-    .header-nav{
-      position:absolute;
-      top:20px;
-      left:0;
-      display:flex;
-      gap:10px;
-      z-index:10
-    }
-
-    .btn-nav{
-      border:1px solid var(--accent);
-      padding:8px 16px;
-      border-radius:999px;
-      font-size:.75rem;
-      font-weight:600;
-      text-transform:uppercase;
-      background:rgba(0,0,0,.8);
-      color:var(--accent);
-      cursor:pointer;
-      transition:.3s;
-      text-decoration:none
-    }
-
-    .btn-nav:hover{
-      background:rgba(0,198,255,.15);
-      box-shadow:0 0 20px rgba(0,198,255,.4)
-    }
-
-    .logo{
-      max-width:230px;
-      margin-bottom:20px;
-      filter:drop-shadow(0 0 15px rgba(0,198,255,.3))
-    }
-
-    h1{
-      font-size:1.6rem;
-      font-weight:800;
-      letter-spacing:2px;
-      color:var(--accent)
-    }
-
-    .subtitle{
-      color:var(--text-dim);
-      font-size:.9rem;
-      max-width:800px;
-      margin:0 auto;
-      line-height:1.5
-    }
-
-    .controls,
-    .bi-section,
-    .sidebar-card,
-    .card{
-      background:var(--panel);
-      border:1px solid var(--panel-border);
-      border-radius:24px;
-      padding:24px;
-      backdrop-filter:blur(16px);
-      box-shadow:var(--shadow)
-    }
-
-    .controls{margin-bottom:30px}
-    .bi-section{margin-bottom:30px}
-
-    .dashboard-grid{
-      display:flex;
-      gap:30px;
-      align-items:flex-start
-    }
-
-    .comparison-section{
-      flex:3;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:20px
-    }
-
-    .sidebar{
-      flex:1;
-      position:sticky;
-      top:20px
-    }
-
-    footer{
-      margin-top:40px;
-      padding:20px 0;
-      text-align:center;
-      opacity:.6;
-      font-size:.75rem;
-      border-top:1px solid var(--panel-border)
-    }
-
-    @media(max-width:1024px){
-      .dashboard-grid{flex-direction:column}
-      .comparison-section{grid-template-columns:repeat(2,1fr)}
-    }
-
-    @media(max-width:768px){
-      .comparison-section{grid-template-columns:1fr}
-    }
-  </style>
+<style>
+:root{
+  --accent:#00c6ff;--bg:#000;--panel:rgba(15,18,22,.75);
+  --border:rgba(255,255,255,.1);--txt:#eaf3ff;--dim:#9ca3af
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Poppins,sans-serif}
+.container{max-width:1400px;margin:auto;padding:20px}
+header{text-align:center;margin-bottom:30px}
+h1{color:var(--accent);font-weight:800}
+.subtitle{color:var(--dim)}
+.panel{background:var(--panel);border:1px solid var(--border);
+border-radius:20px;padding:20px;margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:16px;padding:14px}
+.card h3{font-size:.9rem;color:var(--accent)}
+.card span{font-size:1.4rem;font-weight:700}
+pre{white-space:pre-wrap;font-family:'Fira Code',monospace;color:#bcdcff}
+canvas{width:100%;height:360px}
+</style>
 </head>
 
 <body>
-  <canvas id="matrix-canvas"></canvas>
+<div class="container">
+  <header>
+    <h1>DEMAND PULSE AMAZÔNIA</h1>
+    <p class="subtitle">Radar de Inteligência Turística — 15 destinos</p>
+  </header>
 
-  <div class="container">
-    <header>
-      <div class="header-nav">
-        <a href="index.html" class="btn-nav">← Voltar HUB</a>
-      </div>
+  <section class="panel">
+    <canvas id="chart"></canvas>
+  </section>
 
-      <img src="abr-logo.png" class="logo" alt="ABR Logo">
-      <h1>DEMAND PULSE AMAZÔNIA</h1>
-      <p class="subtitle">
-        Radar de Inteligência Turística do Pará — 15 destinos monitorados
-      </p>
-    </header>
-<!-- ================= ÁREA BI ================= -->
-<section class="bi-section">
-  <canvas id="biChart" style="width:100%;height:380px;"></canvas>
-</section>
+  <section class="cards" id="cards"></section>
 
-<!-- ================= CARDS ================= -->
-<section class="comparison-section" id="cards-container"></section>
+  <section class="panel">
+    <pre id="boletim"></pre>
+  </section>
+</div>
 
-<!-- ================= BOLETIM ================= -->
-<section class="sidebar-card">
-  <pre id="boletim-texto" style="white-space:pre-wrap;font-family:'Fira Code',monospace;"></pre>
-</section>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ================= SUPABASE (PRODUÇÃO) ================= */
-const SUPABASE_URL = 'https://jeoxnzjmfbgnoqqxz.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh';
-
-window.supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
+/* ========= SUPABASE ========= */
+const supabase = window.supabase.createClient(
+  'https://jeoxnzjmfbgnoqqxz.supabase.co',
+  'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh'
 );
 
-/* ================= ESTADO GLOBAL ================= */
-let PULSE_DATA_REAL = [];
-let PULSE_BY_DESTINO = {};
+/* ========= ESTADO ========= */
+let RAW = [];
+let BY_DEST = {};
 
-/* ================= FETCH DADOS REAIS ================= */
-async function fetchPulseAmazonia() {
-  const { data, error } = await window.supabaseClient
+/* ========= FETCH ========= */
+async function fetchData(){
+  const { data, error } = await supabase
     .from('pulse_amazonia')
-    .select('*')
-    .order('data_coleta', { ascending: true });
+    .select('*');
 
-  if (error) {
-    console.error('Erro Supabase:', error);
+  if(error){
+    console.error(error);
     return;
   }
-
-  PULSE_DATA_REAL = data || [];
-  normalizarDados();
+  RAW = data || [];
+  normalize();
 }
 
-/* ================= NORMALIZA ================= */
-function normalizarDados() {
-  PULSE_BY_DESTINO = {};
-
-  PULSE_DATA_REAL.forEach(row => {
-    if (!PULSE_BY_DESTINO[row.destino_id]) {
-      PULSE_BY_DESTINO[row.destino_id] = {
-        destino_id: row.destino_id,
-        nome: row.destino_nome,
-        timeline: []
-      };
+/* ========= NORMALIZA ========= */
+function normalize(){
+  BY_DEST = {};
+  RAW.forEach(r=>{
+    if(!BY_DEST[r.destino_id]){
+      BY_DEST[r.destino_id]={nome:r.destino_nome,series:[]};
     }
-    PULSE_BY_DESTINO[row.destino_id].timeline.push({
-      data: row.data_coleta,
-      interesse: row.interesse
+    BY_DEST[r.destino_id].series.push({
+      data:r.data_coleta,
+      valor:r.interesse
     });
   });
 }
 
-/* ================= INIT DADOS ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  fetchPulseAmazonia();
-});
-</script>
-<script>
-/* ================= MATRIX EFFECT ================= */
-const canvas = document.getElementById('matrix-canvas');
-const ctx = canvas.getContext('2d');
-let w = canvas.width = window.innerWidth;
-let h = canvas.height = window.innerHeight;
+/* ========= CHART ========= */
+function renderChart(){
+  const destinos = Object.values(BY_DEST);
+  if(!destinos.length) return;
 
-const cols = Math.floor(w / 16);
-const drops = Array(cols).fill(1);
-
-function drawMatrix() {
-  ctx.fillStyle = 'rgba(0,0,0,0.08)';
-  ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = 'rgba(0,198,255,0.45)';
-  ctx.font = '16px monospace';
-
-  drops.forEach((y, i) => {
-    const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-    ctx.fillText(text, i * 16, y * 16);
-    if (y * 16 > h && Math.random() > 0.975) drops[i] = 0;
-    drops[i]++;
-  });
-}
-
-setInterval(drawMatrix, 90);
-window.addEventListener('resize', () => {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-});
-
-/* ================= CHART ================= */
-function renderChart() {
-  const destinos = Object.values(PULSE_BY_DESTINO);
-  if (!destinos.length) return;
-
+  const labels = destinos[0].series.map(s=>s.data);
   const colors = ['#00c6ff','#39ff14','#ff3131','#ffea00','#ff00ff'];
-  const datasets = [];
 
-  destinos.slice(0,5).forEach((dest, idx) => {
-    datasets.push({
-      label: dest.nome,
-      data: dest.timeline.map(t => t.interesse),
-      borderColor: colors[idx],
-      backgroundColor: colors[idx] + '22',
-      tension: 0.25,
-      fill: true,
-      pointRadius: 3
-    });
-  });
+  const datasets = destinos.slice(0,5).map((d,i)=>({
+    label:d.nome,
+    data:d.series.map(s=>s.valor),
+    borderColor:colors[i],
+    tension:.3
+  }));
 
-  const labels = destinos[0].timeline.map(t => t.data);
-
-  new Chart(document.getElementById('biChart'), {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: '#9ca3af', font: { family:'Poppins', size:11 } }
-        }
-      },
-      scales: {
-        y: { ticks:{color:'#9ca3af'}, grid:{color:'rgba(255,255,255,0.05)'} },
-        x: { ticks:{color:'#9ca3af'}, grid:{display:false} }
-      }
-    }
+  new Chart(document.getElementById('chart'),{
+    type:'line',
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false}
   });
 }
 
-/* ================= CARDS ================= */
-function renderCards() {
-  const container = document.getElementById('cards-container');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const destinos = Object.values(PULSE_BY_DESTINO);
-
-  destinos.forEach(dest => {
-    const timeline = dest.timeline;
-    const last = timeline[timeline.length - 1];
-    const prev = timeline[timeline.length - 2] || last;
-    const change = ((last.interesse - prev.interesse) / prev.interesse) * 100;
-
-    const status =
-      change > 5 ? 'status-up' :
-      change < -5 ? 'status-down' : 'status-stable';
-
-    container.innerHTML += `
+/* ========= CARDS ========= */
+function renderCards(){
+  const el=document.getElementById('cards');
+  el.innerHTML='';
+  Object.values(BY_DEST).forEach(d=>{
+    const last=d.series.at(-1);
+    el.innerHTML+=`
       <div class="card">
-        <div class="card-header-top">
-          <span class="dest-name">${dest.nome}</span>
-        </div>
-        <span class="status-badge ${status}">
-          ${change >= 0 ? '+' : ''}${change.toFixed(1)}%
-        </span>
-        <div class="metric-box">
-          <span class="metric-label">Interesse atual</span>
-          <span class="metric-value">${last.interesse.toFixed(1)}</span>
-        </div>
-      </div>
-    `;
+        <h3>${d.nome}</h3>
+        <span>${last.valor.toFixed(1)}</span>
+      </div>`;
   });
 }
 
-/* ================= BOLETIM ================= */
-function renderBoletim() {
-  const el = document.getElementById('boletim-texto');
-  if (!el) return;
-
-  let txt = 'BOLETIM ESTRATÉGICO — PULSE AMAZÔNIA\n\n';
-
-  Object.values(PULSE_BY_DESTINO).forEach(dest => {
-    const t = dest.timeline;
-    const last = t[t.length - 1];
-    txt += dest.nome + ': ' + last.interesse.toFixed(1) + ' pts\n';
+/* ========= BOLETIM ========= */
+function renderBoletim(){
+  let txt='BOLETIM ESTRATÉGICO\n\n';
+  Object.values(BY_DEST).forEach(d=>{
+    const last=d.series.at(-1);
+    txt+=${d.nome}: ${last.valor.toFixed(1)} pts\n;
   });
-
-  el.innerText = txt;
+  document.getElementById('boletim').innerText=txt;
 }
 
-/* ================= PIPELINE FINAL ================= */
-async function startRadar() {
-  await fetchPulseAmazonia();
+/* ========= START ========= */
+async function start(){
+  await fetchData();
   renderChart();
   renderCards();
   renderBoletim();
 }
-
-document.addEventListener('DOMContentLoaded', startRadar);
+document.addEventListener('DOMContentLoaded',start);
 </script>
+</body>
+</html>
