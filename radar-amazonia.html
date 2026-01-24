@@ -21,29 +21,81 @@
       --text-dim:#9ca3af;
       --ok:#39ff14;
       --bad:#ff3131;
-      --shadow:0 14px 40px rgba(0,0,0,.85)
+      --shadow:0 14px 40px rgba(0,0,0,.85);
     }
 
     *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
-    body{background:var(--bg);color:var(--text-main);font-family:'Poppins',sans-serif;min-height:100vh;overflow-x:hidden}
+
+    body{
+      background:var(--bg);
+      color:var(--text-main);
+      font-family:'Poppins',sans-serif;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
     #matrix-canvas{position:fixed;inset:0;z-index:0;opacity:.30}
 
-    .container{max-width:1600px;margin:0 auto;padding:20px;position:relative;z-index:1}
-    header{text-align:center;margin-bottom:22px;padding-top:10px;position:relative}
+    .container{
+      max-width:1600px;
+      margin:0 auto;
+      padding:20px;
+      position:relative;
+      z-index:1;
+    }
 
-    .header-nav{position:absolute;top:10px;left:0;display:flex;gap:10px;z-index:10}
+    header{
+      text-align:center;
+      margin-bottom:18px;
+      padding-top:10px;
+      position:relative;
+    }
+
+    .header-nav{
+      position:absolute;
+      top:10px;
+      left:0;
+      display:flex;
+      gap:10px;
+      z-index:10;
+    }
+
     .btn-nav{
       border:1px solid var(--accent);
-      padding:8px 16px;border-radius:999px;
-      font-size:.75rem;font-weight:700;text-transform:uppercase;
-      background:rgba(0,0,0,.75);color:var(--accent);
-      cursor:pointer;transition:.25s;text-decoration:none
+      padding:8px 16px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:800;
+      text-transform:uppercase;
+      background:rgba(0,0,0,.75);
+      color:var(--accent);
+      cursor:pointer;
+      transition:.25s;
+      text-decoration:none;
     }
     .btn-nav:hover{background:rgba(0,198,255,.15);box-shadow:0 0 18px rgba(0,198,255,.35)}
 
-    .logo{width:230px;max-width:70vw;margin:10px auto 12px;display:block;filter:drop-shadow(0 0 14px rgba(0,198,255,.28))}
-    h1{font-size:1.65rem;font-weight:800;letter-spacing:2px;color:var(--accent)}
-    .subtitle{color:var(--text-dim);font-size:.95rem;max-width:860px;margin:6px auto 0;line-height:1.5}
+    .logo{
+      width:230px;
+      max-width:70vw;
+      margin:10px auto 12px;
+      display:block;
+      filter:drop-shadow(0 0 14px rgba(0,198,255,.28));
+    }
+
+    h1{
+      font-size:1.65rem;
+      font-weight:800;
+      letter-spacing:2px;
+      color:var(--accent);
+    }
+    .subtitle{
+      color:var(--text-dim);
+      font-size:.95rem;
+      max-width:860px;
+      margin:6px auto 0;
+      line-height:1.5;
+    }
 
     .panel{
       background:var(--panel);
@@ -51,47 +103,104 @@
       border-radius:24px;
       padding:22px;
       backdrop-filter:blur(16px);
-      box-shadow:var(--shadow)
+      box-shadow:var(--shadow);
     }
 
     .bi-section{margin:18px 0 18px}
-    #biChartWrap{height:380px;position:relative}
 
-    .dashboard-grid{display:flex;gap:18px;align-items:flex-start}
-    .comparison-section{flex:3;display:grid;grid-template-columns:repeat(3, 1fr);gap:14px}
-    .sidebar{flex:1;position:sticky;top:14px}
+    .dashboard-grid{
+      display:flex;
+      gap:18px;
+      align-items:flex-start;
+    }
+
+    .comparison-section{
+      flex:3;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+    }
+
+    .sidebar{
+      flex:1;
+      position:sticky;
+      top:14px;
+    }
 
     .card{
       border-radius:22px;
       padding:18px;
       background:rgba(12,14,18,.60);
       border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 12px 30px rgba(0,0,0,.55)
+      box-shadow:0 12px 30px rgba(0,0,0,.55);
+      min-height:118px;
     }
-    .card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
-    .dest-name{font-weight:800;font-size:.95rem;color:var(--text-main);line-height:1.2}
 
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .dest-name{
+      font-weight:900;
+      font-size:.95rem;
+      color:var(--text-main);
+      line-height:1.2;
+    }
     .badge{
       font-family:'Fira Code', monospace;
       font-size:.75rem;
-      padding:6px 10px;border-radius:999px;
+      padding:6px 10px;
+      border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.25);
       color:var(--text-dim);
-      white-space:nowrap
+      white-space:nowrap;
     }
     .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
     .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
 
-    .metric{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+    .metric{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      margin-top:8px;
+    }
     .metric-label{color:var(--text-dim);font-size:.78rem}
     .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
 
-    .boletim-title{font-weight:900;letter-spacing:1px;color:var(--accent);margin-bottom:10px}
-    #boletim-texto{white-space:pre-wrap;font-family:'Fira Code', monospace;font-size:.80rem;color:#cfe6ff;opacity:.95;line-height:1.45}
+    .boletim-title{
+      font-weight:900;
+      letter-spacing:1px;
+      color:var(--accent);
+      margin-bottom:10px;
+    }
+    #boletim-texto{
+      white-space:pre-wrap;
+      font-family:'Fira Code', monospace;
+      font-size:.80rem;
+      color:#cfe6ff;
+      opacity:.95;
+      line-height:1.45;
+    }
 
-    .hint{margin-top:10px;font-size:.78rem;color:var(--text-dim);opacity:.9}
-    footer{margin-top:26px;padding:18px 0;text-align:center;opacity:.55;font-size:.75rem;border-top:1px solid var(--panel-border)}
+    .hint{
+      margin-top:10px;
+      font-size:.78rem;
+      color:var(--text-dim);
+      opacity:.9;
+    }
+
+    footer{
+      margin-top:26px;
+      padding:18px 0;
+      text-align:center;
+      opacity:.55;
+      font-size:.75rem;
+      border-top:1px solid var(--panel-border);
+    }
 
     @media(max-width:1024px){
       .dashboard-grid{flex-direction:column}
@@ -120,10 +229,10 @@
 
     <!-- ÁREA BI -->
     <section class="panel bi-section">
-      <div id="biChartWrap">
+      <div style="height:380px">
         <canvas id="biChart"></canvas>
       </div>
-      <div class="hint" id="status-msg">Aguardando dados…</div>
+      <div class="hint" id="status-msg"></div>
     </section>
 
     <div class="dashboard-grid">
@@ -142,255 +251,330 @@
     <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
   </div>
 
-  <!-- SUPABASE (carrega ANTES de usar supabase.createClient) -->
+  <!-- SUPABASE (carregar ANTES de usar) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    /* ================= SUPABASE (PRODUÇÃO) ================= */
-    const SUPABASE_URL = 'https://jeoxnzjmfbgnoqqxz.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    /* ================= CONFIG ================= */
+    const SUPABASE_URL = "https://jeoxnzjmfbgnoqqxz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
+    const TABLE_NAME = "pulse_amazonia";
 
-    /* ================= ESTADO GLOBAL ================= */
+    /* ================= ESTADO ================= */
+    let supabaseClient = null;
     let PULSE_DATA_REAL = [];
     let PULSE_BY_DESTINO = {};
     let chartInstance = null;
 
-    /* ================= HELPERS ================= */
+    const elStatus = document.getElementById("status-msg");
+    const elBoletim = document.getElementById("boletim-texto");
+    const elCards = document.getElementById("cards-container");
+
     function setStatus(msg){
-      const el = document.getElementById('status-msg');
-      if (el) el.textContent = msg;
-    }
-
-    function safePctChange(curr, prev){
-      const a = Number(curr);
-      const b = Number(prev);
-      if (!isFinite(a) || !isFinite(b)) return 0;
-      if (b === 0) return a === 0 ? 0 : 100;
-      return ((a - b) / b) * 100;
-    }
-
-    /* ================= FETCH DADOS REAIS ================= */
-    async function fetchPulseAmazonia() {
-      setStatus('Conectando ao Supabase…');
-
-      const { data, error } = await supabaseClient
-        .from('pulse_amazonia')
-        .select('destino_id, destino_nome, data_coleta, interesse')
-        .order('data_coleta', { ascending: true });
-
-      if (error) {
-        console.error('Erro Supabase:', error);
-        setStatus('Falha ao carregar dados. Verifique RLS/Policy (SELECT) e conexão.');
-        return false;
-      }
-
-      PULSE_DATA_REAL = Array.isArray(data) ? data : [];
-      if (!PULSE_DATA_REAL.length){
-        setStatus('Sem dados na tabela pulse_amazonia.');
-        return true;
-      }
-
-      setStatus('Dados carregados. Renderizando…');
-      return true;
-    }
-
-    /* ================= NORMALIZA ================= */
-    function normalizarDados() {
-      PULSE_BY_DESTINO = {};
-
-      PULSE_DATA_REAL.forEach(row => {
-        if (!row || row.destino_id == null) return;
-        const interesse = Number(row.interesse);
-        if (!isFinite(interesse)) return;
-
-        const id = String(row.destino_id);
-        if (!PULSE_BY_DESTINO[id]) {
-          PULSE_BY_DESTINO[id] = {
-            id,
-            nome: row.destino_nome || 'Destino',
-            timeline: []
-          };
-        }
-        PULSE_BY_DESTINO[id].timeline.push({
-          data: row.data_coleta,
-          interesse
-        });
-      });
-
-      // garante timeline ordenada (caso haja registros fora de ordem)
-      Object.values(PULSE_BY_DESTINO).forEach(d => {
-        d.timeline.sort((a,b) => String(a.data).localeCompare(String(b.data)));
-      });
-    }
-
-    /* ================= CHART ================= */
-    function renderChart() {
-      const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length) {
-        setStatus('Sem destinos válidos para renderizar.');
-        return;
-      }
-
-      // seleciona top 5 pelo último valor
-      const ranked = destinos
-        .filter(d => d.timeline.length)
-        .map(d => ({
-          ...d,
-          last: d.timeline[d.timeline.length - 1].interesse
-        }))
-        .sort((a,b) => b.last - a.last)
-        .slice(0,5);
-
-      if (!ranked.length) return;
-
-      const colors = ['#00c6ff','#39ff14','#ff3131','#ffea00','#ff00ff'];
-
-      const labels = ranked[0].timeline.map(t => t.data);
-
-      const datasets = ranked.map((dest, idx) => ({
-        label: dest.nome,
-        data: dest.timeline.map(t => t.interesse),
-        borderColor: colors[idx % colors.length],
-        backgroundColor: (colors[idx % colors.length] + '22'),
-        tension: 0.25,
-        fill: true,
-        pointRadius: 2
-      }));
-
-      const ctx = document.getElementById('biChart');
-      if (!ctx) return;
-
-      if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#9ca3af', font: { family:'Poppins', size:11 } } }
-          },
-          scales: {
-            y: { ticks:{color:'#9ca3af'}, grid:{color:'rgba(255,255,255,0.05)'} },
-            x: { ticks:{color:'#9ca3af'}, grid:{display:false} }
-          }
-        }
-      });
-    }
-
-    /* ================= CARDS ================= */
-    function renderCards() {
-      const container = document.getElementById('cards-container');
-      if (!container) return;
-
-      const destinos = Object.values(PULSE_BY_DESTINO)
-        .filter(d => d.timeline.length)
-        .map(d => {
-          const last = d.timeline[d.timeline.length - 1].interesse;
-          const prev = (d.timeline[d.timeline.length - 2] || d.timeline[d.timeline.length - 1]).interesse;
-          const change = safePctChange(last, prev);
-          return { ...d, last, prev, change };
-        })
-        .sort((a,b) => b.last - a.last);
-
-      container.innerHTML = '';
-
-      destinos.forEach(dest => {
-        const badgeClass = dest.change > 5 ? 'up' : (dest.change < -5 ? 'down' : '');
-        const sign = dest.change >= 0 ? '+' : '';
-        container.insertAdjacentHTML('beforeend', `
-          <div class="card">
-            <div class="card-top">
-              <div class="dest-name">${dest.nome}</div>
-              <div class="badge ${badgeClass}">${sign}${dest.change.toFixed(1)}%</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Interesse atual</div>
-              <div class="metric-value">${dest.last.toFixed(1)}</div>
-            </div>
-          </div>
-        `);
-      });
-    }
-
-    /* ================= BOLETIM ================= */
-    function renderBoletim() {
-      const el = document.getElementById('boletim-texto');
-      if (!el) return;
-
-      const destinos = Object.values(PULSE_BY_DESTINO)
-        .filter(d => d.timeline.length)
-        .map(d => ({
-          nome: d.nome,
-          last: d.timeline[d.timeline.length - 1].interesse
-        }))
-        .sort((a,b) => b.last - a.last);
-
-      if (!destinos.length) {
-        el.textContent = 'Sem dados para boletim.';
-        return;
-      }
-
-      let txt = 'BOLETIM ESTRATÉGICO — PULSE AMAZÔNIA\n\n';
-      destinos.forEach(d => { txt += ${d.nome}: ${d.last.toFixed(1)} pts\n; });
-      el.textContent = txt;
+      if (elStatus) elStatus.textContent = msg || "";
     }
 
     /* ================= MATRIX EFFECT ================= */
-    (function startMatrix(){
-      const canvas = document.getElementById('matrix-canvas');
-      const ctx = canvas.getContext('2d');
+    (function initMatrix(){
+      const canvas = document.getElementById("matrix-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
       let w = canvas.width = window.innerWidth;
       let h = canvas.height = window.innerHeight;
 
       function resize(){
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
-        cols = Math.floor(w / 16);
+        cols = Math.max(1, Math.floor(w / fontSize));
         drops = Array(cols).fill(1);
       }
 
-      let cols = Math.floor(w / 16);
+      const fontSize = 16;
+      let cols = Math.max(1, Math.floor(w / fontSize));
       let drops = Array(cols).fill(1);
 
       function draw(){
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
         ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = 'rgba(0,198,255,0.45)';
-        ctx.font = '16px monospace';
 
-        for (let i=0;i<drops.length;i++){
-          const y = drops[i];
+        ctx.fillStyle = "rgba(0,198,255,0.45)";
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++){
           const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-          ctx.fillText(text, i * 16, y * 16);
-          if (y * 16 > h && Math.random() > 0.975) drops[i] = 0;
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+          if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
           drops[i]++;
         }
       }
 
-      setInterval(draw, 90);
-      window.addEventListener('resize', resize);
+      const timer = setInterval(draw, 90);
+      window.addEventListener("resize", resize);
+
+      // segurança: se página for descarregada
+      window.addEventListener("beforeunload", () => clearInterval(timer));
     })();
 
-    /* ================= PIPELINE FINAL ================= */
+    /* ================= SUPABASE INIT ================= */
+    function initSupabase(){
+      if (!window.supabase || typeof window.supabase.createClient !== "function"){
+        setStatus("⚠️ Falha ao carregar Supabase (CDN). Verifique conexão.");
+        return false;
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return true;
+    }
+
+    /* ================= FETCH ================= */
+    async function fetchPulseAmazonia(){
+      if (!supabaseClient) return;
+
+      setStatus("Carregando dados do Supabase…");
+
+      const { data, error } = await supabaseClient
+        .from(TABLE_NAME)
+        .select("destino_id,destino_nome,data_coleta,interesse")
+        .order("data_coleta", { ascending: true });
+
+      if (error){
+        console.error("Erro Supabase:", error);
+        setStatus("⚠️ Supabase bloqueou (Policy/RLS) ou erro de consulta. Veja Console.");
+        return;
+      }
+
+      PULSE_DATA_REAL = Array.isArray(data) ? data : [];
+      setStatus(PULSE_DATA_REAL.length ? ("OK: " + PULSE_DATA_REAL.length + " registros carregados.") : "⚠️ Sem registros na tabela.");
+      normalizarDados();
+    }
+
+    /* ================= NORMALIZA ================= */
+    function normalizarDados(){
+      PULSE_BY_DESTINO = {};
+
+      for (const row of PULSE_DATA_REAL){
+        if (!row || row.destino_id == null) continue;
+        const interesseNum = Number(row.interesse);
+        if (!Number.isFinite(interesseNum)) continue;
+
+        if (!PULSE_BY_DESTINO[row.destino_id]){
+          PULSE_BY_DESTINO[row.destino_id] = {
+            id: row.destino_id,
+            nome: row.destino_nome || ("Destino " + row.destino_id),
+            timeline: []
+          };
+        }
+
+        PULSE_BY_DESTINO[row.destino_id].timeline.push({
+          data: row.data_coleta,
+          interesse: interesseNum
+        });
+      }
+
+      // ordena timeline por data (caso venha fora)
+      for (const k of Object.keys(PULSE_BY_DESTINO)){
+        PULSE_BY_DESTINO[k].timeline.sort((a,b) => String(a.data).localeCompare(String(b.data)));
+      }
+    }
+
+    /* ================= RENDER CHART ================= */
+    function renderChart(){
+      const canvas = document.getElementById("biChart");
+      if (!canvas) return;
+
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length){
+        // limpa chart se existia
+        if (chartInstance){
+          chartInstance.destroy();
+          chartInstance = null;
+        }
+        return;
+      }
+
+      // pega labels do maior timeline (mais robusto)
+      let base = destinos[0];
+      for (const d of destinos){
+        if (d.timeline.length > base.timeline.length) base = d;
+      }
+      const labels = base.timeline.map(t => t.data);
+
+      const colors = ["#00c6ff","#39ff14","#ff3131","#ffea00","#ff00ff","#00ffea","#ff7a00"];
+      const datasets = [];
+
+      destinos.slice(0, 5).forEach((dest, idx) => {
+        // alinhar valores no mesmo eixo de labels (por data)
+        const map = new Map(dest.timeline.map(t => [String(t.data), t.interesse]));
+        const series = labels.map(l => map.has(String(l)) ? map.get(String(l)) : null);
+
+        datasets.push({
+          label: dest.nome,
+          data: series,
+          borderColor: colors[idx % colors.length],
+          backgroundColor: (colors[idx % colors.length] + "22"),
+          tension: 0.25,
+          fill: true,
+          pointRadius: 2,
+          spanGaps: true
+        });
+      });
+
+      if (chartInstance){
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      chartInstance = new Chart(canvas, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: "#9ca3af", font: { family: "Poppins", size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed.y;
+                  return ctx.dataset.label + ": " + (Number.isFinite(v) ? v.toFixed(1) : "—");
+                }
+              }
+            }
+          },
+          scales: {
+            y: { ticks:{color:"#9ca3af"}, grid:{color:"rgba(255,255,255,0.05)"} },
+            x: { ticks:{color:"#9ca3af"}, grid:{display:false} }
+          }
+        }
+      });
+    }
+
+    /* ================= RENDER CARDS ================= */
+    function renderCards(){
+      if (!elCards) return;
+      elCards.innerHTML = "";
+
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length) return;
+
+      // ordena por interesse atual desc (mais útil)
+      destinos.sort((a,b) => {
+        const la = a.timeline[a.timeline.length-1]?.interesse ?? -Infinity;
+        const lb = b.timeline[b.timeline.length-1]?.interesse ?? -Infinity;
+        return lb - la;
+      });
+
+      for (const dest of destinos){
+        const t = dest.timeline;
+        if (!t.length) continue;
+        const last = t[t.length - 1];
+        const prev = t[t.length - 2] || last;
+
+        const prevVal = Number(prev.interesse);
+        const lastVal = Number(last.interesse);
+
+        let pct = 0;
+        if (Number.isFinite(prevVal) && prevVal !== 0 && Number.isFinite(lastVal)){
+          pct = ((lastVal - prevVal) / prevVal) * 100;
+        } else if (Number.isFinite(lastVal) && Number.isFinite(prevVal) && prevVal === 0){
+          pct = (lastVal > 0) ? 100 : 0;
+        }
+
+        const badgeClass = pct >= 5 ? "up" : (pct <= -5 ? "down" : "");
+        const sign = pct >= 0 ? "+" : "";
+        const pctText = Number.isFinite(pct) ? (sign + pct.toFixed(1) + "%") : "—";
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="dest-name">${escapeHtml(dest.nome)}</div>
+            <div class="badge ${badgeClass}">${pctText}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Interesse atual</div>
+            <div class="metric-value">${Number.isFinite(lastVal) ? lastVal.toFixed(1) : "—"}</div>
+          </div>
+        `;
+        elCards.appendChild(card);
+      }
+    }
+
+    /* ================= BOLETIM ================= */
+    function renderBoletim(){
+      if (!elBoletim) return;
+
+      const destinos = Object.values(PULSE_BY_DESTINO);
+      if (!destinos.length){
+        elBoletim.textContent = "Sem dados para boletim.";
+        return;
+      }
+
+      // calcula variação
+      const rows = destinos.map(d => {
+        const t = d.timeline;
+        const last = t[t.length-1]?.interesse ?? null;
+        const prev = t[t.length-2]?.interesse ?? last;
+        const lastVal = Number(last);
+        const prevVal = Number(prev);
+        let pct = 0;
+        if (Number.isFinite(prevVal) && prevVal !== 0 && Number.isFinite(lastVal)){
+          pct = ((lastVal - prevVal) / prevVal) * 100;
+        }
+        return { nome: d.nome, last: lastVal, pct };
+      }).filter(r => Number.isFinite(r.last));
+
+      // top altas e baixas
+      const topUp = [...rows].sort((a,b) => (b.pct - a.pct)).slice(0, 5);
+      const topDown = [...rows].sort((a,b) => (a.pct - b.pct)).slice(0, 5);
+
+      let txt = "";
+      txt += "PULSE AMAZÔNIA — RESUMO\n";
+      txt += "Atualizado via Supabase\n\n";
+
+      txt += "TOP ALTAS (última variação)\n";
+      for (const r of topUp){
+        const sign = r.pct >= 0 ? "+" : "";
+        txt += • ${r.nome}: ${r.last.toFixed(1)} pts (${sign}${r.pct.toFixed(1)}%)\n;
+      }
+
+      txt += "\nTOP QUEDAS (última variação)\n";
+      for (const r of topDown){
+        const sign = r.pct >= 0 ? "+" : "";
+        txt += • ${r.nome}: ${r.last.toFixed(1)} pts (${sign}${r.pct.toFixed(1)}%)\n;
+      }
+
+      elBoletim.textContent = txt;
+    }
+
+    /* ================= HELPERS ================= */
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    /* ================= START ================= */
     async function startRadar(){
-      const ok = await fetchPulseAmazonia();
+      // Supabase init
+      const ok = initSupabase();
       if (!ok) return;
 
-      normalizarDados();
+      // fetch + render
+      await fetchPulseAmazonia();
       renderChart();
       renderCards();
       renderBoletim();
-
-      setStatus('OK — Radar em produção (Supabase + render).');
     }
 
-    document.addEventListener('DOMContentLoaded', startRadar);
+    document.addEventListener("DOMContentLoaded", startRadar);
   </script>
 </body>
 </html>
