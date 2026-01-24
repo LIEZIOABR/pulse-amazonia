@@ -25,77 +25,29 @@
     }
 
     *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
-
-    body{
-      background:var(--bg);
-      color:var(--text-main);
-      font-family:'Poppins',sans-serif;
-      min-height:100vh;
-      overflow-x:hidden
-    }
-
+    body{background:var(--bg);color:var(--text-main);font-family:'Poppins',sans-serif;min-height:100vh;overflow-x:hidden}
     #matrix-canvas{position:fixed;inset:0;z-index:0;opacity:.30}
 
-    .container{
-      max-width:1600px;
-      margin:0 auto;
-      padding:20px;
-      position:relative;
-      z-index:1
-    }
+    .container{max-width:1600px;margin:0 auto;padding:20px;position:relative;z-index:1}
+    header{text-align:center;margin-bottom:22px;padding-top:10px;position:relative}
 
-    header{
-      text-align:center;
-      margin-bottom:22px;
-      padding-top:10px;
-      position:relative
-    }
-
-    .header-nav{
-      position:absolute;
-      top:10px;
-      left:0;
-      display:flex;
-      gap:10px;
-      z-index:10
-    }
-
+    .header-nav{position:absolute;top:10px;left:0;display:flex;gap:10px;z-index:10}
     .btn-nav{
       border:1px solid var(--accent);
-      padding:8px 16px;
-      border-radius:999px;
-      font-size:.75rem;
-      font-weight:700;
-      text-transform:uppercase;
-      background:rgba(0,0,0,.75);
-      color:var(--accent);
-      cursor:pointer;
-      transition:.25s;
-      text-decoration:none
+      padding:8px 16px;border-radius:999px;
+      font-size:.75rem;font-weight:700;text-transform:uppercase;
+      background:rgba(0,0,0,.75);color:var(--accent);
+      cursor:pointer;transition:.25s;text-decoration:none
     }
     .btn-nav:hover{background:rgba(0,198,255,.15);box-shadow:0 0 18px rgba(0,198,255,.35)}
 
     .logo{
-      width:230px;
-      max-width:70vw;
-      margin:10px auto 12px;
-      display:block;
+      width:230px;max-width:70vw;margin:10px auto 12px;display:block;
       filter:drop-shadow(0 0 14px rgba(0,198,255,.28))
     }
 
-    h1{
-      font-size:1.65rem;
-      font-weight:800;
-      letter-spacing:2px;
-      color:var(--accent)
-    }
-    .subtitle{
-      color:var(--text-dim);
-      font-size:.95rem;
-      max-width:860px;
-      margin:6px auto 0;
-      line-height:1.5
-    }
+    h1{font-size:1.65rem;font-weight:800;letter-spacing:2px;color:var(--accent)}
+    .subtitle{color:var(--text-dim);font-size:.95rem;max-width:860px;margin:6px auto 0;line-height:1.5}
 
     .panel{
       background:var(--panel);
@@ -107,98 +59,45 @@
     }
 
     .bi-section{margin:18px 0 18px}
+    #biChartWrap{height:380px;position:relative}
+    #status-msg{margin-top:10px;font-size:.78rem;color:var(--text-dim);opacity:.95}
 
-    .dashboard-grid{
-      display:flex;
-      gap:18px;
-      align-items:flex-start
-    }
-
-    .comparison-section{
-      flex:3;
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:14px
-    }
-
-    .sidebar{
-      flex:1;
-      position:sticky;
-      top:14px
-    }
+    .dashboard-grid{display:flex;gap:18px;align-items:flex-start}
+    .comparison-section{flex:3;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .sidebar{flex:1;position:sticky;top:14px}
 
     .card{
-      border-radius:22px;
-      padding:18px;
+      border-radius:22px;padding:18px;
       background:rgba(12,14,18,.60);
       border:1px solid rgba(255,255,255,.10);
       box-shadow:0 12px 30px rgba(0,0,0,.55)
     }
 
-    .card-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px
-    }
-    .dest-name{
-      font-weight:800;
-      font-size:.95rem;
-      color:var(--text-main);
-      line-height:1.2
-    }
+    .card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+    .dest-name{font-weight:800;font-size:.95rem;color:var(--text-main);line-height:1.2}
     .badge{
-      font-family:'Fira Code', monospace;
-      font-size:.75rem;
-      padding:6px 10px;
-      border-radius:999px;
+      font-family:'Fira Code', monospace;font-size:.75rem;
+      padding:6px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.25);
-      color:var(--text-dim);
-      white-space:nowrap
+      color:var(--text-dim);white-space:nowrap
     }
     .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
     .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
 
-    .metric{
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      margin-top:8px
-    }
+    .metric{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
     .metric-label{color:var(--text-dim);font-size:.78rem}
     .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
 
-    .boletim-title{
-      font-weight:900;
-      letter-spacing:1px;
-      color:var(--accent);
-      margin-bottom:10px
-    }
+    .boletim-title{font-weight:900;letter-spacing:1px;color:var(--accent);margin-bottom:10px}
     #boletim-texto{
-      white-space:pre-wrap;
-      font-family:'Fira Code', monospace;
-      font-size:.80rem;
-      color:#cfe6ff;
-      opacity:.95;
-      line-height:1.45
-    }
-
-    .hint{
-      margin-top:10px;
-      font-size:.78rem;
-      color:var(--text-dim);
-      opacity:.9
+      white-space:pre-wrap;font-family:'Fira Code', monospace;
+      font-size:.80rem;color:#cfe6ff;opacity:.95;line-height:1.45
     }
 
     footer{
-      margin-top:26px;
-      padding:18px 0;
-      text-align:center;
-      opacity:.55;
-      font-size:.75rem;
-      border-top:1px solid var(--panel-border)
+      margin-top:26px;padding:18px 0;text-align:center;
+      opacity:.55;font-size:.75rem;border-top:1px solid var(--panel-border)
     }
 
     @media(max-width:1024px){
@@ -226,10 +125,12 @@
       <p class="subtitle">Radar de Inteligência Turística do Pará — 15 destinos monitorados</p>
     </header>
 
-    <!-- ÁREA BI -->
+    <!-- BI -->
     <section class="panel bi-section">
-      <canvas id="biChart" style="width:100%;height:380px;"></canvas>
-      <div class="hint" id="status-msg"></div>
+      <div id="biChartWrap">
+        <canvas id="biChart"></canvas>
+      </div>
+      <div id="status-msg"></div>
     </section>
 
     <div class="dashboard-grid">
@@ -248,13 +149,14 @@
     <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
   </div>
 
-  <!-- SUPABASE -->
+  <!-- ✅ LINHA OBRIGATÓRIA ANTES DO SCRIPT SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     /* ================= SUPABASE (PRODUÇÃO) ================= */
-    const SUPABASE_URL = "https://jeoxnzjmfbgnoqqxz.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
+    const SUPABASE_URL = 'https://jeoxnzjmfbgnoqqxz.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh';
+
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ================= ESTADO ================= */
@@ -262,228 +164,257 @@
     let PULSE_BY_DESTINO = {};
     let chartInstance = null;
 
-    function setStatus(msg){
-      const el = document.getElementById("status-msg");
-      if (el) el.textContent = msg || "";
+    const statusMsgEl = document.getElementById('status-msg');
+
+    function setStatus(msg) {
+      if (!statusMsgEl) return;
+      statusMsgEl.textContent = msg || '';
     }
 
-    /* ================= FETCH ================= */
-    async function fetchPulseAmazonia(){
-      setStatus("Conectando ao Supabase…");
-      const { data, error } = await supabaseClient
-        .from("pulse_amazonia")
-        .select("*")
-        .order("data_coleta", { ascending: true });
+    /* ================= FETCH DADOS ================= */
+    async function fetchPulseAmazonia() {
+      setStatus('Conectando ao Supabase…');
 
-      if (error){
-        console.error("Erro Supabase:", error);
-        setStatus("Falha ao carregar dados (ver console).");
+      const { data, error } = await supabaseClient
+        .from('pulse_amazonia')
+        .select('*')
+        .order('data_coleta', { ascending: true });
+
+      if (error) {
+        console.error('Erro Supabase:', error);
+        setStatus('⚠️ Sem acesso aos dados no Supabase (verifique RLS/Policy/Key).');
+        PULSE_DATA_REAL = [];
+        PULSE_BY_DESTINO = {};
         return false;
       }
 
       PULSE_DATA_REAL = Array.isArray(data) ? data : [];
-      setStatus(PULSE_DATA_REAL.length ? Dados carregados: ${PULSE_DATA_REAL.length} linhas. : "Sem dados na tabela.");
+      setStatus(Dados carregados: ${PULSE_DATA_REAL.length} registros.);
       return true;
     }
 
     /* ================= NORMALIZA ================= */
-    function normalizarDados(){
+    function normalizarDados() {
       PULSE_BY_DESTINO = {};
 
-      for (const row of PULSE_DATA_REAL){
-        const id = row.destino_id;
-        if (!id) continue;
+      for (const row of PULSE_DATA_REAL) {
+        if (!row) continue;
 
-        if (!PULSE_BY_DESTINO[id]){
-          PULSE_BY_DESTINO[id] = {
-            destino_id: id,
-            nome: row.destino_nome || id,
-            timeline: []
-          };
+        const id = row.destino_id ?? row.destino_nome ?? 'destino';
+        const nome = row.destino_nome || String(id);
+        const interesse = Number(row.interesse);
+
+        if (!Number.isFinite(interesse)) continue;
+
+        if (!PULSE_BY_DESTINO[id]) {
+          PULSE_BY_DESTINO[id] = { nome, timeline: [] };
         }
 
         PULSE_BY_DESTINO[id].timeline.push({
-          data: row.data_coleta,
-          interesse: Number(row.interesse ?? 0)
+          data: row.data_coleta || '',
+          interesse
         });
       }
 
-      // Garante timeline ordenada por data
-      for (const k of Object.keys(PULSE_BY_DESTINO)){
-        PULSE_BY_DESTINO[k].timeline.sort((a,b)=> String(a.data).localeCompare(String(b.data)));
-      }
+      // Ordena timeline por data (se vier como string ISO, funciona)
+      Object.values(PULSE_BY_DESTINO).forEach(d => {
+        d.timeline.sort((a,b) => (a.data > b.data ? 1 : a.data < b.data ? -1 : 0));
+      });
     }
 
     /* ================= CHART ================= */
-    function renderChart(){
+    function renderChart() {
       const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length){
-        setStatus("Sem destinos para desenhar o gráfico.");
+      if (!destinos.length) {
+        setStatus('⚠️ Sem destinos para plotar. (Tabela vazia ou RLS bloqueando)');
         return;
       }
 
-      const base = destinos[0].timeline;
-      const labels = base.map(t => t.data);
+      // pega o destino com maior timeline como referência de labels
+      const ref = destinos.reduce((best, cur) => (cur.timeline.length > best.timeline.length ? cur : best), destinos[0]);
+      const labels = ref.timeline.map(t => t.data);
 
-      const palette = ["#00c6ff","#39ff14","#ff3131","#ffea00","#ff00ff"];
-      const datasets = destinos.slice(0,5).map((dest, idx) => ({
-        label: dest.nome,
-        data: dest.timeline.map(t => t.interesse),
-        borderColor: palette[idx % palette.length],
-        backgroundColor: palette[idx % palette.length] + "22",
-        tension: 0.25,
-        fill: true,
-        pointRadius: 3
-      }));
+      const colors = ['#00c6ff','#39ff14','#ff3131','#ffea00','#ff00ff','#7c3aed','#22c55e','#f97316'];
 
-      const ctx = document.getElementById("biChart");
-      if (!ctx) return;
+      const datasets = destinos.slice(0, 8).map((dest, idx) => {
+        // alinha pelo índice (simples e robusto)
+        const series = dest.timeline.map(t => t.interesse);
+        return {
+          label: dest.nome,
+          data: series,
+          borderColor: colors[idx % colors.length],
+          backgroundColor: (colors[idx % colors.length] + '22'),
+          tension: 0.25,
+          fill: true,
+          pointRadius: 2
+        };
+      });
 
-      if (chartInstance) chartInstance.destroy();
+      const canvas = document.getElementById('biChart');
+      if (!canvas) return;
 
-      chartInstance = new Chart(ctx, {
-        type: "line",
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      chartInstance = new Chart(canvas, {
+        type: 'line',
         data: { labels, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: "#9ca3af", font: { family:"Poppins", size:11 } } }
+            legend: {
+              labels: { color: '#9ca3af', font: { family:'Poppins', size:11 } }
+            }
           },
           scales: {
-            y: { ticks:{ color:"#9ca3af" }, grid:{ color:"rgba(255,255,255,0.05)" } },
-            x: { ticks:{ color:"#9ca3af" }, grid:{ display:false } }
+            y: { ticks:{color:'#9ca3af'}, grid:{color:'rgba(255,255,255,0.05)'} },
+            x: { ticks:{color:'#9ca3af'}, grid:{display:false} }
           }
         }
       });
     }
 
     /* ================= CARDS ================= */
-    function renderCards(){
-      const container = document.getElementById("cards-container");
+    function renderCards() {
+      const container = document.getElementById('cards-container');
       if (!container) return;
-      container.innerHTML = "";
 
+      container.innerHTML = '';
       const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length){
-        container.innerHTML = <div class="card">Nenhum dado para exibir.</div>;
+
+      if (!destinos.length) {
+        container.innerHTML = <div class="card"><div class="dest-name">Sem dados</div><div class="metric"><span class="metric-label">Aguardando</span><span class="metric-value">—</span></div></div>;
         return;
       }
 
-      for (const dest of destinos){
+      destinos.forEach(dest => {
         const t = dest.timeline;
-        const last = t[t.length - 1] || { interesse: 0 };
+        const last = t[t.length - 1];
         const prev = t[t.length - 2] || last;
 
-        const prevVal = Number(prev.interesse || 0);
-        const lastVal = Number(last.interesse || 0);
-        const change = prevVal === 0 ? 0 : ((lastVal - prevVal) / prevVal) * 100;
+        const prevVal = Number(prev?.interesse);
+        const lastVal = Number(last?.interesse);
 
-        const cls = change > 5 ? "up" : (change < -5 ? "down" : "");
+        let change = 0;
+        if (Number.isFinite(prevVal) && prevVal !== 0 && Number.isFinite(lastVal)) {
+          change = ((lastVal - prevVal) / prevVal) * 100;
+        }
 
-        container.insertAdjacentHTML("beforeend", `
+        const cls = change > 5 ? 'up' : (change < -5 ? 'down' : '');
+        const sign = change >= 0 ? '+' : '';
+
+        container.insertAdjacentHTML('beforeend', `
           <div class="card">
             <div class="card-top">
               <div class="dest-name">${escapeHtml(dest.nome)}</div>
-              <div class="badge ${cls}">
-                ${change >= 0 ? "+" : ""}${change.toFixed(1)}%
-              </div>
+              <div class="badge ${cls}">${sign}${change.toFixed(1)}%</div>
             </div>
 
             <div class="metric">
-              <div class="metric-label">Interesse atual</div>
-              <div class="metric-value">${lastVal.toFixed(0)}</div>
+              <span class="metric-label">Interesse atual</span>
+              <span class="metric-value">${Number.isFinite(lastVal) ? lastVal.toFixed(1) : '—'}</span>
             </div>
 
-            <div class="hint">Última coleta: ${escapeHtml(String(last.data ?? "—"))}</div>
+            <div class="metric">
+              <span class="metric-label">Última coleta</span>
+              <span class="metric-value" style="font-size:.95rem;font-weight:800;color:#cfe6ff">${escapeHtml(String(last?.data || '—'))}</span>
+            </div>
           </div>
         `);
-      }
+      });
     }
 
     /* ================= BOLETIM ================= */
-    function renderBoletim(){
-      const el = document.getElementById("boletim-texto");
+    function renderBoletim() {
+      const el = document.getElementById('boletim-texto');
       if (!el) return;
 
       const destinos = Object.values(PULSE_BY_DESTINO);
-      if (!destinos.length){
-        el.textContent = "Sem dados para boletim.";
+      if (!destinos.length) {
+        el.textContent = 'Sem dados disponíveis.\n\nVerifique:\n1) Policy SELECT na tabela\n2) RLS e permissões\n3) URL/Anon Key';
         return;
       }
 
-      let txt = "";
-      txt += "PULSE AMAZÔNIA — LEITURA RÁPIDA\n\n";
+      let txt = 'BOLETIM ESTRATÉGICO — PULSE AMAZÔNIA\n\n';
 
-      for (const dest of destinos){
+      destinos.forEach(dest => {
         const t = dest.timeline;
         const last = t[t.length - 1];
-        const val = Number(last?.interesse ?? 0);
-        txt += ${dest.nome}: ${val.toFixed(0)} pts\n;
-      }
+        if (!last) return;
+        const val = Number(last.interesse);
+        txt += ${dest.nome}: ${Number.isFinite(val) ? val.toFixed(1) : '—'} pts\n;
+      });
 
       el.textContent = txt;
     }
 
-    function escapeHtml(str){
+    /* ================= UTILS ================= */
+    function escapeHtml(str) {
       return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
         .replaceAll("'","&#039;");
     }
 
-    /* ================= MATRIX EFFECT ================= */
-    (function matrix(){
-      const canvas = document.getElementById("matrix-canvas");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
+    /* ================= MATRIX ================= */
+    (function startMatrix(){
+      const c = document.getElementById('matrix-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
 
-      let w = canvas.width = window.innerWidth;
-      let h = canvas.height = window.innerHeight;
+      let w = c.width = window.innerWidth;
+      let h = c.height = window.innerHeight;
 
-      const cols = Math.floor(w / 16);
+      let cols = Math.floor(w / 16);
       let drops = Array(cols).fill(1);
 
-      function draw(){
-        ctx.fillStyle = "rgba(0,0,0,0.08)";
+      function drawMatrix() {
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
         ctx.fillRect(0, 0, w, h);
 
-        ctx.fillStyle = "rgba(0,198,255,0.45)";
-        ctx.font = "16px monospace";
+        ctx.fillStyle = 'rgba(0,198,255,0.45)';
+        ctx.font = '16px monospace';
 
-        for (let i = 0; i < drops.length; i++){
+        for (let i = 0; i < drops.length; i++) {
+          const y = drops[i];
           const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-          ctx.fillText(text, i * 16, drops[i] * 16);
-
-          if (drops[i] * 16 > h && Math.random() > 0.975) drops[i] = 0;
+          ctx.fillText(text, i * 16, y * 16);
+          if (y * 16 > h && Math.random() > 0.975) drops[i] = 0;
           drops[i]++;
         }
       }
 
-      setInterval(draw, 90);
+      setInterval(drawMatrix, 90);
 
-      window.addEventListener("resize", () => {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-        const newCols = Math.floor(w / 16);
-        drops = Array(newCols).fill(1);
+      window.addEventListener('resize', () => {
+        w = c.width = window.innerWidth;
+        h = c.height = window.innerHeight;
+        cols = Math.floor(w / 16);
+        drops = Array(cols).fill(1);
       });
     })();
 
-    /* ================= PIPELINE ÚNICO ================= */
-    async function startRadar(){
+    /* ================= PIPELINE ================= */
+    async function startRadar() {
       const ok = await fetchPulseAmazonia();
-      if (!ok) return;
-
+      if (!ok) {
+        renderChart();
+        renderCards();
+        renderBoletim();
+        return;
+      }
       normalizarDados();
       renderChart();
       renderCards();
       renderBoletim();
     }
 
-    document.addEventListener("DOMContentLoaded", startRadar);
+    document.addEventListener('DOMContentLoaded', startRadar);
   </script>
 </body>
 </html>
