@@ -1,53 +1,58 @@
-/* ======================================================
-   DEMAND PULSE AMAZÔNIA — radar.js (BASE VISUAL ESTÁVEL)
-   Objetivo: provar renderização JS no anchor
-   Sem Supabase | Sem dados reais | Sem risco
-====================================================== */
+/* ===============================
+   DEMAND PULSE AMAZÔNIA – RADAR.JS
+   Base estável | sem Supabase
+   =============================== */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const anchor = document.getElementById('radar-anchor');
+document.addEventListener("DOMContentLoaded", () => {
+  const anchor = document.getElementById("radar-anchor");
+  if (!anchor) return;
 
-  if (!anchor) {
-    console.error('❌ radar-anchor não encontrado no HTML');
-    return;
-  }
+  // Dados simulados (temporários)
+  const destinos = [
+    { nome: "Belém", interesse: 78, variacao: 4.2 },
+    { nome: "Alter do Chão", interesse: 92, variacao: 6.8 },
+    { nome: "Santarém", interesse: 64, variacao: -1.5 },
+    { nome: "Marabá", interesse: 51, variacao: 2.1 },
+    { nome: "Parauapebas", interesse: 47, variacao: -0.8 }
+  ];
 
-  anchor.innerHTML = `
-    <section class="panel" style="margin-top:20px">
-      <div style="text-align:center">
-        <h2 style="
-          color:#00c6ff;
-          font-weight:800;
-          letter-spacing:1px;
-          margin-bottom:12px
-        ">
-          RADAR ATIVO
-        </h2>
+  // Monta cards
+  let html = <div class="comparison-section">;
 
-        <p style="
-          color:#9ca3af;
-          font-size:.9rem;
-          max-width:520px;
-          margin:0 auto
-        ">
-          O JavaScript está carregando corretamente.<br>
-          A próxima etapa será conectar dados reais.
-        </p>
+  destinos.forEach(d => {
+    const dir = d.variacao >= 0 ? "up" : "down";
+    const sinal = d.variacao >= 0 ? "+" : "";
 
-        <div style="
-          margin-top:18px;
-          display:inline-block;
-          padding:10px 18px;
-          border-radius:999px;
-          border:1px solid rgba(0,198,255,.35);
-          color:#00c6ff;
-          font-family:'Fira Code', monospace;
-          font-size:.75rem;
-          background:rgba(0,0,0,.35)
-        ">
-          STATUS: OK
+    html += `
+      <div class="card">
+        <div class="card-top">
+          <span class="dest-name">${d.nome}</span>
+          <span class="badge ${dir}">${sinal}${d.variacao}%</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Interesse</span>
+          <span class="metric-value">${d.interesse}</span>
         </div>
       </div>
-    </section>
-  `;
+    `;
+  });
+
+  html += </div>;
+
+  anchor.innerHTML = html;
+
+  // Atualiza boletim se existir
+  const boletim = document.getElementById("boletim-texto");
+  if (boletim) {
+    boletim.innerText =
+`BOLETIM ESTRATÉGICO — AMAZÔNIA
+
+* Alter do Chão lidera interesse
+* Belém mantém crescimento estável
+* Santarém apresenta leve retração
+
+(Base simulada — Supabase entra na próxima etapa)`;
+  }
+
+  console.log("✅ Radar carregado com dados simulados");
 });
