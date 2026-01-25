@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   // Monta cards
-  let html = <div class="comparison-section">;
+  let html = '<div class="comparison-section">';
 
   destinos.forEach(d => {
     const dir = d.variacao >= 0 ? "up" : "down";
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   });
 
-  html += </div>;
+  html += '</div>';;
 
   anchor.innerHTML = html;
 
