@@ -19,4 +19,4 @@ destinos.forEach(d => {
   `;
 });
 
-html += </div>;
+html += '</div>;'
