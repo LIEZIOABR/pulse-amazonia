@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
     { nome: "Parauapebas", interesse: 47, variacao: -0.8 }
   ];
 
-  // Monta cards
-  let html = '<div class="comparison-section">';
+  // Monta cards (use crase!)
+  let html = <div class="comparison-section">;
 
-  destinos.forEach(d => {
+  destinos.forEach((d) => {
     const dir = d.variacao >= 0 ? "up" : "down";
     const sinal = d.variacao >= 0 ? "+" : "";
 
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   });
 
-  html += '</div>';;
+  html += </div>;
 
   anchor.innerHTML = html;
 
@@ -45,13 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const boletim = document.getElementById("boletim-texto");
   if (boletim) {
     boletim.innerText =
-`BOLETIM ESTRATÉGICO — AMAZÔNIA
-
-* Alter do Chão lidera interesse
-* Belém mantém crescimento estável
-* Santarém apresenta leve retração
-
-(Base simulada — Supabase entra na próxima etapa)`;
+      "BOLETIM ESTRATÉGICO — AMAZÔNIA\n\n" +
+      "* Alter do Chão lidera interesse\n" +
+      "* Belém mantém crescimento estável\n" +
+      "* Santarém apresenta leve retração\n\n" +
+      "(Base simulada — Supabase entra na próxima etapa)";
   }
 
   console.log("✅ Radar carregado com dados simulados");
