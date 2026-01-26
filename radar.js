@@ -3,16 +3,23 @@
    Base estável | Supabase ativo
    =============================== */
 
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-  const anchor = document.getElementById("radar-anchor");
+  var anchor = document.getElementById("radar-anchor");
   if (!anchor) return;
 
-  let destinos = [];
+  // proteção: Supabase precisa existir no HTML
+  if (!window.supabaseClient) {
+    console.error("Supabase client não encontrado (window.supabaseClient)");
+    anchor.innerHTML = "<p style='opacity:.6'>Erro: Supabase não inicializado</p>";
+    return;
+  }
+
+  carregarDestinos();
 
   async function carregarDestinos() {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await window.supabaseClient
         .from("pulse_amazonia")
         .select("destino_id, interesse")
         .order("interesse", { ascending: false })
@@ -20,57 +27,43 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (error) {
         console.error("Erro Supabase:", error);
+        anchor.innerHTML = "<p style='opacity:.6'>Erro ao carregar dados</p>";
         return;
       }
 
-      destinos = data.map(d => ({
-        nome: d.destino_id,
-        interesse: d.interesse,
-        variacao: 0
-      }));
+      renderRadar(data || []);
+      console.log("✅ Radar carregado com Supabase ativo");
 
     } catch (e) {
       console.error("Erro geral:", e);
+      anchor.innerHTML = "<p style='opacity:.6'>Falha inesperada</p>";
     }
   }
 
-  // ⬇️ CARREGA DADOS PRIMEIRO
-  await carregarDestinos();
+  function renderRadar(dados) {
+    if (!dados.length) {
+      anchor.innerHTML = "<p style='opacity:.6'>Sem dados disponíveis</p>";
+      return;
+    }
 
-  // ⬇️ RENDERIZA DEPOIS
-  let html = "<div class='comparison-section'>";
+    var html = "<div class='comparison-section'>";
 
-  for (let i = 0; i < destinos.length; i++) {
-    const d = destinos[i];
-    const dir = d.variacao >= 0 ? "up" : "down";
-    const sinal = d.variacao >= 0 ? "+" : "";
+    for (var i = 0; i < dados.length; i++) {
+      var d = dados[i];
 
-    html += `
-      <div class="card">
-        <div class="card-top">
-          <span class="dest-name">${d.nome}</span>
-          <span class="badge ${dir}">${sinal}${d.variacao}%</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">Interesse</span>
-          <span class="metric-value">${d.interesse}</span>
-        </div>
-      </div>
-    `;
+      html += "<div class='card'>";
+      html += "  <div class='card-top'>";
+      html += "    <span class='dest-name'>" + d.destino_id + "</span>";
+      html += "  </div>";
+      html += "  <div class='metric'>";
+      html += "    <span class='metric-label'>Interesse</span>";
+      html += "    <span class='metric-value'>" + d.interesse + "</span>";
+      html += "  </div>";
+      html += "</div>";
+    }
+
+    html += "</div>";
+    anchor.innerHTML = html;
   }
 
-  html += "</div>";
-  anchor.innerHTML = html;
-
-  const boletim = document.getElementById("boletim-texto");
-  if (boletim) {
-    boletim.innerText =
-      "BOLETIM ESTRATÉGICO — AMAZÔNIA\n\n" +
-      "• Ranking por interesse absoluto\n" +
-      "• Dados reais Supabase\n" +
-      "• Atualização automática\n\n" +
-      "(Fase BI inicial ativa)";
-  }
-
-  console.log("✅ Radar carregado com Supabase ativo");
 });
