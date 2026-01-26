@@ -1,317 +1,101 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DEMAND PULSE AMAZÔNIA — ABR</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DEMAND PULSE AMAZÔNIA — Radar</title>
 
-  <!-- evita erro de favicon no console -->
-  <link rel="icon" href="data:," />
-
-  <!-- fontes oficiais -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --accent:#00c6ff;
-      --bg:#000;
-      --panel:rgba(15,18,22,.75);
-      --panel-border:rgba(255,255,255,.10);
-      --text-main:#eaf3ff;
-      --text-dim:#9ca3af;
-      --ok:#39ff14;
-      --bad:#ff3131;
-      --shadow:0 14px 40px rgba(0,0,0,.85)
-    }
-
-    *{margin:0;padding:0;box-sizing:border-box}
-
-    body{
-      background:var(--bg);
-      color:var(--text-main);
-      font-family:'Poppins',sans-serif;
-      min-height:100vh;
-      overflow-x:hidden
-    }
-
-    /* MATRIX (páginas secundárias = 0.20) */
-    #matrix-canvas{
-      position:fixed;
-      inset:0;
-      z-index:0;
-      opacity:.20
-    }
-
-    .container{
-      max-width:1600px;
-      margin:0 auto;
-      padding:20px;
-      position:relative;
-      z-index:1
-    }
-
-    header{
-      text-align:center;
-      margin-bottom:22px;
-      padding-top:10px;
-      position:relative
-    }
-
-    .header-nav{
-      position:absolute;
-      top:10px;
-      left:0;
-      display:flex;
-      gap:10px;
-      z-index:10
-    }
-
-    .btn-nav{
-      border:1px solid var(--accent);
-      padding:8px 16px;
-      border-radius:999px;
-      font-size:.75rem;
-      font-weight:700;
-      text-transform:uppercase;
-      background:rgba(0,0,0,.75);
-      color:var(--accent);
-      cursor:pointer;
-      transition:.25s;
-      text-decoration:none
-    }
-    .btn-nav:hover{background:rgba(0,198,255,.15);box-shadow:0 0 18px rgba(0,198,255,.35)}
-
-    .logo{
-      width:230px;
-      max-width:70vw;
-      margin:10px auto 12px;
-      display:block;
-      filter:drop-shadow(0 0 14px rgba(0,198,255,.28))
-    }
-
-    h1{
-      font-size:1.65rem;
-      font-weight:800;
-      letter-spacing:2px;
-      color:var(--accent)
-    }
-    .subtitle{
-      color:var(--text-dim);
-      font-size:.95rem;
-      max-width:860px;
-      margin:6px auto 0;
-      line-height:1.5
-    }
-
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--panel-border);
-      border-radius:24px;
-      padding:22px;
-      backdrop-filter:blur(16px);
-      box-shadow:var(--shadow)
-    }
-
-    .bi-section{margin:18px 0 18px}
-    #status-msg{margin-top:10px;font-size:.78rem;color:var(--text-dim);opacity:.9;text-align:left}
-
-    .dashboard-grid{
-      display:flex;
-      gap:18px;
-      align-items:flex-start
-    }
-
-    .comparison-section{
-      flex:3;
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:14px
-    }
-
-    .sidebar{
-      flex:1;
-      position:sticky;
-      top:14px
-    }
-
-    .card{
-      border-radius:22px;
-      padding:18px;
-      background:rgba(12,14,18,.60);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 12px 30px rgba(0,0,0,.55)
-    }
-
-    .card-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px
-    }
-    .dest-name{
-      font-weight:800;
-      font-size:.95rem;
-      color:var(--text-main);
-      line-height:1.2
-    }
-    .badge{
-      font-family:'Fira Code', monospace;
-      font-size:.75rem;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.25);
-      color:var(--text-dim);
-      white-space:nowrap
-    }
-    .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
-    .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
-
-    .metric{
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      margin-top:8px
-    }
-    .metric-label{color:var(--text-dim);font-size:.78rem}
-    .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
-
-    .boletim-title{
-      font-weight:900;
-      letter-spacing:1px;
-      color:var(--accent);
-      margin-bottom:10px
-    }
-    #boletim-texto{
-      white-space:pre-wrap;
-      font-family:'Fira Code', monospace;
-      font-size:.80rem;
-      color:#cfe6ff;
-      opacity:.95;
-      line-height:1.45
-    }
-
-    footer{
-      margin-top:26px;
-      padding:18px 0;
-      text-align:center;
-      opacity:.55;
-      font-size:.75rem;
-      border-top:1px solid var(--panel-border)
-    }
-
-    @media(max-width:1024px){
-      .dashboard-grid{flex-direction:column}
-      .comparison-section{grid-template-columns:repeat(2,1fr)}
-      .sidebar{position:relative;top:auto}
-    }
-    @media(max-width:768px){
-      .comparison-section{grid-template-columns:1fr}
-    }
-  </style>
+  <!-- Mantém seu visual atual -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <canvas id="matrix-canvas"></canvas>
-
-  <div class="container">
-    <header>
-      <div class="header-nav">
-        <a href="index.html" class="btn-nav">← Voltar HUB</a>
-      </div>
-
-      <img src="abr-logo.png" class="logo" alt="ABR Logo">
-      <h1>DEMAND PULSE AMAZÔNIA</h1>
-      <p class="subtitle">Radar de Inteligência Turística do Pará — 15 destinos monitorados</p>
-    </header>
-
-    <!-- BI -->
-    <section class="panel bi-section">
-      <canvas id="biChart" style="width:100%;height:380px;"></canvas>
-      <div id="status-msg">Pronto. (BI será reativado quando o radar.js incluir o gráfico.)</div>
-    </section>
-
-    <div class="dashboard-grid">
-      <!-- CARDS (RADAR.JS injeta aqui) -->
-      <section id="radar-anchor"></section>
-
-      <!-- BOLETIM -->
-      <aside class="sidebar">
-        <section class="panel">
-          <div class="boletim-title">BOLETIM ESTRATÉGICO</div>
-          <pre id="boletim-texto">Carregando…</pre>
-        </section>
-      </aside>
+  <!-- Header / topo (mantém o padrão do seu arquivo estável) -->
+  <header class="header">
+    <div class="header-nav">
+      <a class="btn-back" href="index.html">← VOLTAR HUB</a>
     </div>
 
-    <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
-  </div>
+    <div class="header-brand">
+      <img src="abr-logo.png" class="logo" alt="ABR Logo" />
+      <h1>DEMAND PULSE AMAZÔNIA</h1>
+      <p class="subtitle">Radar de Inteligência Turística do Pará — BI + Cards + Boletim</p>
+    </div>
+  </header>
 
-  <!-- 1) Chart.js (se o radar.js usar) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <section class="panel">
+    <div class="placeholder">
+      Estrutura base carregada com sucesso.
+    </div>
 
-  <!-- 2) Supabase lib -->
+    <!-- Radar renderiza aqui -->
+    <div id="radar-anchor"></div>
+
+    <!-- Boletim (radar.js usa esse id) -->
+    <div class="boletim-wrap">
+      <div class="boletim-title">BOLETIM ESTRATÉGICO</div>
+      <pre id="boletim-texto" class="boletim-texto">Carregando boletim...</pre>
+    </div>
+
+    <!-- Área de BI / textos (mantém sua seção) -->
+    <div class="data-placeholder">
+      📊 Área de Dados e BI<br />
+      <span style="opacity:.7">(conteúdo será ativado na próxima etapa)</span>
+      <ul>
+        <li>Tendência de buscas por destino</li>
+        <li>Sazonalidade e variação de interesse</li>
+        <li>Comparativo entre períodos</li>
+        <li>Sinais antecipados de alta ou retração</li>
+      </ul>
+      <span style="opacity:.6">(dados reais serão integrados na próxima fase)</span>
+    </div>
+  </section>
+
+  <!-- =========================
+       CONFIG SUPABASE (ÚNICO PONTO)
+       Cole aqui a sua ANON KEY
+       ========================= -->
+  <script>
+    // ✅ URL DO SEU PROJETO (pela sua tela aparece como: jeoxnzjmfbqngoqxz)
+    // Se esse "PROJECT_REF" estiver diferente no seu Supabase, ajuste só isso.
+    window.SUPABASE_URL = "https://jeoxnzjmfbqngoqxz.supabase.co";
+
+    // ✅ COLE A SUA ANON KEY AQUI (Project Settings → API → anon public)
+    window.SUPABASE_ANON_KEY = "COLE_SUA_ANON_KEY_AQUI";
+  </script>
+
+  <!-- 1) Biblioteca Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- 3) Supabase client (cria aliases para evitar erro de nome no radar.js) -->
+  <!-- 2) Cliente Supabase (precisa existir ANTES do radar.js) -->
   <script>
     (function () {
-      const SUPABASE_URL = 'https://jeoxnzjmfbgnoqqxz.supabase.co';
-      const SUPABASE_ANON_KEY = 'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh';
-
       try {
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window.supabaseClient = client;
-        window.supabase = client; // alias: radar.js pode usar supabase.from(...)
+        if (!window.supabase || typeof window.supabase.createClient !== "function") {
+          console.error("❌ Supabase JS não carregou (CDN).");
+          return;
+        }
+
+        const url = (window.SUPABASE_URL || "").trim();
+        const key = (window.SUPABASE_ANON_KEY || "").trim();
+
+        if (!url || !key || key === "COLE_SUA_ANON_KEY_AQUI") {
+          console.error("❌ Credenciais Supabase ausentes (cole a ANON KEY no bloco CONFIG do HTML).");
+          return;
+        }
+
+        // ✅ Fonte de verdade para o radar.js
+        window.supabaseClient = window.supabase.createClient(url, key);
+
+        // (silencioso / só debug)
+        // console.log("✅ supabaseClient pronto");
       } catch (e) {
-        console.error('Falha ao iniciar Supabase:', e);
+        console.error("❌ Erro ao criar supabaseClient:", e);
       }
     })();
   </script>
 
-  <!-- 4) Radar (o SEU radar.js comitado) -->
-  <script src="./radar.js"></script>
-
-  <!-- 5) Matrix (isolado) -->
-  <script>
-    (function () {
-      const canvas = document.getElementById('matrix-canvas');
-      const ctx = canvas.getContext('2d');
-
-      function resize(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-      resize();
-      window.addEventListener('resize', resize);
-
-      let cols = Math.floor(canvas.width / 16);
-      let drops = Array(cols).fill(1);
-
-      function refreshCols(){
-        cols = Math.floor(canvas.width / 16);
-        drops = Array(cols).fill(1);
-      }
-      window.addEventListener('resize', refreshCols);
-
-      function drawMatrix(){
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = 'rgba(0,198,255,0.45)';
-        ctx.font = '16px monospace';
-
-        drops.forEach((y,i)=>{
-          const char = String.fromCharCode(0x30A0 + Math.random()*96);
-          ctx.fillText(char, i*16, y*16);
-          if(y*16 > canvas.height && Math.random()>0.975) drops[i]=0;
-          drops[i]++;
-        });
-      }
-
-      setInterval(drawMatrix, 90);
-    })();
-  </script>
+  <!-- 3) Seu Radar (usa window.supabaseClient) -->
+  <script src="radar.js"></script>
 </body>
 </html>
-```0
