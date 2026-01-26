@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     { nome: "Parauapebas", interesse: 47, variacao: -0.8 }
   ];
 
-  var html = '<div class="comparison-section">';
+   var html = "<div class='comparison-section'>";
 
   for (var i = 0; i < destinos.length; i++) {
     var d = destinos[i];
