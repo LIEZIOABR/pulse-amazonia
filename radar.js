@@ -3,19 +3,19 @@
    Base estável | Supabase ativo
    =============================== */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
-  var anchor = document.getElementById("radar-anchor");
+  const anchor = document.getElementById("radar-anchor");
   if (!anchor) return;
 
-  var destinos = [];
+  let destinos = [];
 
   async function carregarDestinos() {
     try {
       const { data, error } = await supabase
-        .from('pulse_amazonia')
-        .select('destino_id, interesse')
-        .order('interesse', { ascending: false })
+        .from("pulse_amazonia")
+        .select("destino_id, interesse")
+        .order("interesse", { ascending: false })
         .limit(5);
 
       if (error) {
@@ -23,57 +23,54 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      destinos = data.map(function (d) {
-        return {
-          nome: d.destino_id,
-          interesse: d.interesse,
-          variacao: 0
-        };
-      });
-
-      renderRadar();
+      destinos = data.map(d => ({
+        nome: d.destino_id,
+        interesse: d.interesse,
+        variacao: 0
+      }));
 
     } catch (e) {
       console.error("Erro geral:", e);
     }
   }
 
-  function renderRadar() {
-    var html = "<div class='comparison-section'>";
+  // ⬇️ CARREGA DADOS PRIMEIRO
+  await carregarDestinos();
 
-    for (var i = 0; i < destinos.length; i++) {
-      var d = destinos[i];
-      var dir = d.variacao >= 0 ? "up" : "down";
-      var sinal = d.variacao >= 0 ? "+" : "";
+  // ⬇️ RENDERIZA DEPOIS
+  let html = "<div class='comparison-section'>";
 
-      html += '<div class="card">';
-      html += '  <div class="card-top">';
-      html += '    <span class="dest-name">' + d.nome + '</span>';
-      html += '    <span class="badge ' + dir + '">' + sinal + d.variacao + '%</span>';
-      html += '  </div>';
-      html += '  <div class="metric">';
-      html += '    <span class="metric-label">Interesse</span>';
-      html += '    <span class="metric-value">' + d.interesse + '</span>';
-      html += '  </div>';
-      html += '</div>';
-    }
+  for (let i = 0; i < destinos.length; i++) {
+    const d = destinos[i];
+    const dir = d.variacao >= 0 ? "up" : "down";
+    const sinal = d.variacao >= 0 ? "+" : "";
 
-    html += '</div>';
-    anchor.innerHTML = html;
-
-    var boletim = document.getElementById("boletim-texto");
-    if (boletim) {
-      boletim.innerText =
-        "BOLETIM ESTRATÉGICO — AMAZÔNIA\n\n" +
-        "• Ranking dinâmico por interesse\n" +
-        "• Dados reais via Supabase\n" +
-        "• Atualização automática\n\n" +
-        "(Base operacional)";
-    }
-
-    console.log("✅ Radar carregado com Supabase");
+    html += `
+      <div class="card">
+        <div class="card-top">
+          <span class="dest-name">${d.nome}</span>
+          <span class="badge ${dir}">${sinal}${d.variacao}%</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Interesse</span>
+          <span class="metric-value">${d.interesse}</span>
+        </div>
+      </div>
+    `;
   }
 
-  carregarDestinos();
+  html += "</div>";
+  anchor.innerHTML = html;
 
+  const boletim = document.getElementById("boletim-texto");
+  if (boletim) {
+    boletim.innerText =
+      "BOLETIM ESTRATÉGICO — AMAZÔNIA\n\n" +
+      "• Ranking por interesse absoluto\n" +
+      "• Dados reais Supabase\n" +
+      "• Atualização automática\n\n" +
+      "(Fase BI inicial ativa)";
+  }
+
+  console.log("✅ Radar carregado com Supabase ativo");
 });
