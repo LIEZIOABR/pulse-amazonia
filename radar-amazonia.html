@@ -5,74 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DEMAND PULSE AMAZÔNIA — ABR</title>
 
-  <!-- evita erro de favicon no console -->
+  <!-- evita 404 de favicon -->
   <link rel="icon" href="data:," />
 
-  <!-- fontes oficiais -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <!-- fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-/* ===============================
-   DEMAND PULSE – RADAR CARDS
-   =============================== */
-
-.comparison-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(0, 198, 255, 0.25);
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 0 18px rgba(0, 198, 255, 0.08);
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.dest-name {
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.badge {
-  font-size: 13px;
-  padding: 4px 8px;
-  border-radius: 10px;
-}
-
-.badge.up {
-  background: rgba(0, 198, 255, 0.2);
-  color: #00c6ff;
-}
-
-.badge.down {
-  background: rgba(255, 80, 80, 0.2);
-  color: #ff5050;
-}
-
-.metric {
-  margin-top: 6px;
-}
-
-.metric-label {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.metric-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #00c6ff;
-}
     :root{
       --accent:#00c6ff;
       --bg:#000;
@@ -80,25 +19,26 @@
       --panel-border:rgba(255,255,255,.10);
       --text-main:#eaf3ff;
       --text-dim:#9ca3af;
-      --shadow:0 14px 40px rgba(0,0,0,.85)
+      --ok:#39ff14;
+      --bad:#ff3131;
+      --shadow:0 14px 40px rgba(0,0,0,.85);
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
-
     body{
       background:var(--bg);
       color:var(--text-main);
       font-family:'Poppins',sans-serif;
       min-height:100vh;
-      overflow-x:hidden
+      overflow-x:hidden;
     }
 
-    /* MATRIX */
+    /* MATRIX (página secundária = opacity 0.20) */
     #matrix-canvas{
       position:fixed;
       inset:0;
       z-index:0;
-      opacity:.30
+      opacity:.20;
     }
 
     .container{
@@ -106,19 +46,23 @@
       margin:0 auto;
       padding:20px;
       position:relative;
-      z-index:1
+      z-index:1;
     }
 
     header{
       text-align:center;
-      margin-bottom:24px;
-      position:relative
+      margin-bottom:18px;
+      padding-top:10px;
+      position:relative;
     }
 
     .header-nav{
       position:absolute;
       top:10px;
-      left:0
+      left:0;
+      display:flex;
+      gap:10px;
+      z-index:10;
     }
 
     .btn-nav{
@@ -127,30 +71,38 @@
       border-radius:999px;
       font-size:.75rem;
       font-weight:700;
+      text-transform:uppercase;
       background:rgba(0,0,0,.75);
       color:var(--accent);
-      text-decoration:none
+      text-decoration:none;
+      transition:.25s;
+    }
+    .btn-nav:hover{
+      background:rgba(0,198,255,.15);
+      box-shadow:0 0 18px rgba(0,198,255,.35);
     }
 
     .logo{
       width:230px;
       max-width:70vw;
-      margin:10px auto;
-      display:block
+      margin:10px auto 12px;
+      display:block;
+      filter:drop-shadow(0 0 14px rgba(0,198,255,.28));
     }
 
     h1{
-      font-size:1.6rem;
+      font-size:1.65rem;
       font-weight:800;
       letter-spacing:2px;
-      color:var(--accent)
+      color:var(--accent);
     }
 
     .subtitle{
       color:var(--text-dim);
       font-size:.95rem;
-      max-width:820px;
-      margin:6px auto 0
+      max-width:860px;
+      margin:6px auto 0;
+      line-height:1.5;
     }
 
     .panel{
@@ -159,34 +111,119 @@
       border-radius:24px;
       padding:22px;
       backdrop-filter:blur(16px);
-      box-shadow:var(--shadow)
+      box-shadow:var(--shadow);
     }
 
-    .placeholder{
-      text-align:center;
-      padding:40px 10px;
+    .bi-section{margin:18px 0 18px}
+
+    .hint{
+      margin-top:10px;
+      font-size:.78rem;
       color:var(--text-dim);
-      font-size:.9rem
+      opacity:.9;
     }
-.data-placeholder{
-  text-align:center;
-  padding:30px 10px;
-  color:var(--text-dim);
-  font-size:.85rem;
-  opacity:.8
-}
+
+    .dashboard-grid{
+      display:flex;
+      gap:18px;
+      align-items:flex-start;
+    }
+
+    /* Cards (grid) */
+    .comparison-section{
+      flex:3;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+      align-content:start;
+    }
+
+    .card{
+      border-radius:22px;
+      padding:18px;
+      background:rgba(12,14,18,.60);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 12px 30px rgba(0,0,0,.55);
+      min-height:110px;
+    }
+
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .dest-name{
+      font-weight:800;
+      font-size:.95rem;
+      color:var(--text-main);
+      line-height:1.2;
+    }
+
+    .badge{
+      font-family:'Fira Code', monospace;
+      font-size:.75rem;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.25);
+      color:var(--text-dim);
+      white-space:nowrap;
+    }
+    .badge.up{color:var(--ok);border-color:rgba(57,255,20,.25)}
+    .badge.down{color:var(--bad);border-color:rgba(255,49,49,.25)}
+
+    .metric{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      margin-top:8px;
+    }
+    .metric-label{color:var(--text-dim);font-size:.78rem}
+    .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
+
+    /* Sidebar */
+    .sidebar{
+      flex:1;
+      position:sticky;
+      top:14px;
+    }
+
+    .boletim-title{
+      font-weight:900;
+      letter-spacing:1px;
+      color:var(--accent);
+      margin-bottom:10px;
+    }
+
+    #boletim-texto{
+      white-space:pre-wrap;
+      font-family:'Fira Code', monospace;
+      font-size:.80rem;
+      color:#cfe6ff;
+      opacity:.95;
+      line-height:1.45;
+    }
 
     footer{
-      margin-top:30px;
+      margin-top:26px;
       padding:18px 0;
       text-align:center;
-      opacity:.6;
+      opacity:.55;
       font-size:.75rem;
-      border-top:1px solid var(--panel-border)
+      border-top:1px solid var(--panel-border);
     }
-#matrix-canvas{
-  opacity: .20;
-}
+
+    @media(max-width:1024px){
+      .dashboard-grid{flex-direction:column}
+      .comparison-section{grid-template-columns:repeat(2,1fr)}
+      .sidebar{position:relative;top:auto}
+    }
+    @media(max-width:768px){
+      .comparison-section{grid-template-columns:1fr}
+    }
   </style>
 </head>
 
@@ -201,88 +238,82 @@
 
       <img src="abr-logo.png" class="logo" alt="ABR Logo">
       <h1>DEMAND PULSE AMAZÔNIA</h1>
-      <p class="subtitle">
-        Radar de Inteligência Turística do Pará — base estável
-      </p>
+      <p class="subtitle">Radar de Inteligência Turística do Pará — BI + Cards + Boletim</p>
     </header>
 
-    <section class="panel">
+    <!-- BI -->
+    <section class="panel bi-section">
+      <canvas id="biChart" style="width:100%;height:380px;"></canvas>
+      <div class="hint" id="status-msg">Carregando dados…</div>
+    </section>
 
-  <div class="placeholder">
-    Estrutura base carregada com sucesso.
-  </div>
-<div id="radar-anchor"></div>
-<!-- RADAR CONTEÚDO DINÂMICO -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <div class="dashboard-grid">
+      <!-- CARDS (RADAR.JS preenche aqui) -->
+      <section class="comparison-section" id="radar-anchor">
+        <!-- preenchido via radar.js -->
+      </section>
 
-<script>
-  const supabaseUrl = "https://SEU_PROJECT_ID.supabase.co";
-  const supabaseKey = "SUA_ANON_KEY";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-</script>
+      <!-- BOLETIM -->
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="boletim-title">BOLETIM ESTRATÉGICO</div>
+          <pre id="boletim-texto">Carregando…</pre>
+        </section>
+      </aside>
+    </div>
 
-<script src="radar.js"></script>
-  <div class="data-placeholder">
-    📊 Área de Dados e BI<br>
-    <span style="opacity:.7">(conteúdo será ativado na próxima etapa)</span>
-  
-  • Tendência de buscas por destino<br>
-  • Sazonalidade e variação de interesse<br>
-  • Comparativo entre períodos<br>
-  • Sinais antecipados de alta ou retração<br><br>
-
-  <span style="opacity:.6">(dados reais serão integrados na próxima fase)</span>
-</div>
-<div class="data-placeholder">
-  🔍 <strong>O que este radar vai mostrar</strong><br><br>
-
-  • Tendência de buscas por destino<br>
-  • Sazonalidade e variação de interesse<br>
-  • Comparativo entre períodos<br>
-  • Sinais antecipados de alta ou retração<br><br>
-
-  <span style="opacity:.6">
-    (dados reais serão integrados na próxima fase)
-  </span>
-</div>
-
-</section>
-
-    <footer>
-      ABR — Demand Pulse Amazônia • Base Estável
-    </footer>
+    <footer>ABR — Demand Pulse Amazônia • Produção</footer>
   </div>
 
-  <!-- MATRIX SCRIPT (ISOLADO, ESTÁVEL) -->
+  <!-- libs (ordem correta) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- MATRIX (isolado) -->
   <script>
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx = canvas.getContext('2d');
+    (function(){
+      const canvas = document.getElementById('matrix-canvas');
+      const ctx = canvas.getContext('2d');
 
-    function resize(){
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
+      function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
 
-    const cols = Math.floor(canvas.width / 16);
-    const drops = Array(cols).fill(1);
+      function makeDrops(){
+        const cols = Math.floor(canvas.width / 16);
+        return Array(cols).fill(1);
+      }
 
-    function drawMatrix(){
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = 'rgba(0,198,255,0.45)';
-      ctx.font = '16px monospace';
+      let drops = makeDrops();
 
-      drops.forEach((y,i)=>{
-        const char = String.fromCharCode(0x30A0 + Math.random()*96);
-        ctx.fillText(char, i*16, y*16);
-        if(y*16 > canvas.height && Math.random()>0.975) drops[i]=0;
-        drops[i]++;
+      function draw(){
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'rgba(0,198,255,0.45)';
+        ctx.font = '16px monospace';
+
+        for(let i=0;i<drops.length;i++){
+          const y = drops[i];
+          const ch = String.fromCharCode(0x30A0 + Math.random()*96);
+          ctx.fillText(ch, i*16, y*16);
+          if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+
+      setInterval(draw, 90);
+
+      window.addEventListener('resize', () => {
+        drops = makeDrops();
       });
-    }
-
-    setInterval(drawMatrix, 90);
+    })();
   </script>
+
+  <!-- seu JS -->
+  <script src="./radar.js"></script>
 </body>
 </html>
+```0
