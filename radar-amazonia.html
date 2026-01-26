@@ -213,8 +213,15 @@
   </div>
 <div id="radar-anchor"></div>
 <!-- RADAR CONTEÚDO DINÂMICO -->
-<script src="radar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+  const supabaseUrl = "https://SEU_PROJECT_ID.supabase.co";
+  const supabaseKey = "SUA_ANON_KEY";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+</script>
+
+<script src="radar.js"></script>
   <div class="data-placeholder">
     📊 Área de Dados e BI<br>
     <span style="opacity:.7">(conteúdo será ativado na próxima etapa)</span>
