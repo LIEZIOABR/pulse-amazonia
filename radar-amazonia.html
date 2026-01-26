@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DEMAND PULSE AMAZÔNIA — ABR</title>
 
-  <!-- evita 404 de favicon -->
+  <!-- evita 404 de favicon no console -->
   <link rel="icon" href="data:," />
 
   <!-- fontes -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Chart.js (pode ficar carregado mesmo sem uso agora) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root{
@@ -33,12 +36,13 @@
       overflow-x:hidden;
     }
 
-    /* MATRIX (página secundária = opacity 0.20) */
+    /* MATRIX (padrão páginas secundárias = 0.20) */
     #matrix-canvas{
       position:fixed;
       inset:0;
       z-index:0;
       opacity:.20;
+      pointer-events:none;
     }
 
     .container{
@@ -51,7 +55,7 @@
 
     header{
       text-align:center;
-      margin-bottom:18px;
+      margin-bottom:22px;
       padding-top:10px;
       position:relative;
     }
@@ -96,7 +100,6 @@
       letter-spacing:2px;
       color:var(--accent);
     }
-
     .subtitle{
       color:var(--text-dim);
       font-size:.95rem;
@@ -115,12 +118,12 @@
     }
 
     .bi-section{margin:18px 0 18px}
-
-    .hint{
+    #status-msg{
       margin-top:10px;
       font-size:.78rem;
       color:var(--text-dim);
       opacity:.9;
+      text-align:center;
     }
 
     .dashboard-grid{
@@ -129,13 +132,18 @@
       align-items:flex-start;
     }
 
-    /* Cards (grid) */
+    /* grid real usado pelos cards (vem do radar.js) */
     .comparison-section{
       flex:3;
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:14px;
-      align-content:start;
+    }
+
+    .sidebar{
+      flex:1;
+      position:sticky;
+      top:14px;
     }
 
     .card{
@@ -144,7 +152,6 @@
       background:rgba(12,14,18,.60);
       border:1px solid rgba(255,255,255,.10);
       box-shadow:0 12px 30px rgba(0,0,0,.55);
-      min-height:110px;
     }
 
     .card-top{
@@ -154,14 +161,12 @@
       gap:10px;
       margin-bottom:10px;
     }
-
     .dest-name{
       font-weight:800;
       font-size:.95rem;
       color:var(--text-main);
       line-height:1.2;
     }
-
     .badge{
       font-family:'Fira Code', monospace;
       font-size:.75rem;
@@ -184,20 +189,12 @@
     .metric-label{color:var(--text-dim);font-size:.78rem}
     .metric-value{font-weight:900;font-size:1.15rem;color:var(--accent)}
 
-    /* Sidebar */
-    .sidebar{
-      flex:1;
-      position:sticky;
-      top:14px;
-    }
-
     .boletim-title{
       font-weight:900;
       letter-spacing:1px;
       color:var(--accent);
       margin-bottom:10px;
     }
-
     #boletim-texto{
       white-space:pre-wrap;
       font-family:'Fira Code', monospace;
@@ -238,20 +235,18 @@
 
       <img src="abr-logo.png" class="logo" alt="ABR Logo">
       <h1>DEMAND PULSE AMAZÔNIA</h1>
-      <p class="subtitle">Radar de Inteligência Turística do Pará — BI + Cards + Boletim</p>
+      <p class="subtitle">Radar de Inteligência Turística do Pará — produção</p>
     </header>
 
     <!-- BI -->
     <section class="panel bi-section">
       <canvas id="biChart" style="width:100%;height:380px;"></canvas>
-      <div class="hint" id="status-msg">Carregando dados…</div>
+      <div id="status-msg">Carregando dados…</div>
     </section>
 
     <div class="dashboard-grid">
-      <!-- CARDS (RADAR.JS preenche aqui) -->
-      <section class="comparison-section" id="radar-anchor">
-        <!-- preenchido via radar.js -->
-      </section>
+      <!-- CARDS (radar.js preenche aqui) -->
+      <section id="radar-anchor"></section>
 
       <!-- BOLETIM -->
       <aside class="sidebar">
@@ -262,58 +257,70 @@
       </aside>
     </div>
 
-    <footer>ABR — Demand Pulse Amazônia • Produção</footer>
+    <footer>ABR — Demand Pulse Amazônia • Versão Web</footer>
   </div>
 
-  <!-- libs (ordem correta) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- SUPABASE (deixa GLOBAL para o radar.js usar) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://jeoxnzjmfbgnoqqxz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
+
+    // cria client
+    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // compatibilidade: se o seu radar.js usa "supabase.from(...)", ele precisa disso:
+    window.supabase = window.supabaseClient;
+  </script>
 
   <!-- MATRIX (isolado) -->
   <script>
-    (function(){
-      const canvas = document.getElementById('matrix-canvas');
-      const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("matrix-canvas");
+    const ctx = canvas.getContext("2d");
 
-      function resize(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    function resetDrops(){
+      const cols = Math.floor(canvas.width / 16) || 1;
+      const arr = new Array(cols).fill(1);
+      return { cols, drops: arr };
+    }
+    let { drops } = resetDrops();
+    window.addEventListener("resize", () => { drops = resetDrops().drops; });
+
+    function drawMatrix(){
+      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = "rgba(0,198,255,0.45)";
+      ctx.font = "16px monospace";
+
+      for(let i=0;i<drops.length;i++){
+        const y = drops[i];
+        const char = String.fromCharCode(0x30A0 + Math.random()*96);
+        ctx.fillText(char, i*16, y*16);
+        if(y*16 > canvas.height && Math.random()>0.975) drops[i]=0;
+        drops[i]++;
       }
-      resize();
-      window.addEventListener('resize', resize);
-
-      function makeDrops(){
-        const cols = Math.floor(canvas.width / 16);
-        return Array(cols).fill(1);
-      }
-
-      let drops = makeDrops();
-
-      function draw(){
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = 'rgba(0,198,255,0.45)';
-        ctx.font = '16px monospace';
-
-        for(let i=0;i<drops.length;i++){
-          const y = drops[i];
-          const ch = String.fromCharCode(0x30A0 + Math.random()*96);
-          ctx.fillText(ch, i*16, y*16);
-          if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-          drops[i]++;
-        }
-      }
-
-      setInterval(draw, 90);
-
-      window.addEventListener('resize', () => {
-        drops = makeDrops();
-      });
-    })();
+    }
+    setInterval(drawMatrix, 90);
   </script>
 
-  <!-- seu JS -->
-  <script src="./radar.js"></script>
+  <!-- RADAR -->
+  <script src="radar.js" defer></script>
+
+  <!-- Ajuste visual pós-load (não quebra nada) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const anchor = document.getElementById("radar-anchor");
+      if (anchor) anchor.classList.add("comparison-section");
+      const msg = document.getElementById("status-msg");
+      if (msg) msg.textContent = "OK — estrutura carregada.";
+    });
+  </script>
 </body>
 </html>
-```0
