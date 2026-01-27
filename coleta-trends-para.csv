@@ -1,16 +1,16 @@
 destino_id,data_coleta,interesse,origem_1,origem_1_pct,origem_2,origem_2_pct,origem_3,origem_3_pct
-belem,21/01/2026,97,São Paulo,32.0,Brasília,18.0,Fortaleza,12.0
-alter_do_chao,21/01/2026,78,São Paulo,28.0,Manaus,22.0,Brasília,15.0
-ilha_marajo,21/01/2026,74,São Paulo,25.0,Rio de Janeiro,18.0,Belém,15.0
-santarem,21/01/2026,69,Manaus,30.0,São Paulo,20.0,Brasília,12.0
-salinopolis,21/01/2026,65,Belém,40.0,São Paulo,15.0,Fortaleza,12.0
-soure,21/01/2026,60,Belém,35.0,São Paulo,18.0,Brasília,10.0
-salvaterra,21/01/2026,58,Belém,32.0,São Paulo,20.0,Fortaleza,11.0
-mosqueiro,21/01/2026,55,Belém,45.0,Parauapebas,15.0,Castanhal,8.0
-braganca,21/01/2026,52,Belém,28.0,São Paulo,22.0,Fortaleza,15.0
-monte_alegre,21/01/2026,48,Santarém,25.0,Manaus,20.0,Belém,18.0
-algodoal,21/01/2026,45,Belém,30.0,São Paulo,25.0,Rio de Janeiro,12.0
-obidos,21/01/2026,42,Santarém,22.0,Manaus,18.0,Belém,15.0
-cameta,21/01/2026,38,Belém,35.0,Tucuruí,20.0,Castanhal,12.0
-parauapebas,21/01/2026,35,Marabá,35.0,Belém,25.0,São Paulo,12.0
-castanhal,21/01/2026,32,Belém,42.0,Parauapebas,18.0,São Paulo,10.0
+belem,27/01/2026,97,São Paulo,32.0,Brasília,18.0,Fortaleza,12.0
+alter_do_chao,27/01/2026,78,São Paulo,28.0,Manaus,22.0,Brasília,15.0
+ilha_marajo,27/01/2026,74,São Paulo,25.0,Rio de Janeiro,18.0,Belém,15.0
+santarem,27/01/2026,69,Manaus,30.0,São Paulo,20.0,Brasília,12.0
+salinopolis,27/01/2026,65,Belém,40.0,São Paulo,15.0,Fortaleza,12.0
+soure,27/01/2026,60,Belém,35.0,São Paulo,18.0,Brasília,10.0
+salvaterra,27/01/2026,58,Belém,32.0,São Paulo,20.0,Fortaleza,11.0
+mosqueiro,27/01/2026,55,Belém,45.0,Parauapebas,15.0,Castanhal,8.0
+braganca,27/01/2026,52,Belém,28.0,São Paulo,22.0,Fortaleza,15.0
+monte_alegre,27/01/2026,48,Santarém,25.0,Manaus,20.0,Belém,18.0
+algodoal,27/01/2026,45,Belém,30.0,São Paulo,25.0,Rio de Janeiro,12.0
+obidos,27/01/2026,42,Santarém,22.0,Manaus,18.0,Belém,15.0
+cameta,27/01/2026,38,Belém,35.0,Tucuruí,20.0,Castanhal,12.0
+parauapebas,27/01/2026,35,Marabá,35.0,Belém,25.0,São Paulo,12.0
+castanhal,27/01/2026,32,Belém,42.0,Parauapebas,18.0,São Paulo,10.0
