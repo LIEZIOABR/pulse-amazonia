@@ -1,3 +1,5 @@
+window.SUPABASE_URL = "https://ljeoxnxezjmfbqngoqxz.supabase.co"
+window.SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
 /* =========================================================
    RADAR.JS — DEMAND PULSE AMAZÔNIA
    Fonte de verdade • Supabase JS v2 • Sem erro de console
