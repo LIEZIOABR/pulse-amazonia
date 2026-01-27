@@ -1,80 +1,115 @@
-window.SUPABASE_URL = "https://ljeoxnxezjmfbqngoqxz.supabase.co"
-window.SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
-/* =========================================================
-   RADAR.JS — DEMAND PULSE AMAZÔNIA
-   Fonte de verdade • Supabase JS v2 • Sem erro de console
-========================================================= */
+/* ======================================================
+   Pulse Amazônia – radar.js (VERSÃO LIMPA E ESTÁVEL)
+   Única fonte de verdade do Supabase
+   Supabase JS v2
+   ====================================================== */
 
-(function () {
-  // ---------- VALIDAÇÃO BÁSICA ----------
-  if (!window.supabase) {
-    console.error("Supabase JS não carregado (window.supabase)");
-    return;
-  }
+/* === 1) CREDENCIAIS (COLE AS SUAS) ==================== */
+const SUPABASE_URL = "https://ljeoxnxezjmfbqngoqxz.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
 
-  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-    console.error("Credenciais Supabase ausentes");
-    return;
-  }
+/* === 2) GUARDAS BÁSICAS =============================== */
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.warn("Supabase não configurado. Radar em modo visual.");
+}
 
-  // ---------- CLIENTE SUPABASE ----------
-  const supabase = window.supabase.createClient(
-    window.SUPABASE_URL,
-    window.SUPABASE_ANON_KEY
+/* === 3) CLIENTE SUPABASE ============================== */
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+  supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
   );
+  console.info("Supabase client inicializado com sucesso");
+}
 
-  console.log("Supabase client inicializado com sucesso");
+/* === 4) HELPERS ======================================= */
+const $ = (id) => document.getElementById(id);
 
-  // ---------- ELEMENTO ÂNCORA ----------
-  const anchor = document.getElementById("radar-anchor");
-  if (!anchor) {
-    console.error("Elemento #radar-anchor não encontrado");
+const setText = (id, value, fallback = "—") => {
+  const el = $(id);
+  if (!el) return;
+  el.textContent =
+    value === null || value === undefined || value === ""
+      ? fallback
+      : value;
+};
+
+const joinTop3 = (arr) => {
+  if (!Array.isArray(arr) || arr.length === 0) return "—";
+  return arr.slice(0, 3).join(", ");
+};
+
+/* === 5) RENDER ======================================== */
+function renderCards(payload) {
+  // Fallbacks defensivos: nada quebra se o campo não existir
+  const origemDominante =
+    payload?.origem_dominante ||
+    payload?.dominant_origin ||
+    payload?.top_origin ||
+    "—";
+
+  const top3 =
+    payload?.top_3_origens ||
+    payload?.topOrigins ||
+    payload?.top_3 ||
+    [];
+
+  const perfilPublico =
+    payload?.perfil_publico ||
+    payload?.public_profile ||
+    "—";
+
+  const statusDemanda =
+    payload?.status_demanda ||
+    payload?.demand_status ||
+    "—";
+
+  setText("card-origem", origemDominante);
+  setText("card-top3", joinTop3(top3));
+  setText("card-perfil", perfilPublico);
+  setText("card-status", statusDemanda);
+}
+
+/* === 6) FETCH PRINCIPAL =============================== */
+async function loadLatestSnapshot() {
+  if (!supabase) {
+    console.info("Radar sem Supabase. Mantendo placeholders.");
     return;
   }
 
-  // ---------- RENDERIZAÇÃO ----------
-  function renderDestino(row) {
-    const card = document.createElement("div");
-    card.className = "radar-card";
+  const { data, error } = await supabase
+    .from("demand_pulse_snapshots")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-    card.innerHTML = `
-      <h3>${row.destino_id}</h3>
-      <p><strong>Interesse:</strong> ${row.interesse}</p>
-      <p><strong>Origem 1:</strong> ${row.origem_1} (${row.origem_1_pct}%)</p>
-      <p><strong>Origem 2:</strong> ${row.origem_2} (${row.origem_2_pct}%)</p>
-      <p class="radar-date">${row.data_coleta}</p>
-    `;
-
-    anchor.appendChild(card);
+  if (error) {
+    console.error("Erro ao buscar snapshot:", error.message);
+    return;
   }
 
-  // ---------- CARGA DE DADOS ----------
-  async function carregarRadar() {
-    try {
-      const { data, error } = await supabase
-        .from("pulse_amazonia")
-        .select("*")
-        .order("interesse", { ascending: false });
-
-      if (error) {
-        console.error("Erro Supabase:", error);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("Nenhum dado encontrado");
-        return;
-      }
-
-      anchor.innerHTML = "";
-      data.forEach(renderDestino);
-
-      console.log("Radar carregado com sucesso");
-    } catch (err) {
-      console.error("Erro inesperado:", err);
-    }
+  if (!data) {
+    console.warn("Nenhum snapshot encontrado.");
+    return;
   }
 
-  // ---------- START ----------
-  document.addEventListener("DOMContentLoaded", carregarRadar);
-})();
+  // Alguns projetos salvam um objeto payload dentro da linha
+  const payload = data.payload ? data.payload : data;
+
+  renderCards(payload);
+  console.info("Radar carregado com sucesso");
+}
+
+/* === 7) BOOT ========================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  // Estado inicial (visual limpo)
+  setText("card-origem", "—");
+  setText("card-top3", "—");
+  setText("card-perfil", "—");
+  setText("card-status", "—");
+
+  // Carrega dados reais (se houver)
+  loadLatestSnapshot();
+});
