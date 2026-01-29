@@ -8,6 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     
+    <!-- Leaflet CSS e JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
     <style>
         /* ========== RESET & VARIÁVEIS ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
@@ -53,6 +57,52 @@
         .timeline-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
         .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 12px; }
         .chart-wrapper { position: relative; height: 400px; }
+        
+        /* ========== GEO MAP ========== */
+        .map-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .map-container { 
+            height: 550px; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 2px solid rgba(0, 198, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 198, 255, 0.15);
+        }
+        
+        /* Leaflet popup customization */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 18, 22, 0.95) !important;
+            color: #eaf3ff !important;
+            border: 1px solid rgba(0, 198, 255, 0.3) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+        }
+        .leaflet-popup-content {
+            margin: 16px !important;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        .leaflet-popup-tip {
+            background: rgba(15, 18, 22, 0.95) !important;
+            border: 1px solid rgba(0, 198, 255, 0.3) !important;
+        }
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00c6ff;
+            margin-bottom: 10px;
+        }
+        .popup-metric {
+            font-size: 0.85rem;
+            margin: 6px 0;
+            color: #eaf3ff;
+        }
+        .popup-metric strong {
+            color: #00c6ff;
+        }
+        .popup-origins {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
         
         /* ========== DESTINATION CARDS ========== */
         .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
@@ -132,6 +182,7 @@
             h1 { font-size: 2rem; }
             .destinations-grid { grid-template-columns: 1fr; }
             .header-nav { position: static; justify-content: center; margin-bottom: 20px; }
+            .map-container { height: 400px; }
         }
     </style>
 </head>
@@ -184,6 +235,12 @@
                     <div class="chart-wrapper">
                         <canvas id="timeline-chart"></canvas>
                     </div>
+                </section>
+                
+                <!-- GEO MAP -->
+                <section class="map-section">
+                    <h2 class="section-title">🗺️ Mapa Geográfico - Distribuição Espacial do Interesse</h2>
+                    <div id="map" class="map-container"></div>
                 </section>
                 
                 <!-- DESTINATION CARDS -->
@@ -264,11 +321,10 @@
     </footer>
     
     <script>
-        // ========== CONFIGURAÇÃO SUPABASE (CORRIGIDO) ==========
+        // ========== CONFIGURAÇÃO SUPABASE ==========
         const SUPABASE_URL = 'https://ljeoxnxezjmfbqngoqxz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh';
         
-        // Verificação de biblioteca
         if (typeof supabase === 'undefined') {
             console.error('ERRO: Biblioteca Supabase não carregada!');
         } else {
@@ -281,25 +337,33 @@
         // ========== VARIÁVEIS GLOBAIS ==========
         let dadosGlobais = [];
         let chartInstance = null;
+        let mapInstance = null;
         let mesAtual = new Date();
         
         const DESTINOS_INFO = {
-            'belem': { nome: 'Belém', emoji: '🏙️' },
-            'alter_do_chao': { nome: 'Alter do Chão', emoji: '🏖️' },
-            'ilha_marajo': { nome: 'Ilha de Marajó', emoji: '🐃' },
-            'santarem': { nome: 'Santarém', emoji: '⛵' },
-            'salinopolis': { nome: 'Salinópolis', emoji: '🌊' },
-            'soure': { nome: 'Soure', emoji: '🦩' },
-            'salvaterra': { nome: 'Salvaterra', emoji: '🌴' },
-            'mosqueiro': { nome: 'Mosqueiro', emoji: '🏝️' },
-            'braganca': { nome: 'Bragança', emoji: '🦀' },
-            'monte_alegre': { nome: 'Monte Alegre', emoji: '🗻' },
-            'algodoal': { nome: 'Algodoal', emoji: '🥥' },
-            'obidos': { nome: 'Óbidos', emoji: '🏰' },
-            'cameta': { nome: 'Cametá', emoji: '🎣' },
-            'parauapebas': { nome: 'Parauapebas', emoji: '⛏️' },
-            'castanhal': { nome: 'Castanhal', emoji: '🌰' }
+            'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
+            'alter_do_chao': { nome: 'Alter do Chão', emoji: '🏖️', lat: -2.5013, lng: -54.9535 },
+            'ilha_marajo': { nome: 'Ilha de Marajó', emoji: '🐃', lat: -0.9833, lng: -49.5667 },
+            'santarem': { nome: 'Santarém', emoji: '⛵', lat: -2.4411, lng: -54.7083 },
+            'salinopolis': { nome: 'Salinópolis', emoji: '🌊', lat: -0.6145, lng: -47.3559 },
+            'soure': { nome: 'Soure', emoji: '🦩', lat: -0.7167, lng: -48.5167 },
+            'salvaterra': { nome: 'Salvaterra', emoji: '🌴', lat: -0.7553, lng: -48.5141 },
+            'mosqueiro': { nome: 'Mosqueiro', emoji: '🏝️', lat: -1.1500, lng: -48.3833 },
+            'braganca': { nome: 'Bragança', emoji: '🦀', lat: -1.0536, lng: -46.7664 },
+            'monte_alegre': { nome: 'Monte Alegre', emoji: '🗻', lat: -2.0067, lng: -54.0711 },
+            'algodoal': { nome: 'Algodoal', emoji: '🥥', lat: -0.6167, lng: -47.6167 },
+            'obidos': { nome: 'Óbidos', emoji: '🏰', lat: -1.9056, lng: -55.5203 },
+            'cameta': { nome: 'Cametá', emoji: '🎣', lat: -2.2442, lng: -49.4961 },
+            'parauapebas': { nome: 'Parauapebas', emoji: '⛏️', lat: -6.0672, lng: -49.9022 },
+            'castanhal': { nome: 'Castanhal', emoji: '🌰', lat: -1.2936, lng: -47.9216 }
         };
+        
+        // ========== FUNÇÃO PARA DETERMINAR COR DO MARKER ==========
+        function getMarkerColor(interesse) {
+            if (interesse >= 70) return '#ff3860'; // Vermelho
+            if (interesse >= 40) return '#ffea00'; // Amarelo
+            return '#39ff14'; // Verde
+        }
         
         // ========== MATRIX BACKGROUND ==========
         const canvas = document.getElementById('matrix-canvas');
@@ -332,6 +396,100 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+        
+        // ========== INICIALIZAR MAPA ==========
+        function inicializarMapa() {
+            if (mapInstance) {
+                mapInstance.remove();
+            }
+            
+            // Criar mapa centrado no Pará
+            mapInstance = L.map('map', {
+                center: [-3.5, -52.5],
+                zoom: 6,
+                zoomControl: true,
+                scrollWheelZoom: true
+            });
+            
+            // Adicionar tiles do OpenStreetMap com filtro escuro
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                className: 'map-tiles'
+            }).addTo(mapInstance);
+            
+            // Adicionar filtro CSS ao mapa para tema escuro
+            const mapElement = document.getElementById('map');
+            mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
+            
+            console.log('✅ Mapa inicializado');
+        }
+        
+        // ========== RENDERIZAR MARKERS NO MAPA ==========
+        function renderizarMapa(dados) {
+            if (!mapInstance) {
+                inicializarMapa();
+            }
+            
+            // Limpar markers anteriores
+            mapInstance.eachLayer((layer) => {
+                if (layer instanceof L.Marker) {
+                    mapInstance.removeLayer(layer);
+                }
+            });
+            
+            // Pegar última coleta
+            const ultimaData = dados[0].data_coleta;
+            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+            
+            // Adicionar marker para cada destino
+            dadosUltimos.forEach((dest, index) => {
+                const info = DESTINOS_INFO[dest.destino_id];
+                if (!info || !info.lat || !info.lng) return;
+                
+                const cor = getMarkerColor(dest.interesse);
+                
+                // Criar ícone customizado
+                const customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        background: ${cor};
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        border: 3px solid rgba(0, 0, 0, 0.5);
+                        box-shadow: 0 0 15px ${cor}, 0 4px 10px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        animation: pulse 2s ease-in-out infinite;
+                    ">${info.emoji}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                
+                // Criar popup content
+                const popupContent = `
+                    <div class="popup-title">${info.emoji} ${info.nome}</div>
+                    <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                    <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
+                    ${dest.origem_1 ? `
+                        <div class="popup-origins">
+                            <div class="popup-metric">🥇 ${dest.origem_1} (${dest.origem_1_pct}%)</div>
+                            ${dest.origem_2 ? `<div class="popup-metric">🥈 ${dest.origem_2} (${dest.origem_2_pct}%)</div>` : ''}
+                            ${dest.origem_3 ? `<div class="popup-metric">🥉 ${dest.origem_3} (${dest.origem_3_pct}%)</div>` : ''}
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Adicionar marker ao mapa
+                L.marker([info.lat, info.lng], { icon: customIcon })
+                    .addTo(mapInstance)
+                    .bindPopup(popupContent);
+            });
+            
+            console.log('✅ Markers adicionados ao mapa');
+        }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
         async function buscarDados() {
@@ -378,6 +536,9 @@
             // Renderizar timeline
             renderizarTimeline(dados);
             
+            // Renderizar mapa
+            renderizarMapa(dados);
+            
             // Gerar boletim
             gerarBoletim(dados);
             
@@ -391,14 +552,11 @@
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
             
-            // Pegar última coleta
             const ultimaData = dados[0].data_coleta;
             const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
             
-            // Calcular share de mercado
             const somaInteresse = dadosUltimos.reduce((sum, d) => sum + d.interesse, 0);
             
-            // Ordenar por interesse
             const destinosOrdenados = dadosUltimos
                 .map(d => {
                     const share = ((d.interesse / somaInteresse) * 100).toFixed(1);
@@ -406,11 +564,9 @@
                 })
                 .sort((a, b) => b.interesse - a.interesse);
             
-            // Gerar HTML
             container.innerHTML = destinosOrdenados.map((dest, index) => {
                 const info = DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' };
                 
-                // Calcular variação (se existir coleta anterior)
                 const coletas = dados.filter(d => d.destino_id === dest.destino_id);
                 let variacao = null;
                 if (coletas.length > 1) {
@@ -471,7 +627,6 @@
         
         // ========== RENDERIZAR TIMELINE ==========
         function renderizarTimeline(dados) {
-            // Pegar top 5 destinos
             const ultimaData = dados[0].data_coleta;
             const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
             const top5 = dadosUltimos
@@ -479,7 +634,6 @@
                 .slice(0, 5)
                 .map(d => d.destino_id);
             
-            // Preparar datasets
             const datasetsData = {};
             top5.forEach(destId => {
                 datasetsData[destId] = dados
@@ -509,10 +663,8 @@
                 };
             });
             
-            // Destruir chart anterior
             if (chartInstance) chartInstance.destroy();
             
-            // Criar novo chart
             const ctxChart = document.getElementById('timeline-chart').getContext('2d');
             chartInstance = new Chart(ctxChart, {
                 type: 'line',
@@ -557,7 +709,6 @@
             const ultimaData = dados[0].data_coleta;
             const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
             
-            // Top 3
             const top3 = dadosUltimos
                 .sort((a, b) => b.interesse - a.interesse)
                 .slice(0, 3)
@@ -566,18 +717,11 @@
                     return `${info.emoji} ${info.nome} (${d.interesse})`;
                 });
             
-            // Origens agregadas
             const origensMap = {};
             dadosUltimos.forEach(d => {
-                if (d.origem_1) {
-                    origensMap[d.origem_1] = (origensMap[d.origem_1] || 0) + d.origem_1_pct * d.interesse;
-                }
-                if (d.origem_2) {
-                    origensMap[d.origem_2] = (origensMap[d.origem_2] || 0) + d.origem_2_pct * d.interesse;
-                }
-                if (d.origem_3) {
-                    origensMap[d.origem_3] = (origensMap[d.origem_3] || 0) + d.origem_3_pct * d.interesse;
-                }
+                if (d.origem_1) origensMap[d.origem_1] = (origensMap[d.origem_1] || 0) + d.origem_1_pct * d.interesse;
+                if (d.origem_2) origensMap[d.origem_2] = (origensMap[d.origem_2] || 0) + d.origem_2_pct * d.interesse;
+                if (d.origem_3) origensMap[d.origem_3] = (origensMap[d.origem_3] || 0) + d.origem_3_pct * d.interesse;
             });
             
             const topOrigens = Object.entries(origensMap)
@@ -591,21 +735,18 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">📅 Data: ${dataFormatada}</div>
                 </div>
-                
                 <div class="boletim-section">
                     <div class="boletim-section-title">🏆 Top 3 Destinos PA</div>
                     <ul class="boletim-list">
                         ${top3.map(t => `<li>${t}</li>`).join('')}
                     </ul>
                 </div>
-                
                 <div class="boletim-section">
                     <div class="boletim-section-title">🌎 Top 3 Origens Agregadas</div>
                     <ul class="boletim-list">
                         ${topOrigens.map(o => `<li>${o}</li>`).join('')}
                     </ul>
                 </div>
-                
                 <div class="boletim-section">
                     <div class="boletim-section-title">💡 Insights</div>
                     <p>Total de ${dadosUltimos.length} destinos monitorados. Dados coletados via Google Trends.</p>
@@ -615,7 +756,6 @@
             document.getElementById('boletim-content').innerHTML = html;
         }
         
-        // ========== COPIAR BOLETIM ==========
         function copiarBoletim() {
             const content = document.getElementById('boletim-content').innerText;
             navigator.clipboard.writeText(content).then(() => {
@@ -637,7 +777,6 @@
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
             
-            // Labels dias da semana
             ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(dia => {
                 const label = document.createElement('div');
                 label.className = 'calendar-day-label';
@@ -645,14 +784,12 @@
                 grid.appendChild(label);
             });
             
-            // Dias vazios antes do 1º dia
             for (let i = 0; i < primeiroDia; i++) {
                 const empty = document.createElement('div');
                 empty.className = 'calendar-day disabled';
                 grid.appendChild(empty);
             }
             
-            // Dias do mês
             for (let dia = 1; dia <= ultimoDia; dia++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day';
@@ -672,7 +809,6 @@
             renderizarCalendario();
         }
         
-        // ========== ESTADOS VAZIOS ==========
         function mostrarEstadoVazio() {
             document.getElementById('destinations-container').innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1;">
@@ -694,10 +830,10 @@
         // ========== INICIALIZAÇÃO ==========
         window.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Inicializando PULSE AMAZÔNIA...');
+            inicializarMapa();
             atualizarDados();
         });
         
-        // Filtro de período
         document.getElementById('period-select').addEventListener('change', (e) => {
             const customDates = document.getElementById('custom-dates');
             customDates.style.display = e.target.value === 'custom' ? 'flex' : 'none';
