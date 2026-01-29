@@ -68,46 +68,6 @@
             box-shadow: 0 0 30px rgba(0, 198, 255, 0.15);
         }
         
-        /* Animação de entrada dos markers */
-        @keyframes markerDrop {
-            0% {
-                transform: translateY(-200px) scale(0);
-                opacity: 0;
-            }
-            60% {
-                transform: translateY(10px) scale(1.1);
-                opacity: 1;
-            }
-            80% {
-                transform: translateY(-5px) scale(0.95);
-            }
-            100% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .custom-marker {
-            animation: markerDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            opacity: 0;
-        }
-        
-        /* Leaflet tooltip customization */
-        .leaflet-tooltip {
-            background: rgba(0, 198, 255, 0.95) !important;
-            border: 1px solid rgba(0, 198, 255, 1) !important;
-            border-radius: 8px !important;
-            color: #001018 !important;
-            font-family: 'Poppins', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 0.85rem !important;
-            padding: 6px 12px !important;
-            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4) !important;
-        }
-        .leaflet-tooltip::before {
-            border-top-color: rgba(0, 198, 255, 0.95) !important;
-        }
-        
         /* Leaflet popup customization */
         .leaflet-popup-content-wrapper {
             background: rgba(15, 18, 22, 0.95) !important;
@@ -443,6 +403,7 @@
                 mapInstance.remove();
             }
             
+            // Criar mapa centrado no Pará
             mapInstance = L.map('map', {
                 center: [-3.5, -52.5],
                 zoom: 6,
@@ -450,18 +411,20 @@
                 scrollWheelZoom: true
             });
             
+            // Adicionar tiles do OpenStreetMap com filtro escuro
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 className: 'map-tiles'
             }).addTo(mapInstance);
             
+            // Adicionar filtro CSS ao mapa para tema escuro
             const mapElement = document.getElementById('map');
             mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
             
             console.log('✅ Mapa inicializado');
         }
         
-        // ========== RENDERIZAR MARKERS NO MAPA COM ANIMAÇÃO ==========
+        // ========== RENDERIZAR MARKERS NO MAPA ==========
         function renderizarMapa(dados) {
             if (!mapInstance) {
                 inicializarMapa();
@@ -474,73 +437,58 @@
                 }
             });
             
-            // Pegar última coleta e ordenar por ranking
+            // Pegar última coleta
             const ultimaData = dados[0].data_coleta;
-            const dadosUltimos = dados
-                .filter(d => d.data_coleta === ultimaData)
-                .sort((a, b) => b.interesse - a.interesse); // Ordena do maior para o menor
+            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
             
-            // Adicionar markers com delay sequencial (animação staggered)
+            // Adicionar marker para cada destino
             dadosUltimos.forEach((dest, index) => {
                 const info = DESTINOS_INFO[dest.destino_id];
                 if (!info || !info.lat || !info.lng) return;
                 
                 const cor = getMarkerColor(dest.interesse);
                 
-                // Delay baseado no ranking (100ms entre cada marker)
-                setTimeout(() => {
-                    // Criar ícone customizado com animação
-                    const customIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div style="
-                            background: ${cor};
-                            width: 26px;
-                            height: 26px;
-                            border-radius: 50%;
-                            border: 3px solid rgba(0, 0, 0, 0.5);
-                            box-shadow: 0 0 15px ${cor}, 0 4px 10px rgba(0,0,0,0.3);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 14px;
-                            animation-delay: 0ms;
-                        ">${info.emoji}</div>`,
-                        iconSize: [26, 26],
-                        iconAnchor: [13, 13]
-                    });
-                    
-                    // Criar popup content
-                    const popupContent = `
-                        <div class="popup-title">${info.emoji} ${info.nome}</div>
-                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
-                        <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
-                        ${dest.origem_1 ? `
-                            <div class="popup-origins">
-                                <div class="popup-metric">🥇 ${dest.origem_1} (${dest.origem_1_pct}%)</div>
-                                ${dest.origem_2 ? `<div class="popup-metric">🥈 ${dest.origem_2} (${dest.origem_2_pct}%)</div>` : ''}
-                                ${dest.origem_3 ? `<div class="popup-metric">🥉 ${dest.origem_3} (${dest.origem_3_pct}%)</div>` : ''}
-                            </div>
-                        ` : ''}
-                    `;
-                    
-                    // Criar marker com tooltip (hover) e popup (click)
-                    const marker = L.marker([info.lat, info.lng], { icon: customIcon })
-                        .addTo(mapInstance);
-                    
-                    // TOOLTIP (aparece no hover)
-                    marker.bindTooltip(`${info.emoji} ${info.nome}`, {
-                        permanent: false,
-                        direction: 'top',
-                        offset: [0, -10]
-                    });
-                    
-                    // POPUP (aparece no click)
-                    marker.bindPopup(popupContent);
-                    
-                }, index * 100); // 100ms de delay entre cada marker
+                // Criar ícone customizado
+                const customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        background: ${cor};
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        border: 3px solid rgba(0, 0, 0, 0.5);
+                        box-shadow: 0 0 15px ${cor}, 0 4px 10px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        animation: pulse 2s ease-in-out infinite;
+                    ">${info.emoji}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                
+                // Criar popup content
+                const popupContent = `
+                    <div class="popup-title">${info.emoji} ${info.nome}</div>
+                    <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                    <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
+                    ${dest.origem_1 ? `
+                        <div class="popup-origins">
+                            <div class="popup-metric">🥇 ${dest.origem_1} (${dest.origem_1_pct}%)</div>
+                            ${dest.origem_2 ? `<div class="popup-metric">🥈 ${dest.origem_2} (${dest.origem_2_pct}%)</div>` : ''}
+                            ${dest.origem_3 ? `<div class="popup-metric">🥉 ${dest.origem_3} (${dest.origem_3_pct}%)</div>` : ''}
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Adicionar marker ao mapa
+                L.marker([info.lat, info.lng], { icon: customIcon })
+                    .addTo(mapInstance)
+                    .bindPopup(popupContent);
             });
             
-            console.log('✅ Markers adicionados ao mapa com animação sequencial');
+            console.log('✅ Markers adicionados ao mapa');
         }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
@@ -582,10 +530,19 @@
             
             dadosGlobais = dados;
             
+            // Renderizar cards
             renderizarCards(dados);
+            
+            // Renderizar timeline
             renderizarTimeline(dados);
+            
+            // Renderizar mapa
             renderizarMapa(dados);
+            
+            // Gerar boletim
             gerarBoletim(dados);
+            
+            // Atualizar calendário
             renderizarCalendario();
             
             console.log('✅ Dashboard atualizado com sucesso!');
