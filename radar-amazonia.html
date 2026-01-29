@@ -8,6 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     
+    <!-- Leaflet CSS e JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
     <style>
         /* ========== RESET & VARIÁVEIS ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
@@ -54,8 +58,54 @@
         .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 12px; }
         .chart-wrapper { position: relative; height: 400px; }
         
+        /* ========== GEO MAP ========== */
+        .map-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .map-container { 
+            height: 550px; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 2px solid rgba(0, 198, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 198, 255, 0.15);
+        }
+        
+        /* Leaflet popup customization */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 18, 22, 0.95) !important;
+            color: #eaf3ff !important;
+            border: 1px solid rgba(0, 198, 255, 0.3) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+        }
+        .leaflet-popup-content {
+            margin: 16px !important;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        .leaflet-popup-tip {
+            background: rgba(15, 18, 22, 0.95) !important;
+            border: 1px solid rgba(0, 198, 255, 0.3) !important;
+        }
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00c6ff;
+            margin-bottom: 10px;
+        }
+        .popup-metric {
+            font-size: 0.85rem;
+            margin: 6px 0;
+            color: #eaf3ff;
+        }
+        .popup-metric strong {
+            color: #00c6ff;
+        }
+        .popup-origins {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
         /* ========== DESTINATION CARDS ========== */
-        .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .dest-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px; backdrop-filter: blur(14px); transition: 0.3s; cursor: pointer; }
         .dest-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,198,255,0.25); border-color: var(--accent); }
         
@@ -174,6 +224,7 @@
             h1 { font-size: 2rem; }
             .destinations-grid { grid-template-columns: 1fr; }
             .header-nav { position: static; justify-content: center; margin-bottom: 20px; }
+            .map-container { height: 400px; }
         }
     </style>
 </head>
@@ -192,7 +243,7 @@
             </div>
             <h1>DEMAND PULSE AMAZÔNIA</h1>
             <p class="subtitle">
-                Radar de Inteligência Turística do Pará - Monitoramento de 15 destinos amazônicos com nowcasting preditivo
+                Radar de Inteligência Turística do Pará - Monitoramento de 15 destinos amazônicos
             </p>
         </header>
         
@@ -226,6 +277,12 @@
                     <div class="chart-wrapper">
                         <canvas id="timeline-chart"></canvas>
                     </div>
+                </section>
+                
+                <!-- GEO MAP -->
+                <section class="map-section">
+                    <h2 class="section-title">🗺️ Mapa Geográfico - Distribuição Espacial do Interesse</h2>
+                    <div id="map" class="map-container"></div>
                 </section>
                 
                 <!-- DESTINATION CARDS -->
@@ -273,28 +330,20 @@
                         <div class="kpi-desc">Índice de pesquisa relativo do Google Trends. 100 = pico de buscas.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Previsão 7 dias</div>
-                        <div class="kpi-desc">Nowcasting usando média móvel exponencial para estimar interesse nos próximos 7 dias.</div>
+                        <div class="kpi-name">Variação %</div>
+                        <div class="kpi-desc">Mudança percentual em relação à coleta anterior.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Confiabilidade do Sinal</div>
-                        <div class="kpi-desc">Score (0-100) baseado em consistência da tendência, volatilidade baixa e diversificação geográfica.</div>
+                        <div class="kpi-name">Share de Mercado PA</div>
+                        <div class="kpi-desc">Participação relativa entre os 15 destinos monitorados.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Pressão de Demanda</div>
-                        <div class="kpi-desc">Índice composto que combina variação, aceleração e concentração geográfica.</div>
+                        <div class="kpi-name">Top 3 Origens</div>
+                        <div class="kpi-desc">Cidades brasileiras com maior interesse no destino.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Momentum</div>
-                        <div class="kpi-desc">Força e consistência da tendência: Forte, Moderado ou Perdendo força.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Oportunidade Competitiva</div>
-                        <div class="kpi-desc">Velocidade de crescimento comparada à média estadual.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Risco de Mercado</div>
-                        <div class="kpi-desc">Nível de dependência geográfica medido pelo índice HHI.</div>
+                        <div class="kpi-name">Ranking Estadual</div>
+                        <div class="kpi-desc">Posição do destino entre os 15 monitorados (#1 PA até #15 PA).</div>
                     </div>
                 </section>
             </aside>
@@ -330,31 +379,38 @@
         // ========== VARIÁVEIS GLOBAIS ==========
         let dadosGlobais = [];
         let chartInstance = null;
+        let mapInstance = null;
         let mesAtual = new Date();
         
         const DESTINOS_INFO = {
-            'belem': { nome: 'Belém', emoji: '🏙️' },
-            'alter_do_chao': { nome: 'Alter do Chão', emoji: '🏖️' },
-            'ilha_marajo': { nome: 'Ilha de Marajó', emoji: '🐃' },
-            'santarem': { nome: 'Santarém', emoji: '⛵' },
-            'salinopolis': { nome: 'Salinópolis', emoji: '🌊' },
-            'soure': { nome: 'Soure', emoji: '🦩' },
-            'salvaterra': { nome: 'Salvaterra', emoji: '🌴' },
-            'mosqueiro': { nome: 'Mosqueiro', emoji: '🏝️' },
-            'braganca': { nome: 'Bragança', emoji: '🦀' },
-            'monte_alegre': { nome: 'Monte Alegre', emoji: '🗻' },
-            'algodoal': { nome: 'Algodoal', emoji: '🥥' },
-            'obidos': { nome: 'Óbidos', emoji: '🏰' },
-            'cameta': { nome: 'Cametá', emoji: '🎣' },
-            'parauapebas': { nome: 'Parauapebas', emoji: '⛏️' },
-            'castanhal': { nome: 'Castanhal', emoji: '🌰' }
+            'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
+            'alter_do_chao': { nome: 'Alter do Chão', emoji: '🏖️', lat: -2.5013, lng: -54.9535 },
+            'ilha_marajo': { nome: 'Ilha de Marajó', emoji: '🐃', lat: -0.9833, lng: -49.5667 },
+            'santarem': { nome: 'Santarém', emoji: '⛵', lat: -2.4411, lng: -54.7083 },
+            'salinopolis': { nome: 'Salinópolis', emoji: '🌊', lat: -0.6145, lng: -47.3559 },
+            'soure': { nome: 'Soure', emoji: '🦩', lat: -0.7167, lng: -48.5167 },
+            'salvaterra': { nome: 'Salvaterra', emoji: '🌴', lat: -0.7553, lng: -48.5141 },
+            'mosqueiro': { nome: 'Mosqueiro', emoji: '🏝️', lat: -1.1500, lng: -48.3833 },
+            'braganca': { nome: 'Bragança', emoji: '🦀', lat: -1.0536, lng: -46.7664 },
+            'monte_alegre': { nome: 'Monte Alegre', emoji: '🗻', lat: -2.0067, lng: -54.0711 },
+            'algodoal': { nome: 'Algodoal', emoji: '🥥', lat: -0.6167, lng: -47.6167 },
+            'obidos': { nome: 'Óbidos', emoji: '🏰', lat: -1.9056, lng: -55.5203 },
+            'cameta': { nome: 'Cametá', emoji: '🎣', lat: -2.2442, lng: -49.4961 },
+            'parauapebas': { nome: 'Parauapebas', emoji: '⛏️', lat: -6.0672, lng: -49.9022 },
+            'castanhal': { nome: 'Castanhal', emoji: '🌰', lat: -1.2936, lng: -47.9216 }
         };
+        
+        // ========== FUNÇÃO PARA DETERMINAR COR DO MARKER ==========
+        function getMarkerColor(interesse) {
+            if (interesse >= 70) return '#ff3860'; // Vermelho
+            if (interesse >= 40) return '#ffea00'; // Amarelo
+            return '#39ff14'; // Verde
+        }
         
         // ========== FUNÇÕES DE CÁLCULO DE ÍNDICES ==========
         
         /**
          * NOWCASTING: Previsão de interesse para próximos 7 dias
-         * Usa média móvel exponencial (EMA) para suavizar tendência
          */
         function calcularNowcasting(destino, dadosHistoricos) {
             try {
@@ -363,12 +419,8 @@
                     .slice(0, 10)
                     .reverse();
                 
-                if (historico.length < 3) {
-                    console.log(`Nowcasting ${destino.destino_id}: dados insuficientes`);
-                    return null;
-                }
+                if (historico.length < 3) return null;
                 
-                // Média Móvel Exponencial (alpha = 0.3)
                 const alpha = 0.3;
                 let ema = historico[0].interesse;
                 
@@ -376,33 +428,22 @@
                     ema = alpha * historico[i].interesse + (1 - alpha) * ema;
                 }
                 
-                // Calcular tendência (últimos 3 pontos)
                 const ultimo = historico[historico.length - 1].interesse;
                 const penultimo = historico[historico.length - 2].interesse;
                 const antepenultimo = historico[historico.length - 3].interesse;
                 
                 const tendencia = ((ultimo - penultimo) + (penultimo - antepenultimo)) / 2;
-                
-                // Projeção: EMA + tendência ajustada
                 const previsao = Math.max(0, Math.min(100, Math.round(ema + (tendencia * 0.5))));
-                
                 const direcao = tendencia > 1 ? '↗️' : tendencia < -1 ? '↘️' : '➡️';
                 
-                console.log(`Nowcasting ${destino.destino_id}:`, {
-                    ultimo, ema: ema.toFixed(1), tendencia: tendencia.toFixed(1), previsao, direcao
-                });
-                
                 return { valor: previsao, direcao };
-                
             } catch (error) {
-                console.error(`Erro nowcasting ${destino.destino_id}:`, error);
                 return null;
             }
         }
         
         /**
          * CONFIABILIDADE DO SINAL (0-100)
-         * Componentes: Consistência (40%) + Baixa Volatilidade (30%) + Diversificação (30%)
          */
         function calcularConfiabilidade(destino, dadosHistoricos) {
             try {
@@ -411,10 +452,9 @@
                     .slice(0, 5);
                 
                 if (historico.length < 3) {
-                    return { score: null, nivel: 'Dados Insuficientes' };
+                    return { score: null, nivel: 'Dados Insuficientes', classe: 'baixa' };
                 }
                 
-                // COMPONENTE 1: Consistência de direção (últimas 4 mudanças)
                 let consistencia = 0;
                 if (historico.length >= 4) {
                     let direcoes = [];
@@ -422,25 +462,18 @@
                         const diff = historico[i].interesse - historico[i+1].interesse;
                         direcoes.push(diff > 0 ? 1 : diff < 0 ? -1 : 0);
                     }
-                    
-                    // Quantas mudanças seguem mesma direção?
                     const positivas = direcoes.filter(d => d > 0).length;
                     const negativas = direcoes.filter(d => d < 0).length;
                     const maxConsistente = Math.max(positivas, negativas);
-                    
                     consistencia = (maxConsistente / direcoes.length) * 100;
                 }
                 
-                // COMPONENTE 2: Baixa volatilidade (desvio padrão)
                 const valores = historico.map(h => h.interesse);
                 const media = valores.reduce((a,b) => a+b, 0) / valores.length;
                 const variancia = valores.reduce((sum, v) => sum + Math.pow(v - media, 2), 0) / valores.length;
                 const desvioPadrao = Math.sqrt(variancia);
-                
-                // Quanto menor desvio, maior confiabilidade (inversão)
                 const estabilidade = Math.max(0, 100 - (desvioPadrao * 2));
                 
-                // COMPONENTE 3: Diversificação geográfica (já calculado em Risco)
                 const origens = [
                     destino.origem_1_pct || 0,
                     destino.origem_2_pct || 0,
@@ -448,37 +481,24 @@
                 ];
                 const somaOrigens = origens.reduce((a, b) => a + b, 0);
                 
-                let diversificacao = 50; // default médio
+                let diversificacao = 50;
                 if (somaOrigens > 0) {
                     const proporcoes = origens.map(o => o / somaOrigens);
                     const hhi = proporcoes.reduce((sum, p) => sum + (p * p), 0);
-                    // Inverter HHI: quanto menor concentração, maior diversificação
                     diversificacao = Math.max(0, (1 - hhi) * 100);
                 }
                 
-                // FÓRMULA FINAL
                 const scoreConfianca = Math.round(
                     (consistencia * 0.4) + (estabilidade * 0.3) + (diversificacao * 0.3)
                 );
                 
-                // Classificação
                 let nivel, classe;
                 if (scoreConfianca >= 70) { nivel = '🟢 Alta'; classe = 'alta'; }
                 else if (scoreConfianca >= 40) { nivel = '🟡 Média'; classe = 'media'; }
                 else { nivel = '🔴 Baixa'; classe = 'baixa'; }
                 
-                console.log(`Confiabilidade ${destino.destino_id}:`, {
-                    consistencia: consistencia.toFixed(1),
-                    estabilidade: estabilidade.toFixed(1),
-                    diversificacao: diversificacao.toFixed(1),
-                    score: scoreConfianca,
-                    nivel
-                });
-                
                 return { score: scoreConfianca, nivel, classe };
-                
             } catch (error) {
-                console.error(`Erro confiabilidade ${destino.destino_id}:`, error);
                 return { score: null, nivel: 'N/A', classe: 'baixa' };
             }
         }
@@ -513,10 +533,8 @@
                 }
                 
                 const ipd = (0.4 * variacaoNorm) + (0.3 * aceleracaoNorm) + (0.3 * concentracao);
-                
                 return Math.round(ipd);
             } catch (error) {
-                console.error('Erro ao calcular IPD:', error);
                 return null;
             }
         }
@@ -550,9 +568,7 @@
                 if (direcao === 1 && velocidade > 5 && consistencia > 60) return "🚀 Forte";
                 if (direcao === -1) return "📉 Perdendo";
                 return "⚡ Moderado";
-                
             } catch (error) {
-                console.error('Erro ao calcular Momentum:', error);
                 return "N/A";
             }
         }
@@ -572,7 +588,6 @@
                 
                 return variacaoDestino / mediaEstadual;
             } catch (error) {
-                console.error('Erro ao calcular Oportunidade:', error);
                 return null;
             }
         }
@@ -594,9 +609,7 @@
                 if (hhi > 0.5) return "🔴 Alto";
                 if (hhi > 0.35) return "🟡 Médio";
                 return "🟢 Baixo";
-                
             } catch (error) {
-                console.error('Erro ao calcular Risco:', error);
                 return "N/A";
             }
         }
@@ -632,6 +645,145 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+        
+        // ========== INICIALIZAR MAPA ==========
+        function inicializarMapa() {
+            try {
+                // Verificar se Leaflet está disponível
+                if (typeof L === 'undefined') {
+                    console.error('❌ Leaflet não carregado! Tentando novamente em 1s...');
+                    setTimeout(inicializarMapa, 1000);
+                    return;
+                }
+                
+                console.log('🗺️ Iniciando mapa...');
+                
+                if (mapInstance) {
+                    console.log('Removendo instância anterior do mapa...');
+                    mapInstance.remove();
+                }
+                
+                // Verificar se o elemento #map existe
+                const mapElement = document.getElementById('map');
+                if (!mapElement) {
+                    console.error('❌ Elemento #map não encontrado no DOM!');
+                    return;
+                }
+                
+                // Criar mapa centrado no Pará
+                mapInstance = L.map('map', {
+                    center: [-3.5, -52.5],
+                    zoom: 6,
+                    zoomControl: true,
+                    scrollWheelZoom: true
+                });
+                
+                // Adicionar tiles do OpenStreetMap com filtro escuro
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    className: 'map-tiles'
+                }).addTo(mapInstance);
+                
+                // Adicionar filtro CSS ao mapa para tema escuro
+                mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
+                
+                console.log('✅ Mapa inicializado com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao inicializar mapa:', error);
+                console.error('Stack trace:', error.stack);
+            }
+        }
+        
+        // ========== RENDERIZAR MARKERS NO MAPA ==========
+        function renderizarMapa(dados) {
+            try {
+                console.log('🗺️ Renderizando mapa com dados...');
+                
+                if (!mapInstance) {
+                    console.warn('⚠️ Mapa não inicializado, tentando inicializar...');
+                    inicializarMapa();
+                    // Aguarda 500ms para o mapa estar pronto
+                    setTimeout(() => renderizarMapa(dados), 500);
+                    return;
+                }
+                
+                // Verificar se Leaflet está disponível
+                if (typeof L === 'undefined') {
+                    console.error('❌ Leaflet não disponível ao renderizar markers!');
+                    return;
+                }
+                
+                // Limpar markers anteriores
+                mapInstance.eachLayer((layer) => {
+                    if (layer instanceof L.Marker) {
+                        mapInstance.removeLayer(layer);
+                    }
+                });
+                
+                // Pegar última coleta
+                const ultimaData = dados[0].data_coleta;
+                const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+                
+                console.log(`📍 Adicionando ${dadosUltimos.length} markers ao mapa...`);
+                
+                // Adicionar marker para cada destino
+                let markersAdicionados = 0;
+                dadosUltimos.forEach((dest, index) => {
+                    const info = DESTINOS_INFO[dest.destino_id];
+                    if (!info || !info.lat || !info.lng) {
+                        console.warn(`⚠️ Coordenadas ausentes para ${dest.destino_id}`);
+                        return;
+                    }
+                    
+                    const cor = getMarkerColor(dest.interesse);
+                    
+                    // Criar ícone customizado
+                    const customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="
+                            background: ${cor};
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            border: 3px solid rgba(0, 0, 0, 0.5);
+                            box-shadow: 0 0 15px ${cor}, 0 4px 10px rgba(0,0,0,0.3);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 14px;
+                        ">${info.emoji}</div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    
+                    // Criar popup content
+                    const popupContent = `
+                        <div class="popup-title">${info.emoji} ${info.nome}</div>
+                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                        <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
+                        ${dest.origem_1 ? `
+                            <div class="popup-origins">
+                                <div class="popup-metric">🥇 ${dest.origem_1} (${dest.origem_1_pct}%)</div>
+                                ${dest.origem_2 ? `<div class="popup-metric">🥈 ${dest.origem_2} (${dest.origem_2_pct}%)</div>` : ''}
+                                ${dest.origem_3 ? `<div class="popup-metric">🥉 ${dest.origem_3} (${dest.origem_3_pct}%)</div>` : ''}
+                            </div>
+                        ` : ''}
+                    `;
+                    
+                    // Adicionar marker ao mapa
+                    L.marker([info.lat, info.lng], { icon: customIcon })
+                        .addTo(mapInstance)
+                        .bindPopup(popupContent);
+                    
+                    markersAdicionados++;
+                });
+                
+                console.log(`✅ ${markersAdicionados} markers adicionados ao mapa com sucesso!`);
+            } catch (error) {
+                console.error('❌ Erro ao renderizar mapa:', error);
+                console.error('Stack trace:', error.stack);
+            }
+        }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
         async function buscarDados() {
@@ -672,15 +824,25 @@
             
             dadosGlobais = dados;
             
+            // Renderizar cards
             renderizarCards(dados);
+            
+            // Renderizar timeline
             renderizarTimeline(dados);
+            
+            // Renderizar mapa
+            renderizarMapa(dados);
+            
+            // Gerar boletim
             gerarBoletim(dados);
+            
+            // Atualizar calendário
             renderizarCalendario();
             
             console.log('✅ Dashboard atualizado com sucesso!');
         }
         
-        // ========== RENDERIZAR CARDS COM TODOS OS ÍNDICES ==========
+        // ========== RENDERIZAR CARDS ==========
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
             
@@ -714,8 +876,6 @@
             });
             
             const destinosOrdenados = destinosComIndices.sort((a, b) => b.interesse - a.interesse);
-            
-            console.log('📊 Destinos com nowcasting e confiabilidade:', destinosOrdenados);
             
             container.innerHTML = destinosOrdenados.map((dest, index) => {
                 const info = DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' };
@@ -966,7 +1126,7 @@
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">💡 Insights</div>
-                    <p>Sistema com 6 índices estratégicos: Nowcasting, Confiabilidade, Pressão, Momentum, Oportunidade e Risco.</p>
+                    <p>Total de ${dadosUltimos.length} destinos monitorados. Dados coletados via Google Trends.</p>
                 </div>
             `;
             
@@ -1046,7 +1206,8 @@
         
         // ========== INICIALIZAÇÃO ==========
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Inicializando PULSE AMAZÔNIA com Nowcasting + Confiabilidade...');
+            console.log('🚀 Inicializando PULSE AMAZÔNIA...');
+            inicializarMapa();
             atualizarDados();
         });
         
