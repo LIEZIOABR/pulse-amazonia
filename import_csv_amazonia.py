@@ -4,12 +4,13 @@
 """
 PULSE AMAZÔNIA - IMPORTADOR CSV → SUPABASE
 ============================================
-Data: 21/01/2026
+Data: 30/01/2026
 Desenvolvedor: Liezio Abrantes
-Versão: 1.0.2 (FIX CONFIRMADO: sem proxy)
+Versão: 1.1.0 (ACEITA MÚLTIPLAS DATAS)
 
 OBJETIVO:
 Importar dados coletados manualmente do Google Trends (CSV) para o Supabase.
+Aceita múltiplas coletas (múltiplas datas) no mesmo CSV.
 """
 
 import os
@@ -61,14 +62,14 @@ COLUNAS_ESPERADAS = [
 # ============================================================================
 
 def validar_data(data_str: str) -> Tuple[bool, Optional[str], Optional[str]]:
-    """Valida formato de data DD/MM/AAAA."""
-    pattern = r'^\d{2}/\d{2}/\d{4}$'
+    """Valida formato de data YYYY-MM-DD."""
+    pattern = r'^\d{4}-\d{2}-\d{2}$'
     
     if not re.match(pattern, data_str):
-        return False, None, f"Formato inválido: '{data_str}' (esperado: DD/MM/AAAA)"
+        return False, None, f"Formato inválido: '{data_str}' (esperado: YYYY-MM-DD)"
     
     try:
-        dia, mes, ano = data_str.split('/')
+        ano, mes, dia = data_str.split('-')
         data_obj = datetime(int(ano), int(mes), int(dia))
         data_iso = data_obj.strftime('%Y-%m-%d')
         
@@ -247,10 +248,10 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             if erros:
                 print(f"⚠️  Erros encontrados: {len(erros)}")
             
-            if len(dados_validos) != 15:
-                erros.append(f"CRÍTICO: Esperado 15 destinos, encontrado {len(dados_validos)}")
-                return False, [], erros
+            # VALIDAÇÃO REMOVIDA: Não exige mais exatamente 15 destinos
+            # Permite múltiplas datas no mesmo CSV
             
+            # Validar duplicatas (mesmo destino na mesma data)
             chaves_unicas = set()
             for dado in dados_validos:
                 chave = (dado['destino_id'], dado['data_coleta'])
@@ -260,6 +261,11 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             
             if erros:
                 return False, [], erros
+            
+            # Mostrar estatísticas
+            datas_unicas = set(d['data_coleta'] for d in dados_validos)
+            destinos_unicos = set(d['destino_id'] for d in dados_validos)
+            print(f"📊 Estatísticas: {len(datas_unicas)} datas | {len(destinos_unicos)} destinos únicos")
             
             return True, dados_validos, []
             
@@ -340,8 +346,19 @@ def main():
     print("✅ IMPORTAÇÃO CONCLUÍDA COM SUCESSO")
     print("="*70)
     print(f"📊 Registros processados: {len(dados)}")
-    print(f"📅 Data da coleta: {dados[0]['data_coleta']}")
-    print(f"🌴 Destinos: {len(set(d['destino_id'] for d in dados))}")
+    
+    # Estatísticas de datas
+    datas_unicas = sorted(set(d['data_coleta'] for d in dados))
+    print(f"📅 Datas importadas: {len(datas_unicas)}")
+    if len(datas_unicas) <= 5:
+        for data in datas_unicas:
+            count = len([d for d in dados if d['data_coleta'] == data])
+            print(f"   • {data}: {count} destinos")
+    else:
+        print(f"   • Primeira: {datas_unicas[0]}")
+        print(f"   • Última: {datas_unicas[-1]}")
+    
+    print(f"🌴 Destinos únicos: {len(set(d['destino_id'] for d in dados))}")
     print("="*70 + "\n")
     
     sys.exit(0)
