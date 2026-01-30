@@ -100,15 +100,16 @@ def validar_interesse(valor: str) -> Tuple[bool, Optional[int], Optional[str]]:
         return False, None, f"Interesse não numérico: '{valor}'"
 
 
-def validar_percentual(valor: str) -> Tuple[bool, Optional[float], Optional[str]]:
-    """Valida percentual (0-100)."""
+def validar_percentual(valor: str) -> Tuple[bool, Optional[int], Optional[str]]:
+    """Valida percentual (0-100) - retorna INTEGER."""
     try:
         valor_float = float(valor)
         
         if valor_float < 0 or valor_float > 100:
             return False, None, f"Percentual fora do range: {valor_float} (esperado: 0-100)"
         
-        return True, round(valor_float, 2), None
+        # Converte para INTEGER para compatibilidade com Supabase
+        return True, int(round(valor_float)), None
         
     except ValueError:
         return False, None, f"Percentual não numérico: '{valor}'"
