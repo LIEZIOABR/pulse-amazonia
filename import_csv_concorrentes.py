@@ -4,13 +4,14 @@
 """
 PULSE AMAZÔNIA - IMPORTADOR CSV → SUPABASE (CONCORRENTES NACIONAIS)
 ====================================================================
-Data: 29/01/2026
+Data: 30/01/2026
 Desenvolvedor: Liezio Abrantes
-Versão: 1.0.0
+Versão: 1.1.0 (ACEITA MÚLTIPLAS DATAS)
 
 OBJETIVO:
 Importar dados coletados manualmente do Google Trends (CSV) para o Supabase.
 Tabela: concorrentes_nacionais (8 destinos nacionais para comparação IPCR)
+Aceita múltiplas coletas (múltiplas datas) no mesmo CSV.
 """
 
 import os
@@ -247,11 +248,10 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             if erros:
                 print(f"⚠️  Erros encontrados: {len(erros)}")
             
-            # VALIDAÇÃO: Espera 8 destinos (concorrentes nacionais)
-            if len(dados_validos) != 8:
-                erros.append(f"CRÍTICO: Esperado 8 destinos, encontrado {len(dados_validos)}")
-                return False, [], erros
+            # VALIDAÇÃO REMOVIDA: Não exige mais exatamente 8 destinos
+            # Permite múltiplas datas no mesmo CSV
             
+            # Validar duplicatas (mesmo destino na mesma data)
             chaves_unicas = set()
             for dado in dados_validos:
                 chave = (dado['destino_id'], dado['data_coleta'])
@@ -261,6 +261,11 @@ def ler_csv(caminho: str) -> Tuple[bool, List[Dict], List[str]]:
             
             if erros:
                 return False, [], erros
+            
+            # Mostrar estatísticas
+            datas_unicas = set(d['data_coleta'] for d in dados_validos)
+            destinos_unicos = set(d['destino_id'] for d in dados_validos)
+            print(f"📊 Estatísticas: {len(datas_unicas)} datas | {len(destinos_unicos)} destinos únicos")
             
             return True, dados_validos, []
             
@@ -342,8 +347,19 @@ def main():
     print("✅ IMPORTAÇÃO CONCORRENTES CONCLUÍDA COM SUCESSO")
     print("="*70)
     print(f"📊 Registros processados: {len(dados)}")
-    print(f"📅 Data da coleta: {dados[0]['data_coleta']}")
-    print(f"🌍 Destinos nacionais: {len(set(d['destino_id'] for d in dados))}")
+    
+    # Estatísticas de datas
+    datas_unicas = sorted(set(d['data_coleta'] for d in dados))
+    print(f"📅 Datas importadas: {len(datas_unicas)}")
+    if len(datas_unicas) <= 5:
+        for data in datas_unicas:
+            count = len([d for d in dados if d['data_coleta'] == data])
+            print(f"   • {data}: {count} destinos")
+    else:
+        print(f"   • Primeira: {datas_unicas[0]}")
+        print(f"   • Última: {datas_unicas[-1]}")
+    
+    print(f"🌍 Destinos nacionais únicos: {len(set(d['destino_id'] for d in dados))}")
     print("="*70 + "\n")
     
     sys.exit(0)
