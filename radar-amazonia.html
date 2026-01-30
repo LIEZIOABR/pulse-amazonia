@@ -338,7 +338,7 @@
                     <div class="boletim-content" id="boletim-content">
                         <div class="empty-state">
                             <div class="empty-state-icon">📊</div>
-                            <p>Aguardando dados para gerar boletim...</p>
+                            <p>Clique em um destino para ver detalhes...</p>
                         </div>
                     </div>
                 </section>
@@ -360,7 +360,7 @@
                     <h3 class="kpi-dict-title">📖 Dicionário de KPIs</h3>
                     <div class="kpi-item">
                         <div class="kpi-name">Interesse (0-100)</div>
-                        <div class="kpi-desc">Índice de pesquisa relativo do Google Trends. 100 = pico de buscas.</div>
+                        <div class="kpi-desc">Índice proprietário de atração de demanda digital, baseado em padrões recorrentes de procura e distribuição regional de interesse.</div>
                     </div>
                     <div class="kpi-item">
                         <div class="kpi-name">Variação %</div>
@@ -995,13 +995,84 @@
             // Renderizar mapa
             renderizarMapa(dados);
             
-            // Gerar boletim
+            // Gerar boletim padrão
             gerarBoletim(dados, concorrentes);
             
             // Atualizar calendário
             renderizarCalendario();
             
             console.log('✅ Dashboard atualizado com sucesso!');
+        }
+        
+        // ========== GERAR BOLETIM POR DESTINO (NOVA FUNÇÃO) ==========
+        function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
+            const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
+            const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
+            
+            const nowcasting = calcularNowcasting(destino, todosDestinos);
+            const confiabilidade = calcularConfiabilidade(destino, todosDestinos);
+            const momentum = calcularMomentum(destino, todosDestinos);
+            const risco = calcularRisco(destino);
+            
+            // Calcular IPCR
+            const ipcr = calcularIPCR(destino, concorrentes);
+            
+            let ipcrHTML = '';
+            if (ipcr !== null) {
+                const principais = ipcr.concorrentes.slice(0, 3);
+                ipcrHTML = `
+                    <div class="boletim-section ipcr-section">
+                        <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
+                        <div class="ipcr-item">
+                            <div class="ipcr-comparacao">
+                                PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}% | 
+                                Concorrentes: ${ipcr.mediaConcorrentes >= 0 ? '+' : ''}${ipcr.mediaConcorrentes.toFixed(1)}%
+                            </div>
+                            <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">
+                                vs ${principais.map(c => c.nome).join(', ')}
+                            </div>
+                            <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const html = `
+                <div class="boletim-section">
+                    <div class="boletim-section-title">${info.emoji} ${info.nome}</div>
+                    <p style="font-size: 0.75rem; color: var(--text-dim);">📅 ${dataFormatada}</p>
+                </div>
+                <div class="boletim-section">
+                    <div class="boletim-section-title">📊 Métricas Principais</div>
+                    <ul class="boletim-list">
+                        <li>Interesse Atual: ${destino.interesse}/100</li>
+                        ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
+                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
+                        ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
+                    </ul>
+                </div>
+                <div class="boletim-section">
+                    <div class="boletim-section-title">⚡ Análise Estratégica</div>
+                    <ul class="boletim-list">
+                        <li>Momentum: ${momentum}</li>
+                        <li>Risco de Mercado: ${risco}</li>
+                        <li>Share PA: ${destino.share}%</li>
+                    </ul>
+                </div>
+                ${destino.origem_1 ? `
+                <div class="boletim-section">
+                    <div class="boletim-section-title">🌎 Top 3 Origens</div>
+                    <ul class="boletim-list">
+                        <li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>
+                        ${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}
+                        ${destino.origem_3 ? `<li>🥉 ${destino.origem_3} (${destino.origem_3_pct}%)</li>` : ''}
+                    </ul>
+                </div>
+                ` : ''}
+                ${ipcrHTML}
+            `;
+            
+            document.getElementById('boletim-content').innerHTML = html;
         }
         
         // ========== RENDERIZAR CARDS ==========
@@ -1070,7 +1141,7 @@
                 }
                 
                 return `
-                    <div class="dest-card">
+                    <div class="dest-card" data-index="${index}">
                         <div class="dest-header">
                             <div class="dest-name">${info.emoji} ${info.nome}</div>
                             <div class="dest-rank">#${index + 1} PA</div>
@@ -1162,6 +1233,21 @@
                     </div>
                 `;
             }).join('');
+            
+            // ADICIONAR EVENTOS DE CLIQUE NOS CARDS
+            setTimeout(() => {
+                document.querySelectorAll('.dest-card').forEach((card, index) => {
+                    card.addEventListener('click', () => {
+                        const destino = destinosComIndices[index];
+                        gerarBoletimDestino(destino, dados, dadosConcorrentes);
+                        
+                        // Scroll suave para o boletim em mobile
+                        if (window.innerWidth <= 1200) {
+                            document.querySelector('.boletim').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                });
+            }, 100);
         }
         
         // ========== RENDERIZAR TIMELINE ==========
@@ -1243,7 +1329,7 @@
             });
         }
         
-        // ========== GERAR BOLETIM ==========
+        // ========== GERAR BOLETIM GERAL (VISÃO AGREGADA) ==========
         function gerarBoletim(dados, concorrentes) {
             const ultimaData = dados[0].data_coleta;
             const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
@@ -1274,8 +1360,15 @@
             const destinosComIPCR = dadosUltimos
                 .filter(d => MAPA_CONCORRENCIA[d.destino_id])
                 .map(d => {
-                    const ipcr = calcularIPCR(d, concorrentes);
-                    return { ...d, ipcr };
+                    const coletas = dados.filter(dd => dd.destino_id === d.destino_id);
+                    let variacao = null;
+                    if (coletas.length > 1) {
+                        const anterior = coletas[1].interesse;
+                        variacao = anterior !== 0 ? ((d.interesse - anterior) / anterior * 100).toFixed(1) : 0;
+                    }
+                    const destComVariacao = { ...d, variacao: parseFloat(variacao) };
+                    const ipcr = calcularIPCR(destComVariacao, concorrentes);
+                    return { ...destComVariacao, ipcr };
                 })
                 .filter(d => d.ipcr !== null);
             
@@ -1416,3 +1509,4 @@
     </script>
 </body>
 </html>
+
