@@ -181,6 +181,39 @@
         .boletim-list li { padding-left: 16px; position: relative; margin-bottom: 6px; }
         .boletim-list li:before { content: "▸"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
         
+        /* IPCR - COMPETITIVIDADE NACIONAL */
+        .ipcr-section { 
+            margin-top: 20px; 
+            padding-top: 20px; 
+            border-top: 2px solid rgba(0, 198, 255, 0.2);
+        }
+        .ipcr-item {
+            background: rgba(0, 198, 255, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+        .ipcr-destino {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        .ipcr-comparacao {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+        .ipcr-status {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+        .ipcr-status.ganhando { color: #39ff14; }
+        .ipcr-status.perdendo { color: #ff3860; }
+        .ipcr-status.estavel { color: #ffea00; }
+        
         /* ========== CALENDÁRIO ========== */
         .calendar-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 24px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -345,6 +378,10 @@
                         <div class="kpi-name">Ranking Estadual</div>
                         <div class="kpi-desc">Posição do destino entre os 15 monitorados (#1 PA até #15 PA).</div>
                     </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">IPCR (Índice de Pressão Comparativa Regional)</div>
+                        <div class="kpi-desc">Compara crescimento de destinos PA versus concorrentes nacionais diretos.</div>
+                    </div>
                 </section>
             </aside>
         </div>
@@ -378,6 +415,7 @@
         
         // ========== VARIÁVEIS GLOBAIS ==========
         let dadosGlobais = [];
+        let dadosConcorrentes = [];
         let chartInstance = null;
         let mapInstance = null;
         let mesAtual = new Date();
@@ -398,6 +436,28 @@
             'cameta': { nome: 'Cametá', emoji: '🎣', lat: -2.2442, lng: -49.4961 },
             'parauapebas': { nome: 'Parauapebas', emoji: '⛏️', lat: -6.0672, lng: -49.9022 },
             'castanhal': { nome: 'Castanhal', emoji: '🌰', lat: -1.2936, lng: -47.9216 }
+        };
+        
+        // MAPEAMENTO DE CONCORRÊNCIA NACIONAL
+        const MAPA_CONCORRENCIA = {
+            'belem': ['manaus', 'sao_luis'],
+            'santarem': ['manaus', 'parintins'],
+            'alter_do_chao': ['bonito', 'presidente_figueiredo', 'jalapao'],
+            'salinopolis': ['lencois_maranhenses'],
+            'algodoal': ['atins'],
+            'ilha_marajo': ['atins'],
+            'monte_alegre': ['jalapao']
+        };
+        
+        const CONCORRENTES_INFO = {
+            'manaus': { nome: 'Manaus (AM)' },
+            'sao_luis': { nome: 'São Luís (MA)' },
+            'lencois_maranhenses': { nome: 'Lençóis Maranhenses (MA)' },
+            'jalapao': { nome: 'Jalapão (TO)' },
+            'bonito': { nome: 'Bonito (MS)' },
+            'presidente_figueiredo': { nome: 'Presidente Figueiredo (AM)' },
+            'parintins': { nome: 'Parintins (AM)' },
+            'atins': { nome: 'Atins (MA)' }
         };
         
         // ========== FUNÇÃO PARA DETERMINAR COR DO MARKER ==========
@@ -614,6 +674,79 @@
             }
         }
         
+        /**
+         * CALCULAR IPCR (Índice de Pressão Comparativa Regional)
+         */
+        function calcularIPCR(destinoPA, dadosConcorrentesNacionais) {
+            try {
+                const concorrentes = MAPA_CONCORRENCIA[destinoPA.destino_id];
+                if (!concorrentes || concorrentes.length === 0) return null;
+                
+                const variacaoPA = destinoPA.variacao;
+                if (variacaoPA === null || variacaoPA === undefined) return null;
+                
+                // Buscar variações dos concorrentes
+                const ultimaData = dadosConcorrentesNacionais.length > 0 ? dadosConcorrentesNacionais[0].data_coleta : null;
+                if (!ultimaData) return null;
+                
+                const concorrentesData = dadosConcorrentesNacionais.filter(c => c.data_coleta === ultimaData);
+                
+                const variacoesConcorrentes = concorrentes
+                    .map(concId => {
+                        const conc = concorrentesData.find(c => c.destino_id === concId);
+                        if (!conc) return null;
+                        
+                        // Calcular variação do concorrente
+                        const historicoConc = dadosConcorrentesNacionais.filter(d => d.destino_id === concId);
+                        if (historicoConc.length < 2) return null;
+                        
+                        const atual = historicoConc[0].interesse;
+                        const anterior = historicoConc[1].interesse;
+                        const variacao = anterior !== 0 ? ((atual - anterior) / anterior * 100) : 0;
+                        
+                        return {
+                            id: concId,
+                            nome: CONCORRENTES_INFO[concId]?.nome || concId,
+                            variacao: variacao,
+                            interesse: atual
+                        };
+                    })
+                    .filter(v => v !== null);
+                
+                if (variacoesConcorrentes.length === 0) return null;
+                
+                const mediaConcorrentes = variacoesConcorrentes.reduce((sum, c) => sum + c.variacao, 0) / variacoesConcorrentes.length;
+                
+                if (mediaConcorrentes === 0) return null;
+                
+                const ipcr = variacaoPA / mediaConcorrentes;
+                
+                let status, classe;
+                if (ipcr > 1.2) {
+                    status = '✅ Ganhando Competitividade';
+                    classe = 'ganhando';
+                } else if (ipcr < 0.8) {
+                    status = '⚠️ Perdendo Competitividade';
+                    classe = 'perdendo';
+                } else {
+                    status = '➡️ Estável';
+                    classe = 'estavel';
+                }
+                
+                return {
+                    ipcr: ipcr,
+                    status: status,
+                    classe: classe,
+                    variacaoPA: variacaoPA,
+                    mediaConcorrentes: mediaConcorrentes,
+                    concorrentes: variacoesConcorrentes
+                };
+            } catch (error) {
+                console.error('Erro ao calcular IPCR:', error);
+                return null;
+            }
+        }
+        
         // ========== MATRIX BACKGROUND ==========
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
@@ -806,7 +939,7 @@
                     return [];
                 }
                 
-                console.log(`✅ ${data.length} registros carregados`);
+                console.log(`✅ ${data.length} registros carregados (pulse_amazonia)`);
                 return data;
             } catch (error) {
                 console.error('❌ Erro ao buscar dados:', error);
@@ -815,14 +948,43 @@
             }
         }
         
+        async function buscarDadosConcorrentes() {
+            try {
+                console.log('🔍 Buscando dados de concorrentes nacionais...');
+                const { data, error } = await supabaseClient
+                    .from('concorrentes_nacionais')
+                    .select('*')
+                    .order('data_coleta', { ascending: false })
+                    .limit(200);
+                
+                if (error) {
+                    console.error('❌ Erro Supabase (concorrentes):', error);
+                    return [];
+                }
+                
+                if (!data || data.length === 0) {
+                    console.warn('⚠️ Nenhum dado de concorrentes encontrado');
+                    return [];
+                }
+                
+                console.log(`✅ ${data.length} registros de concorrentes carregados`);
+                return data;
+            } catch (error) {
+                console.error('❌ Erro ao buscar dados de concorrentes:', error);
+                return [];
+            }
+        }
+        
         // ========== PROCESSAR E RENDERIZAR ==========
         async function atualizarDados() {
             console.log('🔄 Atualizando dados...');
             const dados = await buscarDados();
+            const concorrentes = await buscarDadosConcorrentes();
             
             if (dados.length === 0) return;
             
             dadosGlobais = dados;
+            dadosConcorrentes = concorrentes;
             
             // Renderizar cards
             renderizarCards(dados);
@@ -834,7 +996,7 @@
             renderizarMapa(dados);
             
             // Gerar boletim
-            gerarBoletim(dados);
+            gerarBoletim(dados, concorrentes);
             
             // Atualizar calendário
             renderizarCalendario();
@@ -1082,7 +1244,7 @@
         }
         
         // ========== GERAR BOLETIM ==========
-        function gerarBoletim(dados) {
+        function gerarBoletim(dados, concorrentes) {
             const ultimaData = dados[0].data_coleta;
             const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
             
@@ -1108,6 +1270,41 @@
             
             const dataFormatada = new Date(ultimaData).toLocaleDateString('pt-BR');
             
+            // Calcular IPCR para destinos mapeados
+            const destinosComIPCR = dadosUltimos
+                .filter(d => MAPA_CONCORRENCIA[d.destino_id])
+                .map(d => {
+                    const ipcr = calcularIPCR(d, concorrentes);
+                    return { ...d, ipcr };
+                })
+                .filter(d => d.ipcr !== null);
+            
+            let ipcrHTML = '';
+            if (destinosComIPCR.length > 0) {
+                ipcrHTML = `
+                    <div class="boletim-section ipcr-section">
+                        <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
+                        ${destinosComIPCR.map(dest => {
+                            const info = DESTINOS_INFO[dest.destino_id];
+                            const principais = dest.ipcr.concorrentes.slice(0, 2);
+                            return `
+                                <div class="ipcr-item">
+                                    <div class="ipcr-destino">${info.emoji} ${info.nome}</div>
+                                    <div class="ipcr-comparacao">
+                                        PA: ${dest.ipcr.variacaoPA >= 0 ? '+' : ''}${dest.ipcr.variacaoPA.toFixed(1)}% | 
+                                        Concorrentes: ${dest.ipcr.mediaConcorrentes >= 0 ? '+' : ''}${dest.ipcr.mediaConcorrentes.toFixed(1)}%
+                                    </div>
+                                    <div class="ipcr-comparacao" style="font-size: 0.7rem;">
+                                        vs ${principais.map(c => c.nome).join(', ')}
+                                    </div>
+                                    <div class="ipcr-status ${dest.ipcr.classe}">${dest.ipcr.status}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+            
             const html = `
                 <div class="boletim-section">
                     <div class="boletim-section-title">📅 Data: ${dataFormatada}</div>
@@ -1124,9 +1321,10 @@
                         ${topOrigens.map(o => `<li>${o}</li>`).join('')}
                     </ul>
                 </div>
+                ${ipcrHTML}
                 <div class="boletim-section">
                     <div class="boletim-section-title">💡 Insights</div>
-                    <p>Total de ${dadosUltimos.length} destinos monitorados. Dados coletados via Google Trends.</p>
+                    <p>Total de ${dadosUltimos.length} destinos monitorados. Fontes públicas + modelagem proprietária ABR.</p>
                 </div>
             `;
             
