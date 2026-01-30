@@ -1,0 +1,9 @@
+data_coleta,destino_id,interesse,origem_1,origem_1_pct,origem_2,origem_2_pct,origem_3,origem_3_pct
+2026-01-29,manaus,0,Amazonas,100,São Paulo,0,Rio de Janeiro,0
+2026-01-29,sao_luis,0,Maranhão,100,São Paulo,0,Pará,0
+2026-01-29,lencois_maranhenses,0,Maranhão,100,São Paulo,0,Bahia,0
+2026-01-29,jalapao,0,Tocantins,100,São Paulo,0,Goiás,0
+2026-01-29,bonito,0,Mato Grosso do Sul,100,São Paulo,0,Paraná,0
+2026-01-29,presidente_figueiredo,0,Amazonas,100,São Paulo,0,Pará,0
+2026-01-29,parintins,0,Amazonas,100,Pará,0,Manaus,0
+2026-01-29,atins,0,Maranhão,100,São Paulo,0,Ceará,0
