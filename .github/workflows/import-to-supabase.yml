@@ -1,10 +1,11 @@
 name: Import CSV to Supabase
 
-# Dispara quando houver push no arquivo CSV
+# Dispara quando houver push nos arquivos CSV
 on:
   push:
     paths:
       - 'coleta-trends-para.csv'
+      - 'coleta-concorrentes-nacionais.csv'
   workflow_dispatch:  # Permite execução manual
 
 jobs:
@@ -28,8 +29,8 @@ jobs:
           python -m pip install --upgrade pip --no-cache-dir
           pip install supabase --no-cache-dir --force-reinstall
       
-      # 4. Executar script de importação
-      - name: 🚀 Run import script
+      # 4. Executar script de importação - DESTINOS PARÁ
+      - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -37,16 +38,28 @@ jobs:
         run: |
           python import_csv_amazonia.py
       
-      # 5. Log de sucesso
+      # 5. Executar script de importação - CONCORRENTES NACIONAIS
+      - name: 🌍 Import National Competitors
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          CSV_PATH: coleta-concorrentes-nacionais.csv
+        run: |
+          python import_csv_concorrentes.py
+      
+      # 6. Log de sucesso
       - name: ✅ Import completed
         if: success()
         run: |
           echo "✅ Importação concluída com sucesso!"
-          echo "📊 Dados disponíveis no Supabase"
+          echo "📊 Dados PA + Concorrentes disponíveis no Supabase"
+          echo "🌴 Tabela: pulse_amazonia (15 destinos)"
+          echo "🌍 Tabela: concorrentes_nacionais (8 destinos)"
       
-      # 6. Log de erro
+      # 7. Log de erro
       - name: ❌ Import failed
         if: failure()
         run: |
           echo "❌ Importação falhou!"
           echo "💡 Verifique os logs acima para detalhes"
+          echo "🔍 Verifique qual script falhou (PA ou Concorrentes)"
