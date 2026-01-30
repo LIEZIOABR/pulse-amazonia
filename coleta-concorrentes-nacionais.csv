@@ -1,9 +1,25 @@
 data_coleta,destino_id,interesse,origem_1,origem_1_pct,origem_2,origem_2_pct,origem_3,origem_3_pct
-2026-01-29,manaus,0,Amazonas,100,São Paulo,0,Rio de Janeiro,0
-2026-01-29,sao_luis,0,Maranhão,100,São Paulo,0,Pará,0
-2026-01-29,lencois_maranhenses,0,Maranhão,100,São Paulo,0,Bahia,0
-2026-01-29,jalapao,0,Tocantins,100,São Paulo,0,Goiás,0
-2026-01-29,bonito,0,Mato Grosso do Sul,100,São Paulo,0,Paraná,0
-2026-01-29,presidente_figueiredo,0,Amazonas,100,São Paulo,0,Pará,0
-2026-01-29,parintins,0,Amazonas,100,Pará,0,Manaus,0
-2026-01-29,atins,0,Maranhão,100,São Paulo,0,Ceará,0
+2026-01-22,manaus,76,Amazonas,100,Roraima,8,Rondônia,1
+2026-01-27,manaus,82,Amazonas,100,Roraima,8,Rondônia,1
+2026-01-30,manaus,73,Amazonas,100,Roraima,8,Rondônia,1
+2026-01-24,sao_luis,67,Maranhão,100,Piauí,3,Goiás,3
+2026-01-27,sao_luis,69,Maranhão,100,Piauí,3,Goiás,3
+2026-01-30,sao_luis,100,Maranhão,100,Piauí,3,Goiás,3
+2026-01-24,lencois_maranhenses,62,Maranhão,100,Piauí,46,Distrito Federal,37
+2026-01-27,lencois_maranhenses,55,Maranhão,100,Piauí,46,Distrito Federal,37
+2026-01-30,lencois_maranhenses,43,Maranhão,100,Piauí,46,Distrito Federal,37
+2026-01-25,jalapao,100,Tocantins,100,Goiás,14,Distrito Federal,12
+2026-01-28,jalapao,20,Tocantins,100,Goiás,14,Distrito Federal,12
+2026-01-30,jalapao,21,Tocantins,100,Goiás,14,Distrito Federal,12
+2026-01-26,bonito,42,Mato Grosso do Sul,100,Paraná,3,Santa Catarina,1
+2026-01-28,bonito,38,Mato Grosso do Sul,100,Paraná,3,Santa Catarina,1
+2026-01-30,bonito,36,Mato Grosso do Sul,100,Paraná,3,Santa Catarina,1
+2026-01-26,presidente_figueiredo,52,Amazonas,100,Roraima,33,Acre,1
+2026-01-28,presidente_figueiredo,53,Amazonas,100,Roraima,33,Acre,1
+2026-01-30,presidente_figueiredo,62,Amazonas,100,Roraima,33,Acre,1
+2026-01-26,parintins,88,Amazonas,100,Pará,5,Roraima,2
+2026-01-28,parintins,63,Amazonas,100,Pará,5,Roraima,2
+2026-01-30,parintins,64,Amazonas,100,Pará,5,Roraima,2
+2026-01-25,atins,49,Maranhão,100,Acre,64,Distrito Federal,12
+2026-01-27,atins,41,Maranhão,100,Acre,64,Distrito Federal,12
+2026-01-30,atins,37,Maranhão,100,Acre,64,Distrito Federal,12
