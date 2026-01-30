@@ -438,15 +438,18 @@
             'castanhal': { nome: 'Castanhal', emoji: '🌰', lat: -1.2936, lng: -47.9216 }
         };
         
-        // MAPEAMENTO DE CONCORRÊNCIA NACIONAL
+        // MAPEAMENTO DE CONCORRÊNCIA NACIONAL (EXPANDIDO)
         const MAPA_CONCORRENCIA = {
             'belem': ['manaus', 'sao_luis'],
             'santarem': ['manaus', 'parintins'],
             'alter_do_chao': ['bonito', 'presidente_figueiredo', 'jalapao'],
             'salinopolis': ['lencois_maranhenses'],
-            'algodoal': ['atins'],
+            'algodoal': ['atins', 'lencois_maranhenses'],
             'ilha_marajo': ['atins'],
-            'monte_alegre': ['jalapao']
+            'monte_alegre': ['jalapao'],
+            'soure': ['atins'],
+            'braganca': ['lencois_maranhenses'],
+            'salvaterra': ['atins']
         };
         
         const CONCORRENTES_INFO = {
@@ -676,27 +679,75 @@
         
         /**
          * CALCULAR IPCR (Índice de Pressão Comparativa Regional)
+         * CORREÇÃO: Agora SEMPRE retorna um objeto válido, mesmo sem concorrentes
          */
         function calcularIPCR(destinoPA, dadosConcorrentesNacionais) {
             try {
-                const concorrentes = MAPA_CONCORRENCIA[destinoPA.destino_id];
-                if (!concorrentes || concorrentes.length === 0) return null;
+                console.log(`🔍 Calculando IPCR para ${destinoPA.destino_id}...`);
                 
                 const variacaoPA = destinoPA.variacao;
-                if (variacaoPA === null || variacaoPA === undefined) return null;
+                if (variacaoPA === null || variacaoPA === undefined) {
+                    console.log('⚠️ Sem variação PA');
+                    return {
+                        ipcr: null,
+                        status: '⏸️ Sem Dados de Variação',
+                        classe: 'estavel',
+                        variacaoPA: null,
+                        mediaConcorrentes: null,
+                        concorrentes: []
+                    };
+                }
                 
-                // Buscar variações dos concorrentes
-                const ultimaData = dadosConcorrentesNacionais.length > 0 ? dadosConcorrentesNacionais[0].data_coleta : null;
-                if (!ultimaData) return null;
+                const concorrentes = MAPA_CONCORRENCIA[destinoPA.destino_id];
                 
+                // SE NÃO TEM CONCORRENTES MAPEADOS
+                if (!concorrentes || concorrentes.length === 0) {
+                    console.log(`⚠️ ${destinoPA.destino_id} não tem concorrentes mapeados`);
+                    
+                    let status, classe;
+                    if (variacaoPA > 10) {
+                        status = '📈 Crescimento Forte';
+                        classe = 'ganhando';
+                    } else if (variacaoPA < -10) {
+                        status = '📉 Queda Acentuada';
+                        classe = 'perdendo';
+                    } else if (variacaoPA > 0) {
+                        status = '✅ Crescimento Moderado';
+                        classe = 'ganhando';
+                    } else {
+                        status = '➡️ Estável';
+                        classe = 'estavel';
+                    }
+                    
+                    return {
+                        ipcr: null,
+                        status: status,
+                        classe: classe,
+                        variacaoPA: variacaoPA,
+                        mediaConcorrentes: null,
+                        concorrentes: [],
+                        semConcorrentes: true
+                    };
+                }
+                
+                // TEM CONCORRENTES - Buscar dados
+                if (!dadosConcorrentesNacionais || dadosConcorrentesNacionais.length === 0) {
+                    console.log('⚠️ Sem dados de concorrentes nacionais');
+                    return {
+                        ipcr: null,
+                        status: '⏸️ Aguardando Dados Nacionais',
+                        classe: 'estavel',
+                        variacaoPA: variacaoPA,
+                        mediaConcorrentes: null,
+                        concorrentes: []
+                    };
+                }
+                
+                const ultimaData = dadosConcorrentesNacionais[0].data_coleta;
                 const concorrentesData = dadosConcorrentesNacionais.filter(c => c.data_coleta === ultimaData);
                 
                 const variacoesConcorrentes = concorrentes
                     .map(concId => {
-                        const conc = concorrentesData.find(c => c.destino_id === concId);
-                        if (!conc) return null;
-                        
-                        // Calcular variação do concorrente
                         const historicoConc = dadosConcorrentesNacionais.filter(d => d.destino_id === concId);
                         if (historicoConc.length < 2) return null;
                         
@@ -713,11 +764,30 @@
                     })
                     .filter(v => v !== null);
                 
-                if (variacoesConcorrentes.length === 0) return null;
+                if (variacoesConcorrentes.length === 0) {
+                    console.log('⚠️ Nenhum concorrente com dados válidos');
+                    return {
+                        ipcr: null,
+                        status: '⏸️ Dados Insuficientes',
+                        classe: 'estavel',
+                        variacaoPA: variacaoPA,
+                        mediaConcorrentes: null,
+                        concorrentes: []
+                    };
+                }
                 
                 const mediaConcorrentes = variacoesConcorrentes.reduce((sum, c) => sum + c.variacao, 0) / variacoesConcorrentes.length;
                 
-                if (mediaConcorrentes === 0) return null;
+                if (mediaConcorrentes === 0) {
+                    return {
+                        ipcr: null,
+                        status: '➡️ Concorrentes Estáveis',
+                        classe: 'estavel',
+                        variacaoPA: variacaoPA,
+                        mediaConcorrentes: mediaConcorrentes,
+                        concorrentes: variacoesConcorrentes
+                    };
+                }
                 
                 const ipcr = variacaoPA / mediaConcorrentes;
                 
@@ -729,9 +799,11 @@
                     status = '⚠️ Perdendo Competitividade';
                     classe = 'perdendo';
                 } else {
-                    status = '➡️ Estável';
+                    status = '➡️ Estável vs Concorrentes';
                     classe = 'estavel';
                 }
+                
+                console.log(`✅ IPCR calculado: ${ipcr.toFixed(2)}`);
                 
                 return {
                     ipcr: ipcr,
@@ -742,8 +814,15 @@
                     concorrentes: variacoesConcorrentes
                 };
             } catch (error) {
-                console.error('Erro ao calcular IPCR:', error);
-                return null;
+                console.error('❌ Erro ao calcular IPCR:', error);
+                return {
+                    ipcr: null,
+                    status: '❌ Erro no Cálculo',
+                    classe: 'estavel',
+                    variacaoPA: destinoPA.variacao || null,
+                    mediaConcorrentes: null,
+                    concorrentes: []
+                };
             }
         }
         
@@ -782,7 +861,6 @@
         // ========== INICIALIZAR MAPA ==========
         function inicializarMapa() {
             try {
-                // Verificar se Leaflet está disponível
                 if (typeof L === 'undefined') {
                     console.error('❌ Leaflet não carregado! Tentando novamente em 1s...');
                     setTimeout(inicializarMapa, 1000);
@@ -796,14 +874,12 @@
                     mapInstance.remove();
                 }
                 
-                // Verificar se o elemento #map existe
                 const mapElement = document.getElementById('map');
                 if (!mapElement) {
                     console.error('❌ Elemento #map não encontrado no DOM!');
                     return;
                 }
                 
-                // Criar mapa centrado no Pará
                 mapInstance = L.map('map', {
                     center: [-3.5, -52.5],
                     zoom: 6,
@@ -811,19 +887,16 @@
                     scrollWheelZoom: true
                 });
                 
-                // Adicionar tiles do OpenStreetMap com filtro escuro
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors',
                     className: 'map-tiles'
                 }).addTo(mapInstance);
                 
-                // Adicionar filtro CSS ao mapa para tema escuro
                 mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
                 
                 console.log('✅ Mapa inicializado com sucesso!');
             } catch (error) {
                 console.error('❌ Erro ao inicializar mapa:', error);
-                console.error('Stack trace:', error.stack);
             }
         }
         
@@ -835,31 +908,26 @@
                 if (!mapInstance) {
                     console.warn('⚠️ Mapa não inicializado, tentando inicializar...');
                     inicializarMapa();
-                    // Aguarda 500ms para o mapa estar pronto
                     setTimeout(() => renderizarMapa(dados), 500);
                     return;
                 }
                 
-                // Verificar se Leaflet está disponível
                 if (typeof L === 'undefined') {
                     console.error('❌ Leaflet não disponível ao renderizar markers!');
                     return;
                 }
                 
-                // Limpar markers anteriores
                 mapInstance.eachLayer((layer) => {
                     if (layer instanceof L.Marker) {
                         mapInstance.removeLayer(layer);
                     }
                 });
                 
-                // Pegar última coleta
                 const ultimaData = dados[0].data_coleta;
                 const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
                 
                 console.log(`📍 Adicionando ${dadosUltimos.length} markers ao mapa...`);
                 
-                // Adicionar marker para cada destino
                 let markersAdicionados = 0;
                 dadosUltimos.forEach((dest, index) => {
                     const info = DESTINOS_INFO[dest.destino_id];
@@ -870,7 +938,6 @@
                     
                     const cor = getMarkerColor(dest.interesse);
                     
-                    // Criar ícone customizado
                     const customIcon = L.divIcon({
                         className: 'custom-marker',
                         html: `<div style="
@@ -889,7 +956,6 @@
                         iconAnchor: [12, 12]
                     });
                     
-                    // Criar popup content
                     const popupContent = `
                         <div class="popup-title">${info.emoji} ${info.nome}</div>
                         <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
@@ -903,7 +969,6 @@
                         ` : ''}
                     `;
                     
-                    // Adicionar marker ao mapa
                     L.marker([info.lat, info.lng], { icon: customIcon })
                         .addTo(mapInstance)
                         .bindPopup(popupContent);
@@ -914,7 +979,6 @@
                 console.log(`✅ ${markersAdicionados} markers adicionados ao mapa com sucesso!`);
             } catch (error) {
                 console.error('❌ Erro ao renderizar mapa:', error);
-                console.error('Stack trace:', error.stack);
             }
         }
         
@@ -986,26 +1050,19 @@
             dadosGlobais = dados;
             dadosConcorrentes = concorrentes;
             
-            // Renderizar cards
             renderizarCards(dados);
-            
-            // Renderizar timeline
             renderizarTimeline(dados);
-            
-            // Renderizar mapa
             renderizarMapa(dados);
-            
-            // Gerar boletim padrão
             gerarBoletim(dados, concorrentes);
-            
-            // Atualizar calendário
             renderizarCalendario();
             
             console.log('✅ Dashboard atualizado com sucesso!');
         }
         
-        // ========== GERAR BOLETIM POR DESTINO (NOVA FUNÇÃO) ==========
+        // ========== GERAR BOLETIM POR DESTINO ==========
         function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
+            console.log(`📊 Gerando boletim para ${destino.destino_id}...`);
+            
             const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
             const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
             
@@ -1016,25 +1073,56 @@
             
             // Calcular IPCR
             const ipcr = calcularIPCR(destino, concorrentes);
+            console.log('IPCR retornado:', ipcr);
             
+            // IPCR HTML - SEMPRE MOSTRAR ALGO
             let ipcrHTML = '';
-            if (ipcr !== null) {
-                const principais = ipcr.concorrentes.slice(0, 3);
-                ipcrHTML = `
-                    <div class="boletim-section ipcr-section">
-                        <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
-                        <div class="ipcr-item">
-                            <div class="ipcr-comparacao">
-                                PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}% | 
-                                Concorrentes: ${ipcr.mediaConcorrentes >= 0 ? '+' : ''}${ipcr.mediaConcorrentes.toFixed(1)}%
+            if (ipcr && ipcr.variacaoPA !== null) {
+                if (ipcr.semConcorrentes) {
+                    // Sem concorrentes mapeados - mostrar status baseado na variação
+                    ipcrHTML = `
+                        <div class="boletim-section ipcr-section">
+                            <div class="boletim-section-title">🌍 Performance Nacional</div>
+                            <div class="ipcr-item">
+                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}%</div>
+                                <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 4px; color: var(--text-dim);">
+                                    Sem concorrentes diretos mapeados
+                                </div>
+                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
                             </div>
-                            <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">
-                                vs ${principais.map(c => c.nome).join(', ')}
-                            </div>
-                            <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else if (ipcr.concorrentes.length > 0) {
+                    // Com concorrentes
+                    const principais = ipcr.concorrentes.slice(0, 3);
+                    ipcrHTML = `
+                        <div class="boletim-section ipcr-section">
+                            <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
+                            <div class="ipcr-item">
+                                <div class="ipcr-comparacao">
+                                    PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}% | 
+                                    Concorrentes: ${ipcr.mediaConcorrentes >= 0 ? '+' : ''}${ipcr.mediaConcorrentes.toFixed(1)}%
+                                </div>
+                                <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">
+                                    vs ${principais.map(c => c.nome).join(', ')}
+                                </div>
+                                ${ipcr.ipcr !== null ? `<div class="ipcr-comparacao" style="margin-top: 4px;">Índice: ${ipcr.ipcr.toFixed(2)}</div>` : ''}
+                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Sem dados de concorrentes
+                    ipcrHTML = `
+                        <div class="boletim-section ipcr-section">
+                            <div class="boletim-section-title">🌍 Competitividade Nacional</div>
+                            <div class="ipcr-item">
+                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}%</div>
+                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
+                            </div>
+                        </div>
+                    `;
+                }
             }
             
             const html = `
@@ -1073,6 +1161,7 @@
             `;
             
             document.getElementById('boletim-content').innerHTML = html;
+            console.log('✅ Boletim gerado com sucesso');
         }
         
         // ========== RENDERIZAR CARDS ==========
@@ -1238,7 +1327,8 @@
             setTimeout(() => {
                 document.querySelectorAll('.dest-card').forEach((card, index) => {
                     card.addEventListener('click', () => {
-                        const destino = destinosComIndices[index];
+                        const destino = destinosOrdenados[index];
+                        console.log(`🎯 Card clicado: ${destino.destino_id}`);
                         gerarBoletimDestino(destino, dados, dadosConcorrentes);
                         
                         // Scroll suave para o boletim em mobile
@@ -1356,48 +1446,6 @@
             
             const dataFormatada = new Date(ultimaData).toLocaleDateString('pt-BR');
             
-            // Calcular IPCR para destinos mapeados
-            const destinosComIPCR = dadosUltimos
-                .filter(d => MAPA_CONCORRENCIA[d.destino_id])
-                .map(d => {
-                    const coletas = dados.filter(dd => dd.destino_id === d.destino_id);
-                    let variacao = null;
-                    if (coletas.length > 1) {
-                        const anterior = coletas[1].interesse;
-                        variacao = anterior !== 0 ? ((d.interesse - anterior) / anterior * 100).toFixed(1) : 0;
-                    }
-                    const destComVariacao = { ...d, variacao: parseFloat(variacao) };
-                    const ipcr = calcularIPCR(destComVariacao, concorrentes);
-                    return { ...destComVariacao, ipcr };
-                })
-                .filter(d => d.ipcr !== null);
-            
-            let ipcrHTML = '';
-            if (destinosComIPCR.length > 0) {
-                ipcrHTML = `
-                    <div class="boletim-section ipcr-section">
-                        <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
-                        ${destinosComIPCR.map(dest => {
-                            const info = DESTINOS_INFO[dest.destino_id];
-                            const principais = dest.ipcr.concorrentes.slice(0, 2);
-                            return `
-                                <div class="ipcr-item">
-                                    <div class="ipcr-destino">${info.emoji} ${info.nome}</div>
-                                    <div class="ipcr-comparacao">
-                                        PA: ${dest.ipcr.variacaoPA >= 0 ? '+' : ''}${dest.ipcr.variacaoPA.toFixed(1)}% | 
-                                        Concorrentes: ${dest.ipcr.mediaConcorrentes >= 0 ? '+' : ''}${dest.ipcr.mediaConcorrentes.toFixed(1)}%
-                                    </div>
-                                    <div class="ipcr-comparacao" style="font-size: 0.7rem;">
-                                        vs ${principais.map(c => c.nome).join(', ')}
-                                    </div>
-                                    <div class="ipcr-status ${dest.ipcr.classe}">${dest.ipcr.status}</div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
-            }
-            
             const html = `
                 <div class="boletim-section">
                     <div class="boletim-section-title">📅 Data: ${dataFormatada}</div>
@@ -1414,10 +1462,10 @@
                         ${topOrigens.map(o => `<li>${o}</li>`).join('')}
                     </ul>
                 </div>
-                ${ipcrHTML}
                 <div class="boletim-section">
                     <div class="boletim-section-title">💡 Insights</div>
                     <p>Total de ${dadosUltimos.length} destinos monitorados. Fontes públicas + modelagem proprietária ABR.</p>
+                    <p style="margin-top: 8px; font-size: 0.75rem;">💡 <strong>Dica:</strong> Clique em qualquer card de destino para ver análise detalhada com IPCR!</p>
                 </div>
             `;
             
@@ -1509,4 +1557,3 @@
     </script>
 </body>
 </html>
-
