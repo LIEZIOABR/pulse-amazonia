@@ -764,6 +764,7 @@
                     })
                     .filter(v => v !== null);
                 
+                // Proteção contra array vazio
                 if (variacoesConcorrentes.length === 0) {
                     console.log('⚠️ Nenhum concorrente com dados válidos');
                     return {
@@ -812,7 +813,7 @@
                     }
                 }
                 
-                console.log(`✅ IPCR: ratio=${ipcr !== null ? ipcr.toFixed(2) : 'N/A'} | PA=${variacaoPA.toFixed(1)}% | Conc=${mediaConcorrentes.toFixed(1)}%`);
+                console.log(`✅ IPCR: ratio=${ipcr !== null ? ipcr.toFixed(2) : 'N/A'} | PA=${Number(variacaoPA).toFixed(1)}% | Conc=${Number(mediaConcorrentes).toFixed(1)}%`);
                 
                 return {
                     ipcr: ipcr,
@@ -1093,7 +1094,7 @@
                         <div class="boletim-section ipcr-section">
                             <div class="boletim-section-title">🌍 Performance Nacional</div>
                             <div class="ipcr-item">
-                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}%</div>
+                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'}</div>
                                 <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 4px; color: var(--text-dim);">
                                     Sem concorrentes diretos mapeados
                                 </div>
@@ -1109,8 +1110,8 @@
                             <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
                             <div class="ipcr-item">
                                 <div class="ipcr-comparacao">
-                                    PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}% | 
-                                    Concorrentes: ${ipcr.mediaConcorrentes >= 0 ? '+' : ''}${ipcr.mediaConcorrentes.toFixed(1)}%
+                                    PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'} | 
+                                    Concorrentes: ${ipcr.mediaConcorrentes !== null ? (ipcr.mediaConcorrentes >= 0 ? '+' : '') + Number(ipcr.mediaConcorrentes).toFixed(1) + '%' : 'N/A'}
                                 </div>
                                 <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">
                                     vs ${principais.map(c => c.nome).join(', ')}
@@ -1126,7 +1127,7 @@
                         <div class="boletim-section ipcr-section">
                             <div class="boletim-section-title">🌍 Competitividade Nacional</div>
                             <div class="ipcr-item">
-                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA >= 0 ? '+' : ''}${ipcr.variacaoPA.toFixed(1)}%</div>
+                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'}</div>
                                 <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
                             </div>
                         </div>
