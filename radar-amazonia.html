@@ -685,7 +685,7 @@
             try {
                 console.log(`🔍 Calculando IPCR para ${destinoPA.destino_id}...`);
                 
-                const variacaoPA = destinoPA.variacao;
+                const variacaoPA = parseFloat(destinoPA.variacao);
                 if (variacaoPA === null || variacaoPA === undefined) {
                     console.log('⚠️ Sem variação PA');
                     return {
