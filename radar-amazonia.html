@@ -686,7 +686,7 @@
                 console.log(`🔍 Calculando IPCR para ${destinoPA.destino_id}...`);
                 
                 const variacaoPA = parseFloat(destinoPA.variacao);
-                if (variacaoPA === null || variacaoPA === undefined) {
+                if (isNaN(variacaoPA) || destinoPA.variacao === null || destinoPA.variacao === undefined) {
                     console.log('⚠️ Sem variação PA');
                     return {
                         ipcr: null,
@@ -1084,6 +1084,12 @@
             // Calcular IPCR
             const ipcr = calcularIPCR(destino, concorrentes);
             console.log('IPCR retornado:', ipcr);
+            console.log('IPCR debug:', {
+                existe: !!ipcr,
+                variacaoPA: ipcr?.variacaoPA,
+                semConcorrentes: ipcr?.semConcorrentes,
+                status: ipcr?.status
+            });
             
             // IPCR HTML - SEMPRE MOSTRAR ALGO
             let ipcrHTML = '';
