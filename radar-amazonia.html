@@ -1089,12 +1089,7 @@
             // Calcular IPCR
             const ipcr = calcularIPCR(destino, concorrentes);
             console.log('IPCR retornado:', ipcr);
-            console.log('IPCR debug:', {
-                existe: !!ipcr,
-                variacaoPA: ipcr?.variacaoPA,
-                semConcorrentes: ipcr?.semConcorrentes,
-                status: ipcr?.status
-            });
+            console.log('🔍 IPCR JSON COMPLETO:', JSON.stringify(ipcr, null, 2));
             
             // IPCR HTML - SEMPRE MOSTRAR ALGO
             let ipcrHTML = '';
@@ -1194,6 +1189,9 @@
                 ${ipcrHTML}
             `;
             
+            console.log('📝 HTML length:', html.length);
+            console.log('📝 ipcrHTML length:', ipcrHTML.length);
+            console.log('📝 ipcrHTML content:', ipcrHTML || 'VAZIO');
             document.getElementById('boletim-content').innerHTML = html;
             console.log('✅ Boletim gerado com sucesso');
         }
