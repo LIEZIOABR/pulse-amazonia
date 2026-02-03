@@ -1087,8 +1087,21 @@
             
             // IPCR HTML - SEMPRE MOSTRAR ALGO
             let ipcrHTML = '';
-            if (ipcr && ipcr.variacaoPA !== null) {
-                if (ipcr.semConcorrentes) {
+            if (ipcr) {
+                if (ipcr.variacaoPA === null) {
+                    // Sem dados históricos ainda
+                    ipcrHTML = `
+                        <div class="boletim-section ipcr-section">
+                            <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
+                            <div class="ipcr-item">
+                                <div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">
+                                    ⏳ Aguardando 2ª coleta para calcular variação
+                                </div>
+                                <div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (ipcr.semConcorrentes) {
                     // Sem concorrentes mapeados - mostrar status baseado na variação
                     ipcrHTML = `
                         <div class="boletim-section ipcr-section">
