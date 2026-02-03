@@ -778,32 +778,41 @@
                 
                 const mediaConcorrentes = variacoesConcorrentes.reduce((sum, c) => sum + c.variacao, 0) / variacoesConcorrentes.length;
                 
-                if (mediaConcorrentes === 0) {
-                    return {
-                        ipcr: null,
-                        status: '➡️ Concorrentes Estáveis',
-                        classe: 'estavel',
-                        variacaoPA: variacaoPA,
-                        mediaConcorrentes: mediaConcorrentes,
-                        concorrentes: variacoesConcorrentes
-                    };
-                }
-                
-                const ipcr = variacaoPA / mediaConcorrentes;
-                
+                // ========== LÓGICA IPCR CORRIGIDA ==========
+                let ipcr = null;
                 let status, classe;
-                if (ipcr > 1.2) {
-                    status = '✅ Ganhando Competitividade';
-                    classe = 'ganhando';
-                } else if (ipcr < 0.8) {
-                    status = '⚠️ Perdendo Competitividade';
-                    classe = 'perdendo';
-                } else {
-                    status = '➡️ Estável vs Concorrentes';
-                    classe = 'estavel';
+                
+                if (mediaConcorrentes === 0) {
+                    if (variacaoPA > 0)      { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                    else if (variacaoPA < 0) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
+                    else                     { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
+                }
+                // Sinais opostos → quem está positivo ganha
+                else if (variacaoPA > 0 && mediaConcorrentes < 0) {
+                    status = '✅ Ganhando Competitividade'; classe = 'ganhando';
+                }
+                else if (variacaoPA < 0 && mediaConcorrentes > 0) {
+                    status = '⚠️ Perdendo Competitividade'; classe = 'perdendo';
+                }
+                // Mesmo sinal → razão das magnitudes
+                else {
+                    const ratio = Math.abs(variacaoPA) / Math.abs(mediaConcorrentes);
+                    ipcr = ratio;
+                    
+                    if (variacaoPA > 0) {
+                        // Ambos positivos: ratio > 1.2 = PA sobe mais = ganhando
+                        if (ratio > 1.2)      { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                        else if (ratio < 0.8) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
+                        else                  { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
+                    } else {
+                        // Ambos negativos: ratio > 1.2 = PA cai mais = perdendo
+                        if (ratio > 1.2)      { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
+                        else if (ratio < 0.8) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                        else                  { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
+                    }
                 }
                 
-                console.log(`✅ IPCR calculado: ${ipcr.toFixed(2)}`);
+                console.log(`✅ IPCR: ratio=${ipcr !== null ? ipcr.toFixed(2) : 'N/A'} | PA=${variacaoPA.toFixed(1)}% | Conc=${mediaConcorrentes.toFixed(1)}%`);
                 
                 return {
                     ipcr: ipcr,
