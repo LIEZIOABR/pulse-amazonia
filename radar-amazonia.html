@@ -1095,62 +1095,44 @@
             let ipcrHTML = '';
             if (ipcr) {
                 if (ipcr.variacaoPA === null) {
-                    // Sem dados históricos ainda
-                    ipcrHTML = `
-                        <div class="boletim-section ipcr-section">
-                            <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
-                            <div class="ipcr-item">
-                                <div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">
-                                    ⏳ Aguardando 2ª coleta para calcular variação
-                                </div>
-                                <div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>
-                            </div>
-                        </div>
-                    `;
+                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
+                        '<div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>' +
+                        '<div class="ipcr-item">' +
+                        '<div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">⏳ Aguardando 2ª coleta para calcular variação</div>' +
+                        '<div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>' +
+                        '</div></div>';
                 } else if (ipcr.semConcorrentes) {
-                    // Sem concorrentes mapeados - mostrar status baseado na variação
-                    ipcrHTML = `
-                        <div class="boletim-section ipcr-section">
-                            <div class="boletim-section-title">🌍 Performance Nacional</div>
-                            <div class="ipcr-item">
-                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'}</div>
-                                <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 4px; color: var(--text-dim);">
-                                    Sem concorrentes diretos mapeados
-                                </div>
-                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
-                            </div>
-                        </div>
-                    `;
+                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
+                        '<div class="boletim-section-title">🌍 Performance Nacional</div>' +
+                        '<div class="ipcr-item">' +
+                        '<div class="ipcr-comparacao">Variação PA: ' + 
+                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
+                        '<div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 4px; color: var(--text-dim);">Sem concorrentes diretos mapeados</div>' +
+                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
+                        '</div></div>';
                 } else if (ipcr.concorrentes.length > 0) {
-                    // Com concorrentes
                     const principais = ipcr.concorrentes.slice(0, 3);
-                    ipcrHTML = `
-                        <div class="boletim-section ipcr-section">
-                            <div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>
-                            <div class="ipcr-item">
-                                <div class="ipcr-comparacao">
-                                    PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'} | 
-                                    Concorrentes: ${ipcr.mediaConcorrentes !== null ? (ipcr.mediaConcorrentes >= 0 ? '+' : '') + Number(ipcr.mediaConcorrentes).toFixed(1) + '%' : 'N/A'}
-                                </div>
-                                <div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">
-                                    vs ${principais.map(c => c.nome).join(', ')}
-                                </div>
-                                ${ipcr.ipcr !== null ? `<div class="ipcr-comparacao" style="margin-top: 4px;">Índice: ${ipcr.ipcr.toFixed(2)}</div>` : ''}
-                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
-                            </div>
-                        </div>
-                    `;
+                    const indiceHTML = ipcr.ipcr !== null ? '<div class="ipcr-comparacao" style="margin-top: 4px;">Índice: ' + ipcr.ipcr.toFixed(2) + '</div>' : '';
+                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
+                        '<div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>' +
+                        '<div class="ipcr-item">' +
+                        '<div class="ipcr-comparacao">PA: ' +
+                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') +
+                        ' | Concorrentes: ' +
+                        (ipcr.mediaConcorrentes !== null ? (ipcr.mediaConcorrentes >= 0 ? '+' : '') + Number(ipcr.mediaConcorrentes).toFixed(1) + '%' : 'N/A') +
+                        '</div>' +
+                        '<div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">vs ' + principais.map(c => c.nome).join(', ') + '</div>' +
+                        indiceHTML +
+                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
+                        '</div></div>';
                 } else {
-                    // Sem dados de concorrentes
-                    ipcrHTML = `
-                        <div class="boletim-section ipcr-section">
-                            <div class="boletim-section-title">🌍 Competitividade Nacional</div>
-                            <div class="ipcr-item">
-                                <div class="ipcr-comparacao">Variação PA: ${ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A'}</div>
-                                <div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div>
-                            </div>
-                        </div>
-                    `;
+                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
+                        '<div class="boletim-section-title">🌍 Competitividade Nacional</div>' +
+                        '<div class="ipcr-item">' +
+                        '<div class="ipcr-comparacao">Variação PA: ' +
+                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
+                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
+                        '</div></div>';
                 }
             }
             
