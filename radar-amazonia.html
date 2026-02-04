@@ -468,6 +468,194 @@
             'atins': { nome: 'Atins (MA)' }
         };
         
+        // ============================================================
+        // PULSE CAMADA 2 (PROXY DE MERCADO EMISSOR) — BLOCO ISOLADO
+        // Objetivo: neutralizar viés endógeno (origem local)
+        // ============================================================
+        
+        // CONFIG: UF local de cada destino
+        const PULSE_LOCAL_UF_BY_DESTINO = {
+            'belem': 'PA',
+            'alter_do_chao': 'PA',
+            'ilha_marajo': 'PA',
+            'santarem': 'PA',
+            'salinopolis': 'PA',
+            'soure': 'PA',
+            'salvaterra': 'PA',
+            'mosqueiro': 'PA',
+            'braganca': 'PA',
+            'monte_alegre': 'PA',
+            'algodoal': 'PA',
+            'obidos': 'PA',
+            'parauapebas': 'PA',
+            'castanhal': 'PA',
+            'cameta': 'PA'
+        };
+        
+        // CONFIG: Destinos que são capitais/hubs (mantém local ponderado)
+        const PULSE_IS_CAPITAL_OR_HUB = {
+            'belem': true
+        };
+        
+        // CONFIG: Redutor do peso local para capitais (40%)
+        const PULSE_LOCAL_REDUCER_FOR_CAPITAL = 0.40;
+        
+        // CONFIG: Critérios de validade
+        const PULSE_MIN_ORIGENS = 3;          // diversidade mínima
+        const PULSE_DOMINANCE_LIMIT = 70;     // se 1 origem >70%, sinal fraco
+        const PULSE_MIN_RECURRENCES = 2;      // recorrência mínima
+        const PULSE_LOOKBACK = 6;             // últimas N coletas
+        
+        /** Normalização de nomes de estados */
+        function pulseNormState(s) {
+            if (!s) return '';
+            return String(s)
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toUpperCase();
+        }
+        
+        /** Extrai top 3 origens de 1 linha */
+        function pulseExtractTop3(row) {
+            const out = [];
+            const pushIf = function(name, pct) {
+                const n = pulseNormState(name);
+                const p = Number(pct);
+                if (!n || !Number.isFinite(p)) return;
+                out.push({ state: n, pct: p });
+            };
+            pushIf(row.origem_1, row.origem_1_pct);
+            pushIf(row.origem_2, row.origem_2_pct);
+            pushIf(row.origem_3, row.origem_3_pct);
+            return out.sort(function(a, b) { return b.pct - a.pct; });
+        }
+        
+        /** Aplica correção do viés local */
+        function pulseAdjustLocalBias(destinoId, top3) {
+            const localUF = pulseNormState(PULSE_LOCAL_UF_BY_DESTINO[destinoId] || '');
+            const isCapital = !!PULSE_IS_CAPITAL_OR_HUB[destinoId];
+            
+            if (!localUF) return { adjusted: top3.slice(), localUF: localUF, mode: 'no_local_config' };
+            
+            if (!isCapital) {
+                const filtered = top3.filter(function(x) { return x.state !== localUF; });
+                return { adjusted: filtered, localUF: localUF, mode: 'local_removed' };
+            }
+            
+            const adjusted = top3.map(function(x) {
+                if (x.state === localUF) {
+                    return { state: x.state, pct: Math.round(x.pct * PULSE_LOCAL_REDUCER_FOR_CAPITAL) };
+                }
+                return x;
+            }).sort(function(a, b) { return b.pct - a.pct; });
+            
+            return { adjusted: adjusted, localUF: localUF, mode: 'local_pondered' };
+        }
+        
+        /** Verifica se 1 coleta tem diversidade estatística mínima */
+        function pulseIsObservedValid(adjustedTop) {
+            const n = adjustedTop.length;
+            if (n < PULSE_MIN_ORIGENS) return false;
+            const maxPct = adjustedTop[0] ? adjustedTop[0].pct : 0;
+            if (maxPct >= PULSE_DOMINANCE_LIMIT) return false;
+            return true;
+        }
+        
+        /** Conta recorrência das origens nas últimas N coletas */
+        function pulseRecurrence(destinoId, rows) {
+            const last = rows.slice(-PULSE_LOOKBACK);
+            const counts = new Map();
+            
+            for (let i = 0; i < last.length; i++) {
+                const row = last[i];
+                const top3 = pulseExtractTop3(row);
+                const adjInfo = pulseAdjustLocalBias(destinoId, top3);
+                const adjusted = adjInfo.adjusted;
+                
+                for (let j = 0; j < adjusted.length; j++) {
+                    const x = adjusted[j];
+                    counts.set(x.state, (counts.get(x.state) || 0) + 1);
+                }
+            }
+            
+            const arr = [];
+            counts.forEach(function(n, state) {
+                arr.push({ state: state, n: n });
+            });
+            
+            arr.sort(function(a, b) { return b.n - a.n; });
+            return arr;
+        }
+        
+        /** Função principal: devolve leitura Camada 2 para 1 destino */
+        function pulseCamada2Compute(destinoId, rowsDoDestino) {
+            const rows = Array.isArray(rowsDoDestino) ? rowsDoDestino : [];
+            if (rows.length === 0) {
+                return { 
+                    mode: 'insuficiente', 
+                    badge: 'Sem histórico', 
+                    text: 'Sem dados suficientes para leitura de origem.' 
+                };
+            }
+            
+            const lastRow = rows[rows.length - 1];
+            const top3 = pulseExtractTop3(lastRow);
+            const adjInfo = pulseAdjustLocalBias(destinoId, top3);
+            const adjusted = adjInfo.adjusted;
+            
+            if (adjusted.length === 0) {
+                return {
+                    mode: 'insuficiente',
+                    badge: 'Baixo volume',
+                    text: 'Origem não observável (baixa diversidade no Trends).'
+                };
+            }
+            
+            const observedOk = pulseIsObservedValid(adjusted);
+            const rec = pulseRecurrence(destinoId, rows);
+            const topRec = rec[0];
+            const isRecurring = topRec && topRec.n >= PULSE_MIN_RECURRENCES;
+            
+            if (observedOk) {
+                const o1 = adjusted[0];
+                const o2 = adjusted[1];
+                const o3 = adjusted[2];
+                
+                const badge = isRecurring
+                    ? 'Origem recorrente: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')'
+                    : 'Origem observada (Top 3)';
+                
+                const textParts = [];
+                textParts.push('Origem (Top 3 ajustado): ' + o1.state + ' ' + o1.pct + '%');
+                if (o2) textParts.push(o2.state + ' ' + o2.pct + '%');
+                if (o3) textParts.push(o3.state + ' ' + o3.pct + '%');
+                if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' coletas recentes');
+                if (adjInfo.mode === 'local_pondered') textParts.push('• Local ponderado (capital/hub)');
+                if (adjInfo.mode === 'local_removed') textParts.push('• Local removido (viés endógeno)');
+                
+                return { mode: 'observada', badge: badge, text: textParts.join(' | ') };
+            }
+            
+            if (isRecurring) {
+                return {
+                    mode: 'inferida',
+                    badge: '⚠️ Origem inferida: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')',
+                    text: 'Baixa diversidade no Trends. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
+                };
+            }
+            
+            return {
+                mode: 'insuficiente',
+                badge: '⚠️ Baixa diversidade',
+                text: 'Origem não confiável (poucos estados no Trends / dominância alta). Aguarde mais coletas.'
+            };
+        }
+        
+        // ============================================================
+        // FIM DA CAMADA 2
+        // ============================================================
+        
         // ========== FUNÇÃO PARA DETERMINAR COR DO MARKER ==========
         function getMarkerColor(interesse) {
             if (interesse >= 70) return '#ff3860'; // Vermelho
@@ -1136,6 +1324,30 @@
                 }
             }
             
+            // Calcular Camada 2 (Origem Ajustada)
+            const historico = todosDestinos.filter(d => d.destino_id === destino.destino_id);
+            const camada2 = pulseCamada2Compute(destino.destino_id, historico);
+            console.log('🔍 Camada 2 resultado:', camada2);
+            
+            // HTML Camada 2
+            let camada2HTML = '';
+            if (camada2.mode === 'observada' || camada2.mode === 'inferida') {
+                const badgeClass = camada2.mode === 'observada' ? 'ganhando' : 'perdendo';
+                camada2HTML = '<div class="boletim-section">' +
+                    '<div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div>' +
+                    '<div class="ipcr-item">' +
+                    '<div class="ipcr-status ' + badgeClass + '" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
+                    '<div class="ipcr-comparacao" style="font-size: 0.75rem; line-height: 1.4;">' + camada2.text + '</div>' +
+                    '</div></div>';
+            } else if (camada2.mode === 'insuficiente') {
+                camada2HTML = '<div class="boletim-section">' +
+                    '<div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div>' +
+                    '<div class="ipcr-item">' +
+                    '<div class="ipcr-status estavel" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
+                    '<div class="ipcr-comparacao" style="font-size: 0.75rem; color: var(--text-dim);">' + camada2.text + '</div>' +
+                    '</div></div>';
+            }
+            
             const html = `
                 <div class="boletim-section">
                     <div class="boletim-section-title">${info.emoji} ${info.nome}</div>
@@ -1160,7 +1372,7 @@
                 </div>
                 ${destino.origem_1 ? `
                 <div class="boletim-section">
-                    <div class="boletim-section-title">🌎 Top 3 Origens</div>
+                    <div class="boletim-section-title">🌎 Top 3 Origens (Bruto)</div>
                     <ul class="boletim-list">
                         <li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>
                         ${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}
@@ -1168,6 +1380,7 @@
                     </ul>
                 </div>
                 ` : ''}
+                ${camada2HTML}
                 ${ipcrHTML}
             `;
             
