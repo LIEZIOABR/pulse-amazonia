@@ -24,16 +24,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytrends pandas requests supabase
 
-      # 🔵 COLETA DESTINOS PARÁ
-      - name: 🔄 Run PA collection
+      # 🔵 COLETA ÚNICA (gera Pará + Concorrentes)
+      - name: 🔄 Run automatic collection
         run: |
           python coleta_automatica_trends.py
 
-      # 🔵 COLETA CONCORRENTES (NOVO PASSO)
-      - name: 🔄 Run competitors collection
-        run: |
-          python coleta_concorrentes_nacionais.py
-
+      # 🔵 Commit dos CSVs gerados
       - name: 💾 Commit updated CSV files
         run: |
           git config --global user.name "github-actions"
@@ -43,6 +39,7 @@ jobs:
           git commit -m "Atualização automática de coleta diária" || echo "Sem alterações"
           git push
 
+      # 🔵 Importar destinos Pará
       - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -51,6 +48,7 @@ jobs:
         run: |
           python import_csv_amazonia.py
 
+      # 🔵 Importar concorrentes nacionais
       - name: 🌍 Import National Competitors
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
