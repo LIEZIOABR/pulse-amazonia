@@ -13,6 +13,8 @@ jobs:
 
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
@@ -32,11 +34,10 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git pull --rebase
           git add coleta-trends-para.csv
           git add coleta-concorrentes-nacionais.csv
           git commit -m "Atualização automática de coleta diária" || echo "Sem alterações"
-          git push
+          git push --force-with-lease
 
       - name: 🌴 Import PA destinations
         env:
@@ -53,13 +54,3 @@ jobs:
           CSV_PATH: coleta-concorrentes-nacionais.csv
         run: |
           python import_csv_concorrentes.py
-
-      - name: ✅ Import completed
-        if: success()
-        run: |
-          echo "Coleta e Importação concluídas com sucesso."
-
-      - name: ❌ Import failed
-        if: failure()
-        run: |
-          echo "Falha na coleta ou importação."
