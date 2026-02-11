@@ -3,7 +3,7 @@ name: Pulse Amazônia – Coleta e Importação Automática
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * *'   # roda todo dia às 09:00 UTC
+    - cron: '0 9 * * *'
 
 jobs:
   coleta-import:
@@ -11,28 +11,29 @@ jobs:
 
     steps:
 
-      # 1️⃣ Checkout
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Python
       - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3️⃣ Instalar dependências
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pytrends pandas requests supabase
 
-      # 4️⃣ Rodar coleta automática
-      - name: 🔄 Run automatic collection
+      # 🔵 COLETA DESTINOS PARÁ
+      - name: 🔄 Run PA collection
         run: |
           python coleta_automatica_trends.py
 
-      # 5️⃣ Commit automático do CSV atualizado
+      # 🔵 COLETA CONCORRENTES (NOVO PASSO)
+      - name: 🔄 Run competitors collection
+        run: |
+          python coleta_concorrentes_nacionais.py
+
       - name: 💾 Commit updated CSV files
         run: |
           git config --global user.name "github-actions"
@@ -42,7 +43,6 @@ jobs:
           git commit -m "Atualização automática de coleta diária" || echo "Sem alterações"
           git push
 
-      # 6️⃣ Importar destinos Pará
       - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -51,7 +51,6 @@ jobs:
         run: |
           python import_csv_amazonia.py
 
-      # 7️⃣ Importar concorrentes nacionais
       - name: 🌍 Import National Competitors
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -60,36 +59,12 @@ jobs:
         run: |
           python import_csv_concorrentes.py
 
-      # 8️⃣ Log de sucesso
       - name: ✅ Import completed
         if: success()
         run: |
-          echo "✅ Coleta e Importação concluídas com sucesso."
-          echo "🌴 Tabela: pulse_amazonia"
-          echo "🌍 Tabela: concorrentes_nacionais"
+          echo "Coleta e Importação concluídas com sucesso."
 
-      # 9️⃣ Log de erro
       - name: ❌ Import failed
         if: failure()
         run: |
-          echo "❌ Falha na coleta ou importação."
-          echo "🔍 Verifique os logs do GitHub Actions."
-
-      # 🔟 Enviar e-mail se falhar
-      - name: 📧 Send failure email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.SMTP_USER }}
-          password: ${{ secrets.SMTP_PASS }}
-          subject: "🚨 Pulse Amazônia – Falha na Coleta/Importação"
-          to: ${{ secrets.SMTP_USER }}
-          from: Pulse Amazônia
-          body: |
-            O workflow automático do Pulse Amazônia falhou.
-
-            Verifique imediatamente:
-            https://github.com/${{ github.repository }}/actions
+          echo "Falha na coleta ou importação."
