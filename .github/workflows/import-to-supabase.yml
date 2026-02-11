@@ -6,30 +6,30 @@ on:
     paths:
       - 'coleta-trends-para.csv'
       - 'coleta-concorrentes-nacionais.csv'
-  workflow_dispatch:  # Permite execução manual
+  workflow_dispatch:
 
 jobs:
   import-data:
     runs-on: ubuntu-latest
-    
+
     steps:
       # 1. Checkout do repositório
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
-      
+
       # 2. Configurar Python 3.11
       - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
-      # 3. Instalar dependências Python (VERSÃO MAIS RECENTE)
+
+      # 3. Instalar dependências
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip --no-cache-dir
           pip install supabase --no-cache-dir --force-reinstall
-      
-      # 4. Executar script de importação - DESTINOS PARÁ
+
+      # 4. Importar destinos Pará
       - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -37,8 +37,8 @@ jobs:
           CSV_PATH: coleta-trends-para.csv
         run: |
           python import_csv_amazonia.py
-      
-      # 5. Executar script de importação - CONCORRENTES NACIONAIS
+
+      # 5. Importar concorrentes nacionais
       - name: 🌍 Import National Competitors
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -46,20 +46,43 @@ jobs:
           CSV_PATH: coleta-concorrentes-nacionais.csv
         run: |
           python import_csv_concorrentes.py
-      
+
       # 6. Log de sucesso
       - name: ✅ Import completed
         if: success()
         run: |
           echo "✅ Importação concluída com sucesso!"
           echo "📊 Dados PA + Concorrentes disponíveis no Supabase"
-          echo "🌴 Tabela: pulse_amazonia (15 destinos)"
-          echo "🌍 Tabela: concorrentes_nacionais (8 destinos)"
-      
+          echo "🌴 Tabela: pulse_amazonia"
+          echo "🌍 Tabela: concorrentes_nacionais"
+
       # 7. Log de erro
       - name: ❌ Import failed
         if: failure()
         run: |
           echo "❌ Importação falhou!"
-          echo "💡 Verifique os logs acima para detalhes"
-          echo "🔍 Verifique qual script falhou (PA ou Concorrentes)"
+          echo "🔍 Verifique os logs do GitHub Actions"
+
+      # 8. Enviar e-mail se falhar
+      - name: 📧 Send failure email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "🚨 Pulse Amazônia – Falha na Importação"
+          to: ${{ secrets.SMTP_USER }}
+          from: Pulse Amazônia
+          body: |
+            O workflow de importação do Pulse Amazônia falhou.
+
+            Verifique imediatamente:
+            https://github.com/${{ github.repository }}/actions
+
+            Recomendação:
+            1. Identificar qual script falhou
+            2. Corrigir erro
+            3. Executar workflow manualmente
