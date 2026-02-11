@@ -1,35 +1,48 @@
-name: Import CSV to Supabase
+name: Pulse Amazônia – Coleta e Importação Automática
 
-# Dispara quando houver push nos arquivos CSV
 on:
-  push:
-    paths:
-      - 'coleta-trends-para.csv'
-      - 'coleta-concorrentes-nacionais.csv'
   workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'   # roda todo dia às 09:00 UTC
 
 jobs:
-  import-data:
+  coleta-import:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repositório
+
+      # 1️⃣ Checkout
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Python 3.11
+      # 2️⃣ Setup Python
       - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. Instalar dependências
+      # 3️⃣ Instalar dependências
       - name: 📦 Install dependencies
         run: |
-          python -m pip install --upgrade pip --no-cache-dir
-          pip install supabase --no-cache-dir --force-reinstall
+          python -m pip install --upgrade pip
+          pip install pytrends pandas requests supabase
 
-      # 4. Importar destinos Pará
+      # 4️⃣ Rodar coleta automática
+      - name: 🔄 Run automatic collection
+        run: |
+          python coleta_automatica_trends.py
+
+      # 5️⃣ Commit automático do CSV atualizado
+      - name: 💾 Commit updated CSV files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add coleta-trends-para.csv
+          git add coleta-concorrentes-nacionais.csv
+          git commit -m "Atualização automática de coleta diária" || echo "Sem alterações"
+          git push
+
+      # 6️⃣ Importar destinos Pará
       - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -38,7 +51,7 @@ jobs:
         run: |
           python import_csv_amazonia.py
 
-      # 5. Importar concorrentes nacionais
+      # 7️⃣ Importar concorrentes nacionais
       - name: 🌍 Import National Competitors
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -47,23 +60,22 @@ jobs:
         run: |
           python import_csv_concorrentes.py
 
-      # 6. Log de sucesso
+      # 8️⃣ Log de sucesso
       - name: ✅ Import completed
         if: success()
         run: |
-          echo "✅ Importação concluída com sucesso!"
-          echo "📊 Dados PA + Concorrentes disponíveis no Supabase"
+          echo "✅ Coleta e Importação concluídas com sucesso."
           echo "🌴 Tabela: pulse_amazonia"
           echo "🌍 Tabela: concorrentes_nacionais"
 
-      # 7. Log de erro
+      # 9️⃣ Log de erro
       - name: ❌ Import failed
         if: failure()
         run: |
-          echo "❌ Importação falhou!"
-          echo "🔍 Verifique os logs do GitHub Actions"
+          echo "❌ Falha na coleta ou importação."
+          echo "🔍 Verifique os logs do GitHub Actions."
 
-      # 8. Enviar e-mail se falhar
+      # 🔟 Enviar e-mail se falhar
       - name: 📧 Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -73,16 +85,11 @@ jobs:
           secure: true
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
-          subject: "🚨 Pulse Amazônia – Falha na Importação"
+          subject: "🚨 Pulse Amazônia – Falha na Coleta/Importação"
           to: ${{ secrets.SMTP_USER }}
           from: Pulse Amazônia
           body: |
-            O workflow de importação do Pulse Amazônia falhou.
+            O workflow automático do Pulse Amazônia falhou.
 
             Verifique imediatamente:
             https://github.com/${{ github.repository }}/actions
-
-            Recomendação:
-            1. Identificar qual script falhou
-            2. Corrigir erro
-            3. Executar workflow manualmente
