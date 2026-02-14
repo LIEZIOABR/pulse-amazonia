@@ -42,7 +42,7 @@ jobs:
       - name: 🌴 Import PA destinations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CSV_PATH: coleta-trends-para.csv
         run: |
           python import_csv_amazonia.py
@@ -50,7 +50,7 @@ jobs:
       - name: 🌍 Import National Competitors
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CSV_PATH: coleta-concorrentes-nacionais.csv
         run: |
           python import_csv_concorrentes.py
