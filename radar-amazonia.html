@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌴 DEMAND PULSE AMAZÔNIA - ABR Consultoria</title>
+    <title>DEMAND PULSE AMAZÔNIA - ABR Consultoria</title>
     <link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌴%3C/text%3E%3C/svg%3E\">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -34,7 +34,7 @@
         .btn-nav:hover { background: rgba(0,198,255,0.15); box-shadow: 0 0 20px rgba(0, 198, 255, 0.4); }
         
         .logo-section { margin-bottom: 30px; animation: fadeIn 1.5s ease-out; }
-        .logo-section img { max-width: 260px; filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.3)); pointer-events: none; }
+        .logo-section img { max-width: 230px; filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.3)); pointer-events: none; }
         
         h1 { font-size: 3.6rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); }
         .subtitle { color: var(--text-dim); font-size: 0.9rem; max-width: 800px; margin: 0 auto; line-height: 1.5; font-weight: 400; }
@@ -288,7 +288,7 @@
                 <section class="controls">
                     <div class="date-filter-group">
                         <div>
-                            <div class="filter-label">📅 Período</div>
+                            <div class="filter-label">Período</div>
                             <select id="period-select">
                                 <option value="7">Últimos 7 dias</option>
                                 <option value="14">Últimos 14 dias</option>
@@ -302,12 +302,12 @@
                             <input type="date" id="date-end" />
                         </div>
                     </div>
-                    <button class="btn-update" onclick="atualizarDados()">🔄 ATUALIZAR DADOS</button>
+                    <button class="btn-update" onclick="atualizarDados()">ATUALIZAR DADOS</button>
                 </section>
                 
                 <!-- TIMELINE CHART -->
                 <section class="timeline-section">
-                    <h2 class="section-title">📈 Timeline Comparativa - Top 5 Destinos</h2>
+                    <h2 class="section-title">Timeline Comparativa - Top 5 Destinos</h2>
                     <div class="chart-wrapper">
                         <canvas id="timeline-chart"></canvas>
                     </div>
@@ -315,7 +315,7 @@
                 
                 <!-- GEO MAP -->
                 <section class="map-section">
-                    <h2 class="section-title">🗺️ Mapa Geográfico - Distribuição Espacial do Interesse</h2>
+                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Interesse</h2>
                     <div id="map" class="map-container"></div>
                 </section>
                 
@@ -333,12 +333,12 @@
                 <!-- BOLETIM ESTRATÉGICO -->
                 <section class="boletim">
                     <div class="boletim-header">
-                        <h3 class="boletim-title">📊 Boletim Estratégico</h3>
+                        <h3 class="boletim-title">Boletim Estratégico</h3>
                         <button class="btn-copy" onclick="copiarBoletim()">📋 Copiar</button>
                     </div>
                     <div class="boletim-content" id="boletim-content">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📊</div>
+                            <div class="empty-state-icon">—</div>
                             <p>Clique em um destino para ver detalhes...</p>
                         </div>
                     </div>
@@ -359,7 +359,7 @@
                 <!-- DICIONÁRIO KPIs -->
                 
 <section class="kpi-dict">
-    <h3 class="kpi-dict-title">📖 Dicionário Executivo de Inteligência</h3>
+    <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
 
     <div class="kpi-item">
         <div class="kpi-name">Interesse (0–100)</div>
@@ -1478,10 +1478,10 @@
             const html = `
                 <div class="boletim-section">
                     <div class="boletim-section-title">${info.emoji} ${info.nome}</div>
-                    <p style="font-size: 0.75rem; color: var(--text-dim);">📅 ${dataFormatada}</p>
+                    <p style="font-size: 0.75rem; color: var(--text-dim);">${dataFormatada}</p>
                 </div>
                 <div class="boletim-section">
-                    <div class="boletim-section-title">📊 Métricas Principais</div>
+                    <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
                         <li>Interesse Atual: ${destino.interesse}/100</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
@@ -1500,7 +1500,7 @@
                 </div>
                 ${destino.origem_1 ? `
                 <div class="boletim-section">
-                    <div class="boletim-section-title">🌎 Top 3 Origens (Bruto)</div>
+                    <div class="boletim-section-title">Top 3 Origens (Bruto)</div>
                     <ul class="boletim-list">
                         <li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>
                         ${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}
@@ -1820,7 +1820,7 @@
             
             const html = `
                 <div class="boletim-section">
-                    <div class="boletim-section-title">📅 Data: ${dataFormatada}</div>
+                    <div class="boletim-section-title">Data: ${dataFormatada}</div>
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">🏆 Top 3 Destinos PA</div>
@@ -1829,15 +1829,15 @@
                     </ul>
                 </div>
                 <div class="boletim-section">
-                    <div class="boletim-section-title">🌎 Top 3 Origens Agregadas</div>
+                    <div class="boletim-section-title">Top 3 Origens Agregadas</div>
                     <ul class="boletim-list">
                         ${topOrigens.map(o => `<li>${o}</li>`).join('')}
                     </ul>
                 </div>
                 <div class="boletim-section">
-                    <div class="boletim-section-title">💡 Insights</div>
+                    <div class="boletim-section-title">Insights</div>
                     <p>Total de ${dadosUltimos.length} destinos monitorados. Fontes públicas + modelagem proprietária ABR.</p>
-                    <p style="margin-top: 8px; font-size: 0.75rem;">💡 <strong>Dica:</strong> Clique em qualquer card de destino para ver análise detalhada com IPCR!</p>
+                    <p style="margin-top: 8px; font-size: 0.75rem;"><strong>Dica:</strong> Clique em qualquer card de destino para ver análise detalhada com IPCR!</p>
                 </div>
             `;
             
@@ -1977,7 +1977,7 @@ renderizarCards = function(dados) {
         extraHTML.style.opacity = "0.85";
 
         extraHTML.innerHTML = `
-            ${rankingHist ? `<div>📊 Média 5 coletas: <strong>${rankingHist}</strong></div>` : ''}
+            ${rankingHist ? `<div>Média 5 coletas: <strong>${rankingHist}</strong></div>` : ''}
             <div style="margin-top:4px;">${selo}</div>
         `;
 
