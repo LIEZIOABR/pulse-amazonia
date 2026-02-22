@@ -1,405 +1,537 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABR — Central de Inteligência Estratégica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --accent: #00c6ff;
-            --bg: #000000;
-            --panel: rgba(15, 18, 22, 0.75);
-            --panel-border: rgba(255, 255, 255, 0.1);
-            --text-main: #eaf3ff;
-            --text-dim: #9ca3af;
-        }
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>ABR | Marketing Estratégico &amp; Consultoria Hoteleira</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+/* ===================================
+   ABR Marketing Estratégico & Consultoria Hoteleira
+   CSS Principal — v2
+   =================================== */
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { 
-            background-color: var(--bg); 
-            color: var(--text-main); 
-            overflow-x: hidden; 
-            min-height: 100vh;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+:root {
+  --bg: #000000;
+  --card: #0c0f14;
+  --accent: #00c6ff;
+  --text: #e6e6e6;
+  --muted: #9aa4ad;
+}
 
-        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.2; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-        .logo-section { margin-bottom: 30px; animation: fadeIn 1.5s ease-out; }
-        .logo-section img { max-width: 260px; filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.3)); pointer-events: none; }
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.12;
+}
 
-        .hero-title { font-size: 2.1rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; transition: 0.3s; }
-        .hero-subtitle { color: var(--accent); font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 20px; }
-        .hero-tagline { font-size: 1.15rem; color: var(--text-main); font-weight: 500; font-style: italic; margin-bottom: 50px; opacity: 0.9; border-bottom: 1px solid rgba(0, 198, 255, 0.2); display: inline-block; padding-bottom: 10px; }
+header {
+  position: relative;
+  z-index: 2;
+  padding: 48px 24px 32px;
+  text-align: center;
+}
 
-        .systems-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 60px; }
+header img {
+  max-width: 230px;
+}
 
-        .card { 
-            background: var(--panel); 
-            backdrop-filter: blur(15px); 
-            border: 1px solid var(--panel-border); 
-            border-radius: 24px; 
-            padding: 40px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: inherit;
-            position: relative;
-            overflow: hidden;
-        }
+main {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
 
-        .card.active:hover { 
-            transform: translateY(-10px); 
-            border-color: var(--accent); 
-            box-shadow: 0 20px 40px rgba(0, 198, 255, 0.2); 
-        }
-        
-        .card.disabled { 
-            opacity: 0.85; 
-            border: 1px solid rgba(0, 198, 255, 0.3); 
-            cursor: not-allowed;
-            animation: borderPulse 3s infinite;
-        }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+}
 
-        @keyframes borderPulse {
-            0% { border-color: rgba(0, 198, 255, 0.1); box-shadow: 0 0 5px rgba(0, 198, 255, 0.05); }
-            50% { border-color: rgba(0, 198, 255, 0.4); box-shadow: 0 0 15px rgba(0, 198, 255, 0.15); }
-            100% { border-color: rgba(0, 198, 255, 0.1); box-shadow: 0 0 5px rgba(0, 198, 255, 0.05); }
-        }
+.card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 15, 20, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  padding: 26px 22px 30px;
+  backdrop-filter: blur(6px);
+  transition: transform .25s ease, border .25s ease;
+}
 
-        .card-icon-svg { width: 65px; height: 65px; margin-bottom: 20px; stroke: var(--accent); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-        
-        .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; }
-        .card-status { font-size: 0.75rem; font-weight: 800; padding: 8px 16px; border-radius: 50px; text-transform: uppercase; margin-top: 15px; letter-spacing: 1px; }
-        .status-online { background: rgba(0, 198, 255, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-        .status-homolog { background: rgba(255, 255, 255, 0.05); color: #ffffff; border: 1px solid var(--panel-border); }
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 198, 255, 0.45);
+}
 
-        .btn-access { 
-            margin-top: 25px;
-            background: var(--accent); 
-            color: #000; 
-            padding: 14px 35px; 
-            border-radius: 12px; 
-            font-weight: 800; 
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            transition: 0.3s;
-            cursor: pointer;
-        }
+.card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--accent);
+}
 
-        .kpi-section { margin-top: 80px; text-align: left; background: rgba(255,255,255,0.02); padding: 50px; border-radius: 30px; border: 1px solid var(--panel-border); }
-        .section-label { color: var(--accent); font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; display: block; text-align: center; }
-        .section-creds { color: #ffffff; font-size: 0.95rem; font-weight: 500; text-align: center; display: block; margin-bottom: 45px; opacity: 1; }
-        
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .kpi-group-title { color: var(--text-main); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px; border-left: 4px solid var(--accent); padding-left: 12px; }
-        .kpi-item { margin-bottom: 20px; }
-        .kpi-name { color: var(--accent); font-weight: 700; font-size: 0.95rem; margin-bottom: 5px; }
-        .kpi-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+.card p {
+  font-size: .88rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
 
-        footer { margin-top: 80px; padding-bottom: 40px; opacity: 0.7; font-size: 0.85rem; }
-        .footer-line { margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .footer-line svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; }
+.card a {
+  display: inline-block;
+  margin-top: auto;
+  padding-top: 16px;
+  font-size: .85rem;
+  color: var(--accent);
+  text-decoration: none;
+}
 
-        .whatsapp-btn {
-            position: fixed; bottom: 30px; right: 30px; background: #25d366; width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: 0.3s; z-index: 1000;
-        }
-        .whatsapp-btn:hover { transform: scale(1.1) rotate(10deg); }
-        .whatsapp-btn svg { width: 32px; height: 32px; fill: white; }
+footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 40px 16px 24px;
+  font-size: .8rem;
+  color: #6f7a83;
+}
 
-        #custom-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
-            z-index: 9999; display: none; align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: var(--panel); backdrop-filter: blur(20px); border: 1px solid var(--accent);
-            border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%;
-            box-shadow: 0 0 50px rgba(0, 198, 255, 0.3);
-        }
-        .modal-title { color: var(--accent); margin-bottom: 10px; font-size: 1.5rem; font-weight: 700; }
-        .modal-subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
-        
-        .input-group { position: relative; margin: 20px 0 10px; }
-        .modal-input {
-            background: #111; border: 1px solid var(--panel-border); color: var(--text-main); padding: 15px 50px 15px 20px;
-            border-radius: 10px; font-size: 1rem; text-align: left; outline: none; width: 100%;
-        }
-        .toggle-password {
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer;
-            width: 20px; height: 20px; stroke: var(--text-dim); fill: none; stroke-width: 2;
-        }
-        .error-message { color: #ff4141; font-size: 0.8rem; height: 1.2em; margin-bottom: 10px; }
+.clients {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 198, 255, 0.18);
+}
 
-        .modal-btn {
-            background: var(--accent); color: #000; padding: 10px 25px; border-radius: 8px; font-weight: 700;
-            text-transform: uppercase; border: none; cursor: pointer; transition: 0.3s;
-        }
-        .modal-btn:hover { background: #00e0ff; }
+.clients-label {
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.70);
+  margin: 0 0 14px 0;
+}
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0;
+}
 
-        .modal-back-btn{
-            position: fixed;
-            top: 18px;
-            left: 18px;
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            background: rgba(15, 18, 22, 0.75);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 198, 255, 0.35);
-            color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: 14px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: 0.25s;
-        }
-        .modal-back-btn:hover{
-            border-color: var(--accent);
-            box-shadow: 0 12px 30px rgba(0, 198, 255, 0.18);
-            transform: translateY(-1px);
-        }
-        .modal-back-btn svg{
-            width: 18px;
-            height: 18px;
-            stroke: var(--accent);
-            fill: none;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-    </style>
+.client-tile {
+  aspect-ratio: 16 / 9;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  transition: border .25s ease, box-shadow .25s ease;
+}
+
+.client-tile:hover {
+  border-color: rgba(0, 198, 255, 0.55);
+  box-shadow: 0 0 12px rgba(0, 198, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.client-tile img {
+  display: block;
+  max-width: 85%;
+  max-height: 80%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.client-tile .tile-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #333;
+  line-height: 1.2;
+}
+
+.client-tile .tile-city {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 3px;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .clients-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .client-tile {
+    padding: 10px 12px;
+  }
+}
+
+body.abr-modal-open #abr-page-content {
+  visibility: hidden;
+}
+
+.modal-footer-signature {
+  margin-top: 18px;
+  padding-top: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, .55);
+  letter-spacing: .3px;
+}
+
+.whatsapp-float {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.whatsapp-float svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}
+
+.abr-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+.abr-modal-overlay.active {
+  display: flex;
+}
+
+.abr-modal-box {
+  width: min(980px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  position: relative;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: none;
+  padding: 18px;
+}
+
+.abr-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  background: rgba(0, 0, 0, .35);
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 36px;
+}
+
+.modal-content-box {
+  margin-top: 44px;
+  background: rgba(12, 15, 20, 0.88);
+  border: 1px solid rgba(0, 198, 255, 0.22);
+  border-radius: 18px;
+  padding: 24px 26px 28px;
+  backdrop-filter: blur(6px);
+}
+
+.modal-content-box h3 {
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 12px;
+  font-size: 1.15rem;
+}
+
+.modal-content-box p {
+  font-size: .87rem;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+  </style>
 </head>
-<body oncontextmenu="return false;" ondragstart="return false;">
-    <canvas id="matrix-canvas"></canvas>
+<body>
 
-    <div class="container">
-        <div class="logo-section">
-            <img src="abr-logo.png" alt="ABR Logo">
+<canvas id="matrix"></canvas>
+
+<div id="abr-page-content">
+
+  <!-- ==================== HEADER ==================== -->
+  <header>
+    <img alt="ABR Marketing Estratégico &amp; Consultoria Hoteleira" src="abr-logo.png"/>
+  </header>
+
+  <!-- ==================== CARDS DE SERVIÇO ==================== -->
+  <main>
+    <section class="grid">
+
+      <!-- Card 1: Revenue Management -->
+      <div class="card" id="rm">
+        <h3>Revenue Management &amp; Aceleração de Negócios</h3>
+        <p>
+          Atuação estratégica em Revenue Management com foco em decisão, proteção de margem e crescimento sustentável.
+          Leitura integrada de preço, demanda, calendário e posicionamento, aplicada à hotelaria Brasil e Latam.
+        </p>
+        <a href="javascript:void(0)" onclick="openModal('rm-modal')">Ler mais</a>
+      </div>
+
+      <!-- Card 2: Estruturação de Projetos -->
+      <div class="card" id="arquitetura">
+        <h3>Estruturação de Projetos Hoteleiros</h3>
+        <p>Consultoria e mentoria para arquitetos, engenheiros e investidores, cobrindo estudos de sensibilidade de resultado, projeções financeiras, layout operacional com fluxos e métricas utilizados na hotelaria e customizados de acordo com projeto em análise.</p>
+        <a href="javascript:void(0)" onclick="openModal('arquitetura-modal')">Ler mais</a>
+      </div>
+
+      <!-- Card 3: Supply Chain -->
+      <div class="card" id="supply">
+        <h3>Supply Chain Hoteleiro</h3>
+        <p>
+          Implantação da cadeia de suprimentos hoteleira, com foco em eficiência operacional, redução de custos e governança de compras. Estruturação de processos de cotação, controle de estoque e padronização de insumos, de acordo com o perfil de cada meio de hospedagem.
+        </p>
+        <a href="javascript:void(0)" onclick="openModal('supply-modal')">Ler mais</a>
+      </div>
+
+      <!-- Card 4: Pulse -->
+      <div class="card" id="pulse">
+        <h3>Pulse de Demanda &amp; Inteligência de Mercado</h3>
+        <p>
+          Monitoramento contínuo de demanda, comportamento de mercado e movimentos da concorrência. Os sistemas Pulse da ABR entregam leitura temporal para decisões assertivas na hotelaria e destinos turísticos com base em dados.
+        </p>
+        <a href="sistemas.html">Acessar sistemas</a>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer>
+    Todos os Direitos Reservados &copy; ABR Marketing Estratégico &amp; Consultoria Hoteleira<br/>
+    Site Blindado
+  </footer>
+
+</div><!-- /abr-page-content -->
+
+<!-- ==================== MODAL: Revenue Management ==================== -->
+<div id="rm-modal" class="abr-modal-overlay" aria-hidden="true">
+  <div class="abr-modal-box" role="dialog" aria-modal="true">
+    <button class="abr-modal-close" aria-label="Fechar" onclick="closeModal('rm-modal')">&times;</button>
+
+    <div class="modal-content-box">
+      <h3>Revenue Management &amp; Aceleração de Negócios</h3>
+      <p>A ABR atua em Revenue Management com foco em consistência e utilização de sistemas proprietários, conectando preço, calendário, demanda e posicionamento em uma leitura integrada.</p>
+      <p>O trabalho prioriza proteção de margem, disciplina comercial e previsibilidade operacional, evitando movimentos reativos que corroem receita.</p>
+      <p>A abordagem parte do cenário real do hotel, inclusive estudo do zero absoluto e da operação, considerando mix de canais, políticas comerciais, sazonalidade e restrições comuns ao segmento.</p>
+      <p>A execução é orientada à gestão, com soluções e métricas definidas de forma específica para cada meio de hospedagem, sempre com recomendações claras e aplicáveis no dia a dia.</p>
+      <p>A ABR atua de forma permanente, com olhar de dono e suporte estratégico de alta capacidade decisória, sustentando decisões com visão de curto, médio e longo prazo.</p>
+      <p>Aplicada à hotelaria Brasil e Latam.</p>
+
+      <div class="clients">
+        <div class="clients-label">Alguns hotéis e pousadas atendidos</div>
+        <div class="clients-grid">
+          <div class="client-tile"><span class="tile-name">Pousada Ahavanoah</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Siri Paraíso Hotel</span><span class="tile-city">Touros / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Pousada Flores da Serra</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Hotel das Hortências</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Hotel Fazenda Itapuá</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Pousada Jardim</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Pousada das Pedras</span><span class="tile-city">Monte Verde / MG</span></div>
+          <div class="client-tile"><span class="tile-name">Villa Park Hotel</span><span class="tile-city">Natal - Recife - Fortaleza</span></div>
         </div>
+      </div>
 
-        <h1 class="hero-title">Central de Inteligência</h1>
-        <p class="hero-subtitle">Big Data & Business Intelligence</p>
-        <p class="hero-tagline">Motor proprietário de índices estratégicos.<br>Não medimos buscas. Medimos pressão de demanda, competitividade nacional e antecipação de mercado.</p>
-
-        <div class="systems-grid">
-            <div class="card active">
-                <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="7" r="3"/></svg>
-                <div class="card-title">Pulse Amazônia</div>
-                <p class="kpi-desc" style="text-align: center;">Radar de inteligência turística do Pará. Monitoramento de 15 destinos amazônicos.</p>
-                <div class="btn-access" onclick="showModal('amazonia')">Acessar Pulse</div>
-            </div>
-
-            <div class="card active">
-                <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 18c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6z"/><path d="M12 14c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-                <div class="card-title">Demand Pulse</div>
-                <p class="kpi-desc" style="text-align: center;">Análise estratégica de demanda e tendências para destinos turísticos.</p>
-                <div class="card-status status-homolog">Sistema em Homologação</div>
-            </div>
-
-            <div class="card disabled">
-                <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><circle cx="9" cy="7" r="1"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="7" r="1"/><circle cx="15" cy="11" r="1"/></svg>
-                <div class="card-title">Hotéis & Pousadas</div>
-                <p class="kpi-desc" style="text-align: center;">Monitoramento de performance e benchmarking para meios de hospedagem.</p>
-                <div class="card-status status-homolog">Sistema em Homologação</div>
-            </div>
-        </div>
-
-        <div class="kpi-section">
-            <span class="section-label">Dicionário de Inteligência (KPIs)</span>
-            <span class="section-creds">monitoramento contínuo com atualização a cada 48 horas</span>
-            
-            <div class="kpi-grid">
-                <div>
-                    <div class="kpi-group-title">Análise de Demanda</div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Timeline de Interesse (0-100)</div>
-                        <div class="kpi-desc">Índice normalizado do Google Trends que mede o volume relativo de buscas ao longo do tempo. 100 representa o pico de interesse no período analisado.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Variação Percentual</div>
-                        <div class="kpi-desc">Crescimento ou retração do interesse entre a última coleta e a anterior. Indica tendência de curto prazo (aquecimento/arrefecimento).</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Share de Mercado Regional</div>
-                        <div class="kpi-desc">Proporção do interesse de um destino em relação aos demais monitorados no estado. Mostra dominância relativa no portfólio.</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="kpi-group-title">Origens de Demanda</div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Top 3 Cidades Origem</div>
-                        <div class="kpi-desc">Principais localizações geográficas de onde partem as buscas por cada destino. Revela perfil geográfico da demanda.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Concentração de Origem</div>
-                        <div class="kpi-desc">Percentual agregado das três principais cidades origem. Indica diversificação (baixa %) ou dependência (alta %) de poucos mercados.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Origens Agregadas Estaduais</div>
-                        <div class="kpi-desc">Cidades que mais demandam o conjunto dos 15 destinos do Pará. Identifica mercados prioritários para campanhas regionais.</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="kpi-group-title">Tendências & Projeção</div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Linha de Tendência (Regressão Linear)</div>
-                        <div class="kpi-desc">Projeção estatística da direção futura da demanda baseada em histórico de 15+ coletas. Indica crescimento ou retração esperada.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Ranking Estadual</div>
-                        <div class="kpi-desc">Posição relativa de cada destino no estado do Pará. Permite comparação competitiva e identificação de líderes.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Sazonalidade Observada</div>
-                        <div class="kpi-desc">Padrões recorrentes de alta e baixa ao longo do ano. Auxilia planejamento de campanhas e precificação dinâmica.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <div class="footer-line">
-                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Sistema Blindado
-            </div>
-            <div class="footer-line">
-                @ Todos os direitos reservados a ABR Marketing Estratégico & Consultoria Hoteleira.
-            </div>
-        </footer>
+      <div class="modal-footer-signature">
+        ABR — Inteligência Hoteleira aplicada à decisão
+      </div>
     </div>
+  </div>
+</div>
 
-    <a href="https://wa.me/5584999519500" class="whatsapp-btn" target="_blank">
-        <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48 2.242 2.242 3.48 5.227 3.48 8.557-5.332 11.888-11.888 11.888-2.019 0-3.999-.512-5.752-1.483l-6.231 1.709zm6.103-4.494l.352.208c1.61.955 3.461 1.46 5.381 1.46 5.755 0 10.435-4.68 10.435-10.435 0-2.778-1.082-5.39-3.046-7.354s-4.576-3.046-7.354-3.046c-5.756 0-10.435 4.679-10.435 10.435 0 2.108.632 4.169 1.826 5.928l.23.339-.997 3.642 3.735-.981z"/></svg>
-    </a>
+<!-- ==================== MODAL: Estruturação de Projetos ==================== -->
+<div id="arquitetura-modal" class="abr-modal-overlay" aria-hidden="true">
+  <div class="abr-modal-box" role="dialog" aria-modal="true">
+    <button class="abr-modal-close" aria-label="Fechar" onclick="closeModal('arquitetura-modal')">&times;</button>
 
-    <div id="custom-modal">
-        <button class="modal-back-btn" id="modal-back-btn" type="button" onclick="closeModal()">
-            <svg viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6"/>
-                <path d="M9 12h12"/>
-            </svg>
-            Voltar
-        </button>
+    <div class="modal-content-box">
+      <h3>Estruturação de Projetos Hoteleiros</h3>
+      <p>A mentoria aplicada da ABR atua na estruturação técnica de projetos hoteleiros desde a concepção até a abertura efetiva do negócio. O trabalho integra leitura de demanda, definição do produto adequado ao perfil do destino, projeções financeiras projetadas e dimensionamento operacional.</p>
+      <p>Um hotel é tão bom quanto melhores fluxos e métricas são produzidos. Cada projeto é analisado sob critérios de previsibilidade, considerando tipologia hoteleira, mix de serviços, criticidade técnica e lógica de mercado.</p>
+      <p>Além do projeto e objetivos, o espaço disponível é determinante. A abordagem elimina decisões equivocadas, reduz riscos de retrabalhos e conecta arquitetura, operação e resultado financeiro de forma objetiva e aplicável à realidade da hotelaria.</p>
 
-        <div class="modal-content">
-            <h3 class="modal-title" id="modal-title">SISTEMA RESTRITO</h3>
-            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso para o Demand Pulse.</p>
-            <div class="input-group">
-                <input type="password" id="modal-pass" class="modal-input" placeholder="CHAVE DE ACESSO" autofocus>
-                <svg class="toggle-password" id="toggle-pass" viewBox="0 0 24 24" onclick="togglePasswordVisibility()"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
-            <div id="error-message" class="error-message"></div>
-            <button class="modal-btn" onclick="validateModalPassword()">ACESSAR</button>
+      <div class="clients">
+        <div class="clients-label">Alguns hotéis e pousadas atendidos</div>
+        <div class="clients-grid">
+          <div class="client-tile"><span class="tile-name">Aquaria Natal Hotel</span><span class="tile-city">Natal / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Ba'ra Hotel</span><span class="tile-city">João Pessoa / PB</span></div>
+          <div class="client-tile"><span class="tile-name">Majestic Ponta Negra</span><span class="tile-city">Natal / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Oceana Atlântico Hotel</span><span class="tile-city">João Pessoa / PB</span></div>
+          <div class="client-tile"><span class="tile-name">Palo Santo Galápagos</span><span class="tile-city">Galápagos / EC</span></div>
+          <div class="client-tile"><span class="tile-name">Praia Bonita Resort</span><span class="tile-city">Camurupim / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Slaviero</span><span class="tile-city">Campina Grande / PB</span></div>
+          <div class="client-tile"><span class="tile-name">Villa Park Hotel</span><span class="tile-city">Natal - Recife - Fortaleza</span></div>
         </div>
+      </div>
+
+      <div class="modal-footer-signature">
+        ABR — Inteligência Hoteleira aplicada à decisão
+      </div>
     </div>
+  </div>
+</div>
 
-    <script>
-        const PASSWORDS = ["testecliente", "abrturbo"];
-        let currentSystem = 'municipal';
+<!-- ==================== MODAL: Supply Chain ==================== -->
+<div id="supply-modal" class="abr-modal-overlay" aria-hidden="true">
+  <div class="abr-modal-box" role="dialog" aria-modal="true">
+    <button class="abr-modal-close" aria-label="Fechar" onclick="closeModal('supply-modal')">&times;</button>
 
-        function showModal(system) {
-            currentSystem = system;
-            document.getElementById('custom-modal').style.display = 'flex';
-            document.getElementById('modal-pass').focus();
-            document.getElementById('error-message').innerHTML = '';
-            
-            if (system === 'amazonia') {
-                document.getElementById('modal-title').textContent = 'PULSE AMAZÔNIA';
-                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Pulse Amazônia.';
-            } else {
-                document.getElementById('modal-title').textContent = 'SISTEMA RESTRITO';
-                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Demand Pulse.';
-            }
-            
-            const btn = document.getElementById('modal-back-btn');
-            if (btn) btn.style.display = 'inline-flex';
-        }
+    <div class="modal-content-box">
+      <h3>Supply Chain Hoteleiro</h3>
+      <p>A ABR atua na implantação e reestruturação da cadeia de suprimentos hoteleira, do diagnóstico da operação de compras à entrega de processos funcionais e com controle real.</p>
+      <p>O trabalho cobre mapeamento de fornecedores, padronização de insumos, estruturação de cotação e definição de políticas de estoque compatíveis com o porte e o tipo de cada meio de hospedagem.</p>
+      <p>A abordagem inclui treinamento de equipe, implantação de governança de compras e negociação direta com fornecedores, sempre com foco em redução de custos sem perder qualidade operacional.</p>
+      <p>Cada projeto é dimensionado conforme o perfil do hotel ou pousada, considerando sazonalidade, volume e realidade de abastecimento da região.</p>
 
-        function validateModalPassword() {
-            const input = document.getElementById('modal-pass').value.toLowerCase().trim();
-            if (PASSWORDS.includes(input)) {
-                if (currentSystem === 'amazonia') {
-                    window.location.href = 'radar-amazonia.html';
-                } else {
-                    window.location.href = 'radar.html';
-                }
-            } else {
-                document.getElementById('error-message').innerHTML = 'ACESSO NEGADO. Chave incorreta.';
-                document.getElementById('modal-pass').value = '';
-                document.getElementById('modal-pass').focus();
-            }
-        }
+      <div class="clients">
+        <div class="clients-label">Alguns hotéis e pousadas atendidos</div>
+        <div class="clients-grid">
+          <div class="client-tile"><span class="tile-name">Hotel Sombra e Água Fresca</span><span class="tile-city">Pipa / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Siri Paraíso Hotel</span><span class="tile-city">Touros / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Rest. Ponta do Pirambu</span><span class="tile-city">Tibau do Sul / RN</span></div>
+          <div class="client-tile"><span class="tile-name">Asenza Beach Resort</span><span class="tile-city">Pitimbu / PB</span></div>
+        </div>
+      </div>
 
-        function togglePasswordVisibility() {
-            const passInput = document.getElementById('modal-pass');
-            const toggleIcon = document.getElementById('toggle-pass');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                toggleIcon.style.stroke = 'var(--accent)';
-            } else {
-                passInput.type = 'password';
-                toggleIcon.style.stroke = 'var(--text-dim)';
-            }
-        }
+      <div class="modal-footer-signature">
+        ABR — Inteligência Hoteleira aplicada à decisão
+      </div>
+    </div>
+  </div>
+</div>
 
-        function closeModal() {
-            document.getElementById('custom-modal').style.display = 'none';
-            const btn = document.getElementById('modal-back-btn');
-            if (btn) btn.style.display = 'none';
-            document.getElementById('error-message').innerHTML = '';
-            document.getElementById('modal-pass').value = '';
-            currentSystem = 'municipal';
-        }
+<!-- ==================== WHATSAPP FLOAT ==================== -->
+<a class="whatsapp-float" href="https://wa.me/5584999519500" target="_blank" aria-label="WhatsApp ABR">
+  <svg viewBox="0 0 32 32">
+    <path d="M16.04 2.004c-7.73 0-14 6.27-14 14 0 2.46.64 4.86 1.86 6.98L2 30l7.22-1.88A13.93 13.93 0 0016.04 30c7.73 0 14-6.27 14-14s-6.27-14-14-14zm0 25.6a11.58 11.58 0 01-5.9-1.62l-.42-.25-4.38 1.15 1.17-4.28-.28-.44a11.54 11.54 0 01-1.77-6.16c0-6.4 5.21-11.6 11.6-11.6 6.4 0 11.6 5.2 11.6 11.6 0 6.4-5.2 11.6-11.6 11.6zm6.35-8.68c-.35-.17-2.07-1.02-2.39-1.14-.32-.11-.55-.17-.78.17-.23.35-.9 1.14-1.1 1.37-.2.23-.41.26-.76.09-.35-.18-1.48-.55-2.82-1.74-1.04-.93-1.74-2.08-1.95-2.43-.2-.35-.02-.54.15-.71.16-.16.35-.41.52-.62.18-.2.23-.35.35-.58.12-.23.06-.44-.03-.61-.09-.17-.78-1.89-1.07-2.59-.28-.68-.57-.59-.78-.6h-.67c-.23 0-.61.09-.93.44-.32.35-1.22 1.19-1.22 2.91s1.25 3.37 1.42 3.6c.18.23 2.46 3.75 5.96 5.26.83.36 1.48.57 1.99.73.84.27 1.6.23 2.2.14.67-.1 2.07-.85 2.36-1.67.29-.82.29-1.53.2-1.67-.08-.15-.32-.23-.67-.41z"/>
+  </svg>
+</a>
 
-        document.getElementById('modal-pass').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') validateModalPassword();
-        });
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+/* ===================================
+   ABR Marketing Estratégico & Consultoria Hoteleira
+   JavaScript Principal
+   =================================== */
 
-        const canvas = document.getElementById('matrix-canvas');
-        const ctx = canvas.getContext('2d');
-        let w = canvas.width = window.innerWidth;
-        let h = canvas.height = window.innerHeight;
-        const cols = Math.floor(w / 20);
-        const ypos = Array(cols).fill(0);
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
 
-        function matrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-            ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = 'rgba(0, 198, 255, 0.7)';
-            ctx.font = '15pt monospace';
-            ypos.forEach((y, ind) => {
-                const text = String.fromCharCode(Math.random() * 128);
-                const x = ind * 20;
-                ctx.fillText(text, x, y);
-                if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
-                else ypos[ind] = y + 20;
-            });
-        }
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
 
-        setInterval(matrix, 90);
+const letters = '01';
+const fontSize = 14;
+let columns = Math.floor(canvas.width / fontSize);
+let drops = Array(columns).fill(1);
 
-        window.addEventListener('resize', function() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-        });
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00c6ff';
+  ctx.font = fontSize + 'px monospace';
 
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
-        }
-    </script>
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+}
+setInterval(draw, 45);
+
+window.addEventListener('resize', function() {
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
+});
+
+let __abrScrollY = 0;
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  __abrScrollY = window.scrollY || 0;
+  el.classList.add('active');
+  el.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.body.classList.add('abr-modal-open');
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('active');
+  el.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  document.body.classList.remove('abr-modal-open');
+  window.scrollTo(0, __abrScrollY);
+}
+
+document.addEventListener('click', function(e) {
+  const overlay = e.target.closest('.abr-modal-overlay');
+  if (overlay && e.target === overlay) {
+    closeModal(overlay.id);
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const open = document.querySelector('.abr-modal-overlay.active');
+    if (open) closeModal(open.id);
+  }
+});
+</script>
+
 </body>
 </html>
