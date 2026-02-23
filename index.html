@@ -5,290 +5,94 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>ABR | Marketing Estratégico &amp; Consultoria Hoteleira</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="css/style.css" rel="stylesheet"/>
+  <link rel="manifest" href="/manifest.json"/>
   <style>
-/* ===================================
-   ABR Marketing Estratégico & Consultoria Hoteleira
-   CSS Principal — v2
-   =================================== */
-
-:root {
-  --bg: #000000;
-  --card: #0c0f14;
-  --accent: #00c6ff;
-  --text: #e6e6e6;
-  --muted: #9aa4ad;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Poppins', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-}
-
-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.12;
-}
-
-header {
-  position: relative;
-  z-index: 2;
-  padding: 48px 24px 32px;
-  text-align: center;
-}
-
-header img {
-  max-width: 230px;
-}
-
-main {
-  position: relative;
-  z-index: 2;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 20px 80px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 22px;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  background: rgba(12, 15, 20, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 18px;
-  padding: 26px 22px 30px;
-  backdrop-filter: blur(6px);
-  transition: transform .25s ease, border .25s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 198, 255, 0.45);
-}
-
-.card h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: var(--accent);
-}
-
-.card p {
-  font-size: .88rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.card a {
-  display: inline-block;
-  margin-top: auto;
-  padding-top: 16px;
-  font-size: .85rem;
-  color: var(--accent);
-  text-decoration: none;
-}
-
-footer {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 40px 16px 24px;
-  font-size: .8rem;
-  color: #6f7a83;
-}
-
-.clients {
-  margin-top: 22px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(0, 198, 255, 0.18);
-}
-
-.clients-label {
-  font-size: 12px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.70);
-  margin: 0 0 14px 0;
-}
-
-.clients-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 0;
-}
-
-.client-tile {
-  aspect-ratio: 16 / 9;
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  overflow: hidden;
-  transition: border .25s ease, box-shadow .25s ease;
-}
-
-.client-tile:hover {
-  border-color: rgba(0, 198, 255, 0.55);
-  box-shadow: 0 0 12px rgba(0, 198, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.client-tile img {
-  display: block;
-  max-width: 85%;
-  max-height: 80%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-.client-tile .tile-name {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #333;
-  line-height: 1.2;
-}
-
-.client-tile .tile-city {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 300;
-  font-size: 0.7rem;
-  color: #888;
-  margin-top: 3px;
-  line-height: 1.2;
-}
-
-@media (max-width: 768px) {
-  .clients-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 520px) {
-  .client-tile {
-    padding: 10px 12px;
-  }
-}
-
-body.abr-modal-open #abr-page-content {
-  visibility: hidden;
-}
-
-.modal-footer-signature {
-  margin-top: 18px;
-  padding-top: 10px;
-  font-size: 12px;
-  text-align: center;
-  color: rgba(255, 255, 255, .55);
-  letter-spacing: .3px;
-}
-
-.whatsapp-float {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: #25d366;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-}
-
-.whatsapp-float svg {
-  width: 28px;
-  height: 28px;
-  fill: #fff;
-}
-
-.abr-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  overflow: auto;
-}
-
-.abr-modal-overlay.active {
-  display: flex;
-}
-
-.abr-modal-box {
-  width: min(980px, 100%);
-  max-height: 85vh;
-  overflow: auto;
-  position: relative;
-  border-radius: 18px;
-  background: rgba(0, 0, 0, .55);
-  backdrop-filter: blur(10px);
-  border: none;
-  box-shadow: none;
-  padding: 18px;
-}
-
-.abr-modal-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, .15);
-  background: rgba(0, 0, 0, .35);
-  color: #fff;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 36px;
-}
-
-.modal-content-box {
-  margin-top: 44px;
-  background: rgba(12, 15, 20, 0.88);
-  border: 1px solid rgba(0, 198, 255, 0.22);
-  border-radius: 18px;
-  padding: 24px 26px 28px;
-  backdrop-filter: blur(6px);
-}
-
-.modal-content-box h3 {
-  color: var(--accent);
-  font-weight: 500;
-  margin-bottom: 12px;
-  font-size: 1.15rem;
-}
-
-.modal-content-box p {
-  font-size: .87rem;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
+    /* Text tiles - substitui logomarcas */
+    .client-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px 10px;
+    }
+    .client-tile .tile-name {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #333;
+      line-height: 1.2;
+    }
+    .client-tile .tile-city {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+      font-size: 0.7rem;
+      color: #888;
+      margin-top: 3px;
+      line-height: 1.2;
+    }
+    /* Banner iOS para instalação manual */
+    #ios-install-banner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #2B5876 0%, #4E9AC7 100%);
+      color: white;
+      padding: 12px 20px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      z-index: 10000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    #ios-install-banner .banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    #ios-install-banner .banner-text {
+      flex: 1;
+      line-height: 1.4;
+    }
+    #ios-install-banner .banner-icon {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+    #ios-install-banner .banner-close {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-left: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #ios-install-banner .banner-close:hover {
+      background: rgba(255,255,255,0.3);
+    }
   </style>
 </head>
 <body>
+
+<!-- Banner iOS para instalação manual -->
+<div id="ios-install-banner">
+  <div class="banner-content">
+    <span class="banner-icon">📱</span>
+    <div class="banner-text">
+      Para instalar: toque em <strong>Compartilhar ⬆️</strong> e depois em <strong>"Adicionar à Tela de Início"</strong>
+    </div>
+    <button class="banner-close" onclick="closeIOSBanner()" aria-label="Fechar">&times;</button>
+  </div>
+</div>
 
 <canvas id="matrix"></canvas>
 
@@ -296,7 +100,7 @@ body.abr-modal-open #abr-page-content {
 
   <!-- ==================== HEADER ==================== -->
   <header>
-    <img alt="ABR Marketing Estratégico &amp; Consultoria Hoteleira" src="abr-logo.png"/>
+    <img alt="ABR Marketing Estratégico &amp; Consultoria Hoteleira" src="img/logo-abr-allinone.png"/>
   </header>
 
   <!-- ==================== CARDS DE SERVIÇO ==================== -->
@@ -335,7 +139,7 @@ body.abr-modal-open #abr-page-content {
         <p>
           Monitoramento contínuo de demanda, comportamento de mercado e movimentos da concorrência. Os sistemas Pulse da ABR entregam leitura temporal para decisões assertivas na hotelaria e destinos turísticos com base em dados.
         </p>
-        <a href="sistemas.html">Acessar sistemas</a>
+        <a href="#">Acessar sistemas</a>
       </div>
 
     </section>
@@ -453,84 +257,50 @@ body.abr-modal-open #abr-page-content {
 </a>
 
 <!-- ==================== SCRIPTS ==================== -->
+<script src="js/main.js"></script>
+
+<!-- ==================== PWA: Service Worker + Banner iOS ==================== -->
 <script>
-/* ===================================
-   ABR Marketing Estratégico & Consultoria Hoteleira
-   JavaScript Principal
-   =================================== */
-
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+// Registrar Service Worker para funcionalidade PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+      })
+      .catch(error => {
+        console.error('❌ Erro ao registrar Service Worker:', error);
+      });
+  });
 }
-window.addEventListener('resize', resize);
-resize();
 
-const letters = '01';
-const fontSize = 14;
-let columns = Math.floor(canvas.width / fontSize);
-let drops = Array(columns).fill(1);
-
-function draw() {
-  ctx.fillStyle = 'rgba(0,0,0,0.06)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#00c6ff';
-  ctx.font = fontSize + 'px monospace';
-
-  for (let i = 0; i < drops.length; i++) {
-    const text = letters[Math.floor(Math.random() * letters.length)];
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-      drops[i] = 0;
+// Detectar iOS e mostrar banner de instalação manual
+function detectiOS() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(userAgent);
+  const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+  
+  // Mostrar banner apenas no iOS, no Safari, e se não estiver já instalado
+  if (isIOS && !isInStandaloneMode) {
+    const banner = document.getElementById('ios-install-banner');
+    const bannerClosed = localStorage.getItem('ios-banner-closed');
+    
+    // Mostrar banner se não foi fechado anteriormente
+    if (!bannerClosed) {
+      banner.style.display = 'block';
     }
-    drops[i]++;
   }
 }
-setInterval(draw, 45);
 
-window.addEventListener('resize', function() {
-  columns = Math.floor(canvas.width / fontSize);
-  drops = Array(columns).fill(1);
-});
-
-let __abrScrollY = 0;
-
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  __abrScrollY = window.scrollY || 0;
-  el.classList.add('active');
-  el.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  document.body.classList.add('abr-modal-open');
+// Fechar banner iOS
+function closeIOSBanner() {
+  const banner = document.getElementById('ios-install-banner');
+  banner.style.display = 'none';
+  localStorage.setItem('ios-banner-closed', 'true');
 }
 
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('active');
-  el.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-  document.body.classList.remove('abr-modal-open');
-  window.scrollTo(0, __abrScrollY);
-}
-
-document.addEventListener('click', function(e) {
-  const overlay = e.target.closest('.abr-modal-overlay');
-  if (overlay && e.target === overlay) {
-    closeModal(overlay.id);
-  }
-});
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const open = document.querySelector('.abr-modal-overlay.active');
-    if (open) closeModal(open.id);
-  }
-});
+// Executar detecção ao carregar
+window.addEventListener('load', detectiOS);
 </script>
 
 </body>
