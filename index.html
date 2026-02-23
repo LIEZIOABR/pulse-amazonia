@@ -6,7 +6,6 @@
   <title>ABR | Marketing Estratégico &amp; Consultoria Hoteleira</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link href="css/style.css" rel="stylesheet"/>
-  <link rel="manifest" href="/manifest.json"/>
   <style>
     /* Text tiles - substitui logomarcas */
     .client-tile {
@@ -32,67 +31,9 @@
       margin-top: 3px;
       line-height: 1.2;
     }
-    /* Banner iOS para instalação manual */
-    #ios-install-banner {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(135deg, #2B5876 0%, #4E9AC7 100%);
-      color: white;
-      padding: 12px 20px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.85rem;
-      z-index: 10000;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    #ios-install-banner .banner-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    #ios-install-banner .banner-text {
-      flex: 1;
-      line-height: 1.4;
-    }
-    #ios-install-banner .banner-icon {
-      font-size: 1.5rem;
-      margin-right: 10px;
-    }
-    #ios-install-banner .banner-close {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      cursor: pointer;
-      margin-left: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #ios-install-banner .banner-close:hover {
-      background: rgba(255,255,255,0.3);
-    }
   </style>
 </head>
 <body>
-
-<!-- Banner iOS para instalação manual -->
-<div id="ios-install-banner">
-  <div class="banner-content">
-    <span class="banner-icon">📱</span>
-    <div class="banner-text">
-      Para instalar: toque em <strong>Compartilhar ⬆️</strong> e depois em <strong>"Adicionar à Tela de Início"</strong>
-    </div>
-    <button class="banner-close" onclick="closeIOSBanner()" aria-label="Fechar">&times;</button>
-  </div>
-</div>
 
 <canvas id="matrix"></canvas>
 
@@ -258,50 +199,6 @@
 
 <!-- ==================== SCRIPTS ==================== -->
 <script src="js/main.js"></script>
-
-<!-- ==================== PWA: Service Worker + Banner iOS ==================== -->
-<script>
-// Registrar Service Worker para funcionalidade PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
-      })
-      .catch(error => {
-        console.error('❌ Erro ao registrar Service Worker:', error);
-      });
-  });
-}
-
-// Detectar iOS e mostrar banner de instalação manual
-function detectiOS() {
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  const isIOS = /iphone|ipad|ipod/.test(userAgent);
-  const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
-  
-  // Mostrar banner apenas no iOS, no Safari, e se não estiver já instalado
-  if (isIOS && !isInStandaloneMode) {
-    const banner = document.getElementById('ios-install-banner');
-    const bannerClosed = localStorage.getItem('ios-banner-closed');
-    
-    // Mostrar banner se não foi fechado anteriormente
-    if (!bannerClosed) {
-      banner.style.display = 'block';
-    }
-  }
-}
-
-// Fechar banner iOS
-function closeIOSBanner() {
-  const banner = document.getElementById('ios-install-banner');
-  banner.style.display = 'none';
-  localStorage.setItem('ios-banner-closed', 'true');
-}
-
-// Executar detecção ao carregar
-window.addEventListener('load', detectiOS);
-</script>
 
 </body>
 </html>
