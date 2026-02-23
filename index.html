@@ -5,7 +5,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>ABR | Marketing Estratégico & Consultoria Hoteleira</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <link rel="manifest" href="#" id="manifest-placeholder"/>
+  <link rel="manifest" href="/manifest.json">
   <style>
 /* ===================================
    ABR Marketing Estratégico & Consultoria Hoteleira
@@ -516,7 +516,7 @@ body.abr-modal-open #abr-page-content {
           <div style="text-align: center; font-size: 3rem; margin-bottom: 15px; color: var(--accent);">📍</div>
           <h3>Pulse Amazônia</h3>
           <p>Radar de inteligência turística do Pará. Monitoramento de 15 destinos amazônicos.</p>
-          <a href="radar-amazonia.html">ACESSAR PULSE</a>
+          <a href="sistemas.html">ACESSAR PULSE</a>
         </div>
 
         <div class="card">
@@ -787,6 +787,13 @@ function closeIOSBanner() {
 }
 
 window.addEventListener('load', detectiOS);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/service-worker.js');
+  });
+}
 </script>
 
 </body>
