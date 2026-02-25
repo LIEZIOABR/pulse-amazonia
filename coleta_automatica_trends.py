@@ -1,7 +1,7 @@
 from pytrends.request import TrendReq
 from pytrends.exceptions import TooManyRequestsError
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import csv
 import time
 import random
@@ -19,25 +19,43 @@ GEO = 'BR'
 pytrends = TrendReq(hl='pt-BR', tz=180)
 
 # 🔒 DATA ESTÁVEL (UTC → Brasil)
-hoje = (datetime.utcnow() - timedelta(hours=3)).strftime('%Y-%m-%d')
+hoje = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime('%Y-%m-%d')
 
 # ==============================
-# DESTINOS PARÁ
+# DESTINOS PARÁ (15)
 # ==============================
 
 destinos_para = [
-    "Belem","Santarem","Maraba","Alter do Chao","Ilha do Marajo",
-    "Salinopolis","Soure","Salvaterra","Mosqueiro","Monte Alegre",
-    "Algodoal","Obidos","Parauapebas","Castanhal","Cameta"
+    "Belem",
+    "Santarem",
+    "Maraba",
+    "Alter do Chao",
+    "Ilha do Marajo",
+    "Salinopolis",
+    "Soure",
+    "Salvaterra",
+    "Mosqueiro",
+    "Monte Alegre",
+    "Algodoal",
+    "Obidos",
+    "Parauapebas",
+    "Castanhal",
+    "Cameta"
 ]
 
 # ==============================
-# CONCORRENTES NACIONAIS
+# CONCORRENTES NACIONAIS (8)
 # ==============================
 
 concorrentes_nacionais = [
-    "Manaus","Sao Luis","Lencois Maranhenses","Jalapao",
-    "Bonito","Presidente Figueiredo","Parintins","Atins"
+    "Manaus",
+    "Sao Luis",
+    "Lencois Maranhenses",
+    "Jalapao",
+    "Bonito",
+    "Presidente Figueiredo",
+    "Parintins",
+    "Atins"
 ]
 
 # ==============================
@@ -63,7 +81,11 @@ def coletar_interesse(destino):
 def coletar_origens(destino):
     for tentativa in range(MAX_RETRIES):
         try:
-            regioes = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True)
+            regioes = pytrends.interest_by_region(
+                resolution='REGION',
+                inc_low_vol=True
+            )
+
             if regioes.empty:
                 break
 
@@ -80,6 +102,7 @@ def coletar_origens(destino):
                 origens[1].lower().replace(" ", "_"), int(valores[1]),
                 origens[2].lower().replace(" ", "_"), int(valores[2])
             )
+
         except TooManyRequestsError:
             sleep_progressivo(tentativa)
         except Exception:
@@ -89,17 +112,24 @@ def coletar_origens(destino):
 
 def coletar_destinos(lista_destinos):
     resultado = []
+
     for destino in lista_destinos:
         interesse = coletar_interesse(destino)
         time.sleep(random.uniform(3, 5))
-        o1,p1,o2,p2,o3,p3 = coletar_origens(destino)
+
+        o1, p1, o2, p2, o3, p3 = coletar_origens(destino)
+
         resultado.append([
             hoje,
             destino.lower().replace(" ", "_"),
             interesse,
-            o1,p1,o2,p2,o3,p3
+            o1, p1,
+            o2, p2,
+            o3, p3
         ])
+
         time.sleep(random.uniform(4, 6))
+
     return resultado
 
 # ==============================
@@ -111,12 +141,19 @@ resultado_para = coletar_destinos(destinos_para)
 with open('coleta-trends-para.csv', 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     writer.writerow([
-        'data_coleta','destino_id','interesse',
-        'origem_1','origem_1_pct',
-        'origem_2','origem_2_pct',
-        'origem_3','origem_3_pct'
+        'data_coleta',
+        'destino_id',
+        'interesse',
+        'origem_1',
+        'origem_1_pct',
+        'origem_2',
+        'origem_2_pct',
+        'origem_3',
+        'origem_3_pct'
     ])
     writer.writerows(resultado_para)
+
+print("✅ CSV Pará gerado com sucesso.")
 
 # ==============================
 # COLETA CONCORRENTES
@@ -126,8 +163,18 @@ resultado_concorrentes = coletar_destinos(concorrentes_nacionais)
 
 with open('coleta-concorrentes-nacionais.csv', 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
-    writer.writerow(['data_coleta','destino_id','interesse'])
-    for linha in resultado_concorrentes:
-        writer.writerow([linha[0], linha[1], linha[2]])
+    writer.writerow([
+        'data_coleta',
+        'destino_id',
+        'interesse'
+    ])
 
-print("🏁 Coleta concluída com data estável.")
+    for linha in resultado_concorrentes:
+        writer.writerow([
+            linha[0],
+            linha[1],
+            linha[2]
+        ])
+
+print("✅ CSV Concorrentes gerado com sucesso.")
+print("🏁 Coleta automática concluída com data Brasil estável.")
