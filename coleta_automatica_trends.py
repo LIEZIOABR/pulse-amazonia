@@ -18,8 +18,16 @@ GEO = 'BR'
 
 pytrends = TrendReq(hl='pt-BR', tz=180)
 
-# 🔒 DATA ESTÁVEL (UTC → Brasil)
-hoje = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime('%Y-%m-%d')
+# ==============================
+# FUNÇÃO DE DATA (BRASIL)
+# ==============================
+
+def data_brasil():
+    """
+    Retorna a data atual do Brasil (UTC-3) no formato YYYY-MM-DD
+    Avaliada em TEMPO DE EXECUÇÃO, nunca congelada.
+    """
+    return (datetime.now(timezone.utc) - timedelta(hours=3)).strftime('%Y-%m-%d')
 
 # ==============================
 # DESTINOS PARÁ (15)
@@ -86,7 +94,7 @@ def coletar_origens(destino):
                 inc_low_vol=True
             )
 
-            if regioes.empty:
+            if regioes.empty or destino not in regioes.columns:
                 break
 
             top3 = regioes.sort_values(by=destino, ascending=False).head(3)
@@ -120,7 +128,7 @@ def coletar_destinos(lista_destinos):
         o1, p1, o2, p2, o3, p3 = coletar_origens(destino)
 
         resultado.append([
-            hoje,
+            data_brasil(),
             destino.lower().replace(" ", "_"),
             interesse,
             o1, p1,
@@ -177,4 +185,4 @@ with open('coleta-concorrentes-nacionais.csv', 'w', newline='', encoding='utf-8'
         ])
 
 print("✅ CSV Concorrentes gerado com sucesso.")
-print("🏁 Coleta automática concluída com data Brasil estável.")
+print("🏁 Coleta automática concluída com data Brasil dinâmica.")
