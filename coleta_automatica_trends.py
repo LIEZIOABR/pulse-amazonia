@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 import csv
 import time
 import random
+import sys
 
 # ==============================
 # CONFIGURAÇÕES GERAIS
@@ -146,6 +147,10 @@ def coletar_destinos(lista_destinos):
 
 resultado_para = coletar_destinos(destinos_para)
 
+if len(resultado_para) == 0:
+    print("❌ ERRO: Nenhum dado coletado para destinos do Pará.")
+    sys.exit(1)
+
 with open('coleta-trends-para.csv', 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     writer.writerow([
@@ -161,13 +166,17 @@ with open('coleta-trends-para.csv', 'w', newline='', encoding='utf-8') as f:
     ])
     writer.writerows(resultado_para)
 
-print("✅ CSV Pará gerado com sucesso.")
+print(f"✅ CSV Pará gerado com sucesso ({len(resultado_para)} registros).")
 
 # ==============================
 # COLETA CONCORRENTES
 # ==============================
 
 resultado_concorrentes = coletar_destinos(concorrentes_nacionais)
+
+if len(resultado_concorrentes) == 0:
+    print("❌ ERRO: Nenhum dado coletado para concorrentes nacionais.")
+    sys.exit(1)
 
 with open('coleta-concorrentes-nacionais.csv', 'w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
@@ -184,5 +193,5 @@ with open('coleta-concorrentes-nacionais.csv', 'w', newline='', encoding='utf-8'
             linha[2]
         ])
 
-print("✅ CSV Concorrentes gerado com sucesso.")
+print(f"✅ CSV Concorrentes gerado com sucesso ({len(resultado_concorrentes)} registros).")
 print("🏁 Coleta automática concluída com data Brasil dinâmica.")
