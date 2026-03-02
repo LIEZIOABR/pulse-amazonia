@@ -42,7 +42,6 @@ const joinTop3 = (arr) => {
 
 /* === 5) RENDER ======================================== */
 function renderCards(payload) {
-  // Fallbacks defensivos: nada quebra se o campo não existir
   const origemDominante =
     payload?.origem_dominante ||
     payload?.dominant_origin ||
@@ -95,21 +94,22 @@ async function loadLatestSnapshot() {
     return;
   }
 
-  // Alguns projetos salvam um objeto payload dentro da linha
   const payload = data.payload ? data.payload : data;
-
   renderCards(payload);
   console.info("Radar carregado com sucesso");
 }
 
 /* === 7) BOOT ========================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  // Estado inicial (visual limpo)
   setText("card-origem", "—");
   setText("card-top3", "—");
   setText("card-perfil", "—");
   setText("card-status", "—");
 
-  // Carrega dados reais (se houver)
   loadLatestSnapshot();
 });
+
+/* === 7.5) BOTÃO ATUALIZAR DADOS (CORREÇÃO DEFINITIVA) == */
+function atualizarDados() {
+  window.location.reload(true);
+}
