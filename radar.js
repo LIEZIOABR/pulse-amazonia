@@ -111,5 +111,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* === 7.5) BOTÃO ATUALIZAR DADOS (CORREÇÃO DEFINITIVA) == */
 function atualizarDados() {
-  window.location.reload(true);
+  window.location.replace(window.location.pathname + '?v=' + Date.now());
 }
