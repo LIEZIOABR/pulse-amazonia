@@ -1322,7 +1322,7 @@
                 const { data, error } = await supabaseClient
                     .from('pulse_amazonia')
                     .select('*')
-                    .order('data_coleta', { ascending: false })
+                   .order('data_coleta', { ascending: false }).order('created_at', { ascending: false })
                     .limit(300);
                 
                 if (error) {
