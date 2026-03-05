@@ -1,26 +1,27 @@
 /* ======================================================
-   Pulse Amazônia – radar.js (VERSÃO LIMPA E ESTÁVEL)
-   Única fonte de verdade do Supabase
+   Pulse Amazônia – radar.js (VERSÃO CORRIGIDA E ESTÁVEL)
+   Fonte real de data: tabela pulse_amazonia
    Supabase JS v2
    ====================================================== */
 
-/* === 1) CREDENCIAIS (COLE AS SUAS) ==================== */
+/* === 1) CREDENCIAIS ================================== */
 const SUPABASE_URL = "https://ljeoxnxezjmfbqngoqxz.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_3omH8_Hx47S3AlmGOoycpw_Etp5P7Nh";
 
-/* === 2) GUARDAS BÁSICAS =============================== */
+/* === 2) GUARDAS ====================================== */
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.warn("Supabase não configurado. Radar em modo visual.");
 }
 
 /* === 3) CLIENTE SUPABASE ============================== */
 let supabase = null;
+
 if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
   supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
   );
-  console.info("Supabase client inicializado com sucesso");
+  console.info("Supabase client inicializado");
 }
 
 /* === 4) HELPERS ======================================= */
@@ -29,6 +30,7 @@ const $ = (id) => document.getElementById(id);
 const setText = (id, value, fallback = "—") => {
   const el = $(id);
   if (!el) return;
+
   el.textContent =
     value === null || value === undefined || value === ""
       ? fallback
@@ -42,6 +44,7 @@ const joinTop3 = (arr) => {
 
 /* === 5) RENDER ======================================== */
 function renderCards(payload) {
+
   const origemDominante =
     payload?.origem_dominante ||
     payload?.dominant_origin ||
@@ -70,10 +73,34 @@ function renderCards(payload) {
   setText("card-status", statusDemanda);
 }
 
-/* === 6) FETCH PRINCIPAL =============================== */
+/* === 6) DATA REAL DO SISTEMA ========================== */
+async function getLatestDate() {
+
+  const { data, error } = await supabase
+    .from("pulse_amazonia")
+    .select("data_coleta")
+    .order("data_coleta", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao buscar data real:", error.message);
+    return null;
+  }
+
+  if (!data) {
+    console.warn("Nenhuma data encontrada.");
+    return null;
+  }
+
+  return data.data_coleta;
+}
+
+/* === 7) SNAPSHOT ====================================== */
 async function loadLatestSnapshot() {
+
   if (!supabase) {
-    console.info("Radar sem Supabase. Mantendo placeholders.");
+    console.info("Radar sem Supabase.");
     return;
   }
 
@@ -95,21 +122,30 @@ async function loadLatestSnapshot() {
   }
 
   const payload = data.payload ? data.payload : data;
+
   renderCards(payload);
-  console.info("Radar carregado com sucesso");
 }
 
-/* === 7) BOOT ========================================== */
-document.addEventListener("DOMContentLoaded", () => {
+/* === 8) BOOT ========================================== */
+document.addEventListener("DOMContentLoaded", async () => {
+
   setText("card-origem", "—");
   setText("card-top3", "—");
   setText("card-perfil", "—");
   setText("card-status", "—");
 
-  loadLatestSnapshot();
+  await loadLatestSnapshot();
+
+  const ultimaData = await getLatestDate();
+
+  if (ultimaData) {
+    const el = document.querySelector("#boletim-data");
+    if (el) el.textContent = ultimaData;
+  }
+
 });
 
-/* === 7.5) BOTÃO ATUALIZAR DADOS (CORREÇÃO DEFINITIVA) == */
+/* === 9) BOTÃO ATUALIZAR DADOS ========================= */
 function atualizarDados() {
   window.location.replace(window.location.pathname + '?v=' + Date.now());
 }
