@@ -1397,7 +1397,7 @@
             console.log(`📊 Gerando boletim para ${destino.destino_id}...`);
             
             const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
-            const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
+            const dataFormatada = new Date(destino.data_coleta + 'T12:00:00').toLocaleDateString('pt-BR');
             
             const nowcasting = calcularNowcasting(destino, todosDestinos);
             const confiabilidade = calcularConfiabilidade(destino, todosDestinos);
