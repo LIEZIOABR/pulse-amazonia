@@ -452,6 +452,7 @@
         console.log('✅ Cliente Supabase inicializado');
         
         // ========== VARIÁVEIS GLOBAIS ==========
+        function normData(d) { return String(d).slice(0,10); }
         let dadosGlobais = [];
         let dadosConcorrentes = [];
         let chartInstance = null;
@@ -1526,8 +1527,8 @@
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
             
-            const ultimaData = dados.map(d => d.data_coleta).sort().pop(); dados.map(d => d.data_coleta).sort().pop(); dados[dados.length - 1].data_coleta;
-            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+            const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
+            const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
             
             const somaInteresse = dadosUltimos.reduce((sum, d) => sum + d.interesse, 0);
             
@@ -1717,9 +1718,9 @@
         
         // ========== RENDERIZAR TIMELINE ==========
         function renderizarTimeline(dados) {
-            const ultimaData = dados.map(d => d.data_coleta).sort().pop(); dados.map(d => d.data_coleta).sort().pop(); dados[dados.length - 1].data_coleta;
-            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
-            const top5 = dadosUltimos
+            const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
+            const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
+                        const top5 = dadosUltimos
                 .sort((a, b) => b.interesse - a.interesse)
                 .slice(0, 5)
                 .map(d => d.destino_id);
@@ -1796,9 +1797,8 @@
         
         // ========== GERAR BOLETIM GERAL (VISÃO AGREGADA) ==========
         function gerarBoletim(dados, concorrentes) {
-            const ultimaData = dados[0].data_coleta;
-            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
-            
+            const ultimaData = normData(dados[0].data_coleta);
+            const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);                                    
             const top3 = dadosUltimos
                 .sort((a, b) => b.interesse - a.interesse)
                 .slice(0, 3)
@@ -1962,8 +1962,8 @@ const _renderizarCardsOriginal = renderizarCards;
 renderizarCards = function(dados) {
     _renderizarCardsOriginal(dados);
 
-    const ultimaData = dados.map(d => d.data_coleta).sort().pop(); dados.map(d => d.data_coleta).sort().pop(); dados[dados.length - 1].data_coleta;
-    const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+    const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
+    const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
 
     document.querySelectorAll('.dest-card').forEach((card, index) => {
         const destino = dadosUltimos.sort((a,b)=>b.interesse-a.interesse)[index];
