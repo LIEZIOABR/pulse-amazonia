@@ -1066,7 +1066,7 @@
                     };
                 }
                 
-                const ultimaData = dadosConcorrentesNacionais[0].data_coleta;
+                const ultimaData = [...dadosConcorrentesNacionais].sort((a,b)=>new Date(b.data_coleta)-new Date(a.data_coleta))[0].data_coleta;
                 const concorrentesData = dadosConcorrentesNacionais.filter(c => c.data_coleta === ultimaData);
                 
                 const variacoesConcorrentes = concorrentes
