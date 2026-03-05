@@ -1066,7 +1066,7 @@
                     };
                 }
                 
-                const ultimaData = dados.map(d => d.data_coleta).sort().pop(); dados.map(d => d.data_coleta).sort().pop(); [...dadosConcorrentesNacionais].sort((a,b)=>new Date(b.data_coleta + 'T12:00:00') - new Date(a.data_coleta + 'T12:00:00'))[0].data_coleta;
+                const ultimaData = [...new Set(dados.map(d => d.data_coleta))].sort().pop();
                 const concorrentesData = dadosConcorrentesNacionais.filter(c => c.data_coleta === ultimaData);
                 
                 const variacoesConcorrentes = concorrentes
