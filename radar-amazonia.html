@@ -456,7 +456,7 @@
         let dadosConcorrentes = [];
         let chartInstance = null;
         let mapInstance = null;
-        let mesAtual = new Date();
+        let mesAtual = new Date(Date.now() + 3 * 60 * 60 * 1000);
         
         const DESTINOS_INFO = {
             'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
