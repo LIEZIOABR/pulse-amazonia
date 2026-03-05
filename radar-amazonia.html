@@ -1067,7 +1067,7 @@
                 }
                 
                 const ultimaData = [...new Set(dados.map(d => d.data_coleta.split('T')[0]))].sort().pop();
-                const concorrentesData = dadosConcorrentesNacionais.filter(c => c.data_coleta === ultimaData);
+                const concorrentesData = dadosConcorrentesNacionais.filter(c => String(c.data_coleta).split('T')[0] === String(ultimaData).split('T')[0]);
                 
                 const variacoesConcorrentes = concorrentes
                     .map(concId => {
