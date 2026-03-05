@@ -1323,7 +1323,7 @@
                     .from('pulse_amazonia')
                     .select('*')
                    .order('data_coleta', { ascending: false }).order('created_at', { ascending: false })
-                    .limit(300);
+                    .limit(5000)
                 
                 if (error) {
                     console.error('❌ Erro Supabase:', error);
@@ -1352,7 +1352,7 @@
                     .from('concorrentes_nacionais')
                     .select('*')
                     .order('data_coleta', { ascending: false })
-                    .limit(200);
+                    .limit(5000)
                 
                 if (error) {
                     console.error('❌ Erro Supabase (concorrentes):', error);
