@@ -1257,8 +1257,8 @@
                     }
                 });
                 
-                const ultimaData = dados.map(d => d.data_coleta).sort().pop(); dados.map(d => d.data_coleta).sort().pop(); dados[dados.length - 1].data_coleta;
-                const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+                const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
+                const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
                 
                 console.log(`📍 Adicionando ${dadosUltimos.length} markers ao mapa...`);
                 
