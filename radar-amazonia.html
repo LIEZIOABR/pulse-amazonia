@@ -1797,7 +1797,7 @@
         
         // ========== GERAR BOLETIM GERAL (VISÃO AGREGADA) ==========
         function gerarBoletim(dados, concorrentes) {
-            const ultimaData = normData(dados[0].data_coleta);
+            const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
             const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);                                    
             const top3 = dadosUltimos
                 .sort((a, b) => b.interesse - a.interesse)
