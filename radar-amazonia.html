@@ -1734,7 +1734,7 @@
             });
             
             const labels = datasetsData[top5[0]].map(d => {
-                const date = new Date(d.data_coleta);
+                const date = new Date(d.data_coleta + 'T12:00:00');
                 return `${date.getDate()}/${date.getMonth() + 1}`;
             });
             
