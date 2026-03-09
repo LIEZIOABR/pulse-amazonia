@@ -653,7 +653,7 @@
                 return {
                     mode: 'insuficiente',
                     badge: 'Baixo volume',
-                    text: 'Origem não observável (baixa diversidade no Trends).'
+                    text: 'Origem não observável (baixa diversidade nas fontes digitais).'
                 };
             }
             
@@ -686,14 +686,14 @@
                 return {
                     mode: 'inferida',
                     badge: '⚠️ Origem inferida: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')',
-                    text: 'Baixa diversidade no Trends. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
+                    text: 'Baixa diversidade nas fontes digitais. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
                 };
             }
             
             return {
                 mode: 'insuficiente',
                 badge: '⚠️ Baixa diversidade',
-                text: 'Origem não confiável (poucos estados no Trends / dominância alta). Aguarde mais coletas.'
+                text: 'Origem não confiável (poucos estados nas fontes digitais / dominância alta). Aguarde mais coletas.'
             };
         }
         
