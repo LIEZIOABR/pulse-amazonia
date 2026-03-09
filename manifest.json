@@ -1,0 +1,22 @@
+{
+  "name": "Demand Pulse Amazônia",
+  "short_name": "Pulse Amazônia",
+  "description": "Radar de inteligência turística do Pará",
+  "start_url": "/radar-amazonia.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00c6ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "img/logo-abr-allinone.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo-abr-allinone.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
