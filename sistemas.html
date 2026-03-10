@@ -93,7 +93,33 @@
             cursor: pointer;
         }
 
-        .kpi-section { margin-top: 80px; text-align: left; background: rgba(255,255,255,0.02); padding: 50px; border-radius: 30px; border: 1px solid var(--panel-border); }
+        .btn-kpi {
+            margin-top: 15px;
+            background: transparent;
+            color: var(--accent);
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: 1px solid rgba(0, 198, 255, 0.4);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-kpi:hover { background: rgba(0, 198, 255, 0.08); }
+
+        .kpi-section { 
+            margin-top: 40px; 
+            text-align: left; 
+            background: rgba(255,255,255,0.02); 
+            padding: 50px; 
+            border-radius: 30px; 
+            border: 1px solid var(--panel-border);
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .kpi-section.visible { display: block; }
+
         .section-label { color: var(--accent); font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; display: block; text-align: center; }
         .section-creds { color: #ffffff; font-size: 0.95rem; font-weight: 500; text-align: center; display: block; margin-bottom: 45px; opacity: 1; }
         
@@ -102,6 +128,8 @@
         .kpi-item { margin-bottom: 20px; }
         .kpi-name { color: var(--accent); font-weight: 700; font-size: 0.95rem; margin-bottom: 5px; }
         .kpi-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+        .kpi-empty { text-align: center; padding: 40px 0; color: var(--text-dim); font-size: 0.95rem; font-style: italic; }
 
         footer { margin-top: 80px; padding-bottom: 40px; opacity: 0.7; font-size: 0.85rem; }
         .footer-line { margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -197,78 +225,150 @@
         <p class="hero-tagline">Motor proprietário de índices estratégicos.<br>Não medimos buscas. Medimos pressão de demanda, competitividade nacional e antecipação de mercado.</p>
 
         <div class="systems-grid">
+            <!-- CARD 1: PULSE AMAZÔNIA -->
             <div class="card active">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="7" r="3"/></svg>
                 <div class="card-title">Pulse Amazônia</div>
                 <p class="kpi-desc" style="text-align: center;">Radar de inteligência turística do Pará. Monitoramento de 15 destinos amazônicos.</p>
                 <div class="btn-access" onclick="showModal('amazonia')">Acessar Pulse</div>
+                <div class="btn-kpi" onclick="showKpi('amazonia', event)">Ver Dicionário de KPIs</div>
             </div>
 
-            <div class="card active">
-                <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 18c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6z"/><path d="M12 14c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-                <div class="card-title">Demand Pulse</div>
-                <p class="kpi-desc" style="text-align: center;">Análise estratégica de demanda e tendências para destinos turísticos.</p>
-                <div class="card-status status-homolog">Sistema em Homologação</div>
-            </div>
-
+            <!-- CARD 2: HOTEL PULSE -->
             <div class="card disabled">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><circle cx="9" cy="7" r="1"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="7" r="1"/><circle cx="15" cy="11" r="1"/></svg>
-                <div class="card-title">Hotéis & Pousadas</div>
-                <p class="kpi-desc" style="text-align: center;">Monitoramento de performance e benchmarking para meios de hospedagem.</p>
+                <div class="card-title">Hotel Pulse</div>
+                <p class="kpi-desc" style="text-align: center;">Monitoramento de performance e competitividade para meios de hospedagem.</p>
+                <div class="card-status status-homolog">Sistema em Homologação</div>
+                <div class="btn-kpi" onclick="showKpi('hotel', event)">Ver Dicionário de KPIs</div>
+            </div>
+
+            <!-- CARD 3: RADAR CLUSTER -->
+            <div class="card disabled">
+                <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 18c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6z"/><path d="M12 14c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+                <div class="card-title">Radar Cluster</div>
+                <p class="kpi-desc" style="text-align: center;">Inteligência de demanda para clusters turísticos regionais customizáveis. Qualquer microrregião do Brasil.</p>
                 <div class="card-status status-homolog">Sistema em Homologação</div>
             </div>
         </div>
 
-        <div class="kpi-section">
-            <span class="section-label">Dicionário de Inteligência (KPIs)</span>
-            <span class="section-creds">monitoramento contínuo com atualização a cada 48 horas</span>
-            
+        <!-- DICIONÁRIO PULSE AMAZÔNIA -->
+        <div class="kpi-section" id="kpi-amazonia">
+            <span class="section-label">Pulse Amazônia — Dicionário de KPIs</span>
+            <span class="section-creds">Monitoramento contínuo com atualização a cada 48 horas</span>
             <div class="kpi-grid">
                 <div>
                     <div class="kpi-group-title">Análise de Demanda</div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Timeline de Interesse (0-100)</div>
-                        <div class="kpi-desc">Índice normalizado do Google Trends que mede o volume relativo de buscas ao longo do tempo. 100 representa o pico de interesse no período analisado.</div>
+                        <div class="kpi-name">Interesse (0-100)</div>
+                        <div class="kpi-desc">Pulso digital do destino. Mede a força de atração de cada lugar no ambiente online. 100 é o pico do período analisado.</div>
                     </div>
                     <div class="kpi-item">
                         <div class="kpi-name">Variação Percentual</div>
-                        <div class="kpi-desc">Crescimento ou retração do interesse entre a última coleta e a anterior. Indica tendência de curto prazo (aquecimento/arrefecimento).</div>
+                        <div class="kpi-desc">Quanto o interesse cresceu ou caiu em relação à coleta anterior. Indica se o destino está aquecendo ou esfriando no curto prazo.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Share de Mercado Regional</div>
-                        <div class="kpi-desc">Proporção do interesse de um destino em relação aos demais monitorados no estado. Mostra dominância relativa no portfólio.</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="kpi-group-title">Origens de Demanda</div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Top 3 Cidades Origem</div>
-                        <div class="kpi-desc">Principais localizações geográficas de onde partem as buscas por cada destino. Revela perfil geográfico da demanda.</div>
+                        <div class="kpi-name">Share de Mercado PA</div>
+                        <div class="kpi-desc">Fatia que o destino ocupa dentro dos 15 monitorados no estado. Mostra quem domina e quem está perdendo espaço no portfólio paraense.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Concentração de Origem</div>
-                        <div class="kpi-desc">Percentual agregado das três principais cidades origem. Indica diversificação (baixa %) ou dependência (alta %) de poucos mercados.</div>
-                    </div>
-                    <div class="kpi-item">
-                        <div class="kpi-name">Origens Agregadas Estaduais</div>
-                        <div class="kpi-desc">Cidades que mais demandam o conjunto dos 15 destinos do Pará. Identifica mercados prioritários para campanhas regionais.</div>
+                        <div class="kpi-name">Pressão de Demanda (IPD)</div>
+                        <div class="kpi-desc">Mede a intensidade competitiva do destino. Quanto maior, mais concentrada e acelerada está a demanda — e maior o risco de saturação.</div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="kpi-group-title">Tendências & Projeção</div>
+                    <div class="kpi-group-title">Origens & Mercado Emissor</div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Linha de Tendência (Regressão Linear)</div>
-                        <div class="kpi-desc">Projeção estatística da direção futura da demanda baseada em histórico de 15+ coletas. Indica crescimento ou retração esperada.</div>
+                        <div class="kpi-name">Top 3 Origens</div>
+                        <div class="kpi-desc">De onde vem o turista. Os três principais estados ou cidades que estão procurando o destino. Orienta campanhas e canais de venda.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Ranking Estadual</div>
-                        <div class="kpi-desc">Posição relativa de cada destino no estado do Pará. Permite comparação competitiva e identificação de líderes.</div>
+                        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
+                        <div class="kpi-desc">Ajuste que reduz o viés local e identifica mercados externos reais. Melhora a leitura de onde vem a demanda de fora do estado.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Sazonalidade Observada</div>
-                        <div class="kpi-desc">Padrões recorrentes de alta e baixa ao longo do ano. Auxilia planejamento de campanhas e precificação dinâmica.</div>
+                        <div class="kpi-name">Origens Agregadas</div>
+                        <div class="kpi-desc">Mercados que mais demandam o conjunto dos destinos monitorados. Identifica prioridades para campanhas regionais.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Competitividade & Projeção</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">IPCR — Competitividade Regional</div>
+                        <div class="kpi-desc">Compara o destino com concorrentes nacionais diretos. Mostra se o Pará está ganhando ou perdendo mercado fora do estado.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Momentum</div>
+                        <div class="kpi-desc">Velocidade e consistência do movimento da demanda. Indica se o destino está numa tendência real de crescimento ou só num pico passageiro.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Nowcasting (Previsão 7 dias)</div>
+                        <div class="kpi-desc">Projeção de curto prazo baseada no histórico de coletas. Indica para onde o interesse vai nos próximos dias.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Selo Estratégico</div>
+                        <div class="kpi-desc">Classificação executiva do destino: Explosão, Aquecendo, Estável, Resfriando ou Crítico. Resume a situação em uma palavra.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DICIONÁRIO HOTEL PULSE -->
+        <div class="kpi-section" id="kpi-hotel">
+            <span class="section-label">Hotel Pulse — Dicionário de KPIs</span>
+            <span class="section-creds">Monitoramento contínuo com atualização a cada 48 horas</span>
+            <div class="kpi-grid">
+                <div>
+                    <div class="kpi-group-title">Performance</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Interesse (0-100)</div>
+                        <div class="kpi-desc">Pulso digital do meio de hospedagem. Mede a força de atração do hotel ou pousada no ambiente online em relação ao período analisado.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Variação Percentual</div>
+                        <div class="kpi-desc">Quanto o interesse cresceu ou caiu em relação à coleta anterior. Indica se a propriedade está aquecendo ou perdendo tração.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Pressão de Demanda (IPD)</div>
+                        <div class="kpi-desc">Intensidade da procura pela propriedade. Apoia decisões de precificação e gestão de disponibilidade.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Mercado & Origens</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Top 3 Origens</div>
+                        <div class="kpi-desc">Principais mercados emissores da propriedade. Orienta estratégia de canais, campanhas e perfil do hóspede.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Share no Destino</div>
+                        <div class="kpi-desc">Participação relativa da propriedade dentro do conjunto monitorado no mesmo destino. Mostra posição competitiva local.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
+                        <div class="kpi-desc">Identifica mercados externos reais, reduzindo o viés de demanda local. Melhora a leitura de hóspedes de fora da região.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Competitividade & Projeção</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">IPCR — Competitividade Regional</div>
+                        <div class="kpi-desc">Compara a propriedade com concorrentes diretos no mesmo destino e fora dele. Indica ganho ou perda de posicionamento competitivo.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Momentum</div>
+                        <div class="kpi-desc">Velocidade e consistência do movimento de demanda da propriedade. Diferencia crescimento real de picos isolados.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Nowcasting (Previsão 7 dias)</div>
+                        <div class="kpi-desc">Projeção de curto prazo para a propriedade. Apoia decisões de revenue management e gestão de disponibilidade.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Selo Estratégico</div>
+                        <div class="kpi-desc">Classificação executiva da propriedade: Explosão, Aquecendo, Estável, Resfriando ou Crítico. Resume o momento em uma palavra.</div>
                     </div>
                 </div>
             </div>
@@ -300,7 +400,7 @@
 
         <div class="modal-content">
             <h3 class="modal-title" id="modal-title">SISTEMA RESTRITO</h3>
-            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso para o Demand Pulse.</p>
+            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso para o Pulse Amazônia.</p>
             <div class="input-group">
                 <input type="password" id="modal-pass" class="modal-input" placeholder="CHAVE DE ACESSO" autofocus>
                 <svg class="toggle-password" id="toggle-pass" viewBox="0 0 24 24" onclick="togglePasswordVisibility()"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -313,6 +413,7 @@
     <script>
         const PASSWORDS = ["testecliente", "abrturbo"];
         let currentSystem = 'municipal';
+        let currentKpi = null;
 
         function showModal(system) {
             currentSystem = system;
@@ -325,11 +426,28 @@
                 document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Pulse Amazônia.';
             } else {
                 document.getElementById('modal-title').textContent = 'SISTEMA RESTRITO';
-                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Demand Pulse.';
+                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o sistema.';
             }
             
             const btn = document.getElementById('modal-back-btn');
             if (btn) btn.style.display = 'inline-flex';
+        }
+
+        function showKpi(system, event) {
+            event.stopPropagation();
+            const sections = document.querySelectorAll('.kpi-section');
+            const target = document.getElementById('kpi-' + system);
+
+            if (currentKpi === system) {
+                target.classList.remove('visible');
+                currentKpi = null;
+                return;
+            }
+
+            sections.forEach(s => s.classList.remove('visible'));
+            target.classList.add('visible');
+            currentKpi = system;
+            setTimeout(() => { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
 
         function validateModalPassword() {
