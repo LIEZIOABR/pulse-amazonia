@@ -1928,6 +1928,7 @@
         document.getElementById('period-select').addEventListener('change', (e) => {
             const customDates = document.getElementById('custom-dates');
             customDates.style.display = e.target.value === 'custom' ? 'flex' : 'none';
+            if (dadosGlobais.length > 0) renderizarTimeline(dadosGlobais);
         });
     </script>
 
