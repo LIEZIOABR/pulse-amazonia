@@ -1730,7 +1730,7 @@
                 datasetsData[destId] = dados
                     .filter(d => d.destino_id === destId)
                     .reverse()
-                    .slice(-7);
+                    .slice(-( parseInt(document.getElementById('period-select').value) || 7 ));
             });
             
             const labels = datasetsData[top5[0]].map(d => {
