@@ -1728,7 +1728,7 @@
             const datasetsData = {};
             top5.forEach(destId => {
                 datasetsData[destId] = dados
-                    .filter(d => d.destino_id === destId)
+                    .filter(d => d.destino_id === destId && d.interesse > 0)
                     .reverse()
                     .slice(-( parseInt(document.getElementById('period-select').value) || 7 ));
             });
