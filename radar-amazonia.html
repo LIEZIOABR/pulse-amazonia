@@ -310,7 +310,7 @@
                 
                 <!-- TIMELINE CHART -->
                 <section class="timeline-section">
-                    <h2 class="section-title">Timeline Comparativa - Top 5 Destinos</h2>
+                    <h2 class="section-title">Momentum da Demanda - Top 5 Destinos</h2>
                     <div class="chart-wrapper">
                         <canvas id="timeline-chart"></canvas>
                     </div>
@@ -1744,7 +1744,7 @@
                 const info = (DESTINOS_INFO[destId] || { nome: destId, emoji: '📍' });
                 return {
                     label: info.nome,
-                    data: datasetsData[destId].map(d => d.interesse),
+                    data: datasetsData[destId].map((d,i,arr) => i === 0 ? 0 : d.interesse - arr[i-1].interesse),
                     borderColor: cores[i],
                     backgroundColor: cores[i] + '20',
                     borderWidth: 3,
