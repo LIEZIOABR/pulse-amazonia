@@ -375,7 +375,7 @@
     <div class="kpi-item">
         <div class="kpi-name">Variação Percentual</div>
         <div class="kpi-desc">
-            Mede aceleração ou desaceleração da procura em relação à coleta anterior. 
+            Mede aceleração ou desaceleração da procura em relação à análise anterior. 
             Indica direção estratégica de curto prazo.
         </div>
     </div>
@@ -1531,7 +1531,9 @@
                     destinosProcessados
                 );
 
-                return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final };
+                // IPCR comparativo com concorrentes nacionais
+                const ipcr_comp = calcularIPCR(dest, dadosConcorrentes);
+                return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final, ipcr_comp };
             });
             
             const destinosOrdenados = destinosComIndices.sort((a, b) => b.interesse - a.interesse);
@@ -1595,10 +1597,13 @@
                             <div class="metric-value">${dest.share}%</div>
                         </div>
                         
-                        ${dest.ipcr_final !== null && dest.ipcr_final !== undefined ? `
-                        <div class="metric-row">
-                            <div class="metric-label">Competitividade</div>
-                            <div class="metric-value ${dest.ipcr_final >= 70 ? 'positive' : dest.ipcr_final >= 40 ? 'neutral' : 'negative'}">${dest.ipcr_final}/100</div>
+                        ${dest.ipcr_comp ? `
+                        <div class="metric-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <div style="display:flex;justify-content:space-between;width:100%;">
+                                <div class="metric-label">Competitividade</div>
+                                <div class="metric-value ${dest.ipcr_comp.classe === 'ganhando' ? 'positive' : dest.ipcr_comp.classe === 'perdendo' ? 'negative' : 'neutral'}" style="font-size:0.85rem;">${dest.ipcr_comp.status.replace('✅ ','').replace('⚠️ ','').replace('➡️ ','')}</div>
+                            </div>
+                            ${dest.ipcr_comp.concorrentes && dest.ipcr_comp.concorrentes.length > 0 ? `<div style="font-size:0.7rem;color:#9ca3af;margin-top:2px;">vs. ${dest.ipcr_comp.concorrentes.map(c => c.nome).join(', ')}</div>` : dest.ipcr_comp.semConcorrentes ? '' : ''}
                         </div>
                         ` : ''}
                         
@@ -1782,7 +1787,7 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">Insights</div>
                     <p>Total de ${dadosUltimos.length} destinos monitorados. Fontes públicas + modelagem proprietária ABR.</p>
-                    <p style="margin-top: 8px; font-size: 0.75rem;"><strong>Dica:</strong> Clique em qualquer card de destino para ver análise detalhada com IPCR!</p>
+                    <p style="margin-top: 8px; font-size: 0.75rem;"><strong>Dica:</strong> Clique em qualquer destino para ver a análise detalhada.</p>
                 </div>
             `;
             
