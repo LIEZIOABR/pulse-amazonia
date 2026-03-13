@@ -1609,24 +1609,7 @@
                             <div class="metric-value">${dest.interesse}/100</div>
                         </div>
                         
-                        ${dest.nowcasting && dest.nowcasting.valor !== null ? `
-                        <div class="metric-row">
-                            <div class="metric-label">Previsão 7 dias</div>
-                            <div class="metric-value ${dest.nowcasting.valor > dest.interesse ? 'positive' : dest.nowcasting.valor < dest.interesse ? 'negative' : 'neutral'}">
-                                ${dest.nowcasting.valor} ${dest.nowcasting.direcao}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${dest.confiabilidade.score !== null ? `
-                        <div class="metric-row">
-                            <div class="metric-label">Confiabilidade</div>
-                            <div class="metric-value">
-                                ${dest.confiabilidade.nivel}
-                                <span class="badge-confianca ${dest.confiabilidade.classe}">${dest.confiabilidade.score}/100</span>
-                            </div>
-                        </div>
-                        ` : ''}
+
                         
                         ${dest.variacao !== null ? `
                         <div class="metric-row">
@@ -1636,41 +1619,6 @@
                             </div>
                         </div>
                         ` : ''}
-                        
-                        ${dest.ipd !== null ? `
-                        <div class="indice-destaque">
-                            <div class="indice-titulo">💎 Pressão de Demanda</div>
-                            <div class="indice-valor ${ipdClass}">${ipdLabel} (${dest.ipd}/100)</div>
-                            ${ipdDesc ? `<div class="indice-descricao">${ipdDesc}</div>` : ''}
-                        </div>
-                        ` : ''}
-                        
-                        <div class="metric-row">
-                            <div class="metric-label">Momentum</div>
-                            <div class="metric-value">${dest.momentum}</div>
-                        </div>
-
-
-                        ${dest.ipcr_final !== null && dest.ipcr_final !== undefined ? `
-                        <div class="metric-row">
-                            <div class="metric-label">IPCR Final</div>
-                            <div class="metric-value ${dest.ipcr_final >= 70 ? 'positive' : dest.ipcr_final >= 40 ? 'neutral' : 'negative'}">
-                                ${dest.ipcr_final}/100
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${oportunidadeTexto ? `
-                        <div class="metric-row">
-                            <div class="metric-label" style="min-width: 120px;">Oportunidade</div>
-                            <div class="metric-value" style="font-size: 0.8rem;">${oportunidadeTexto}</div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="metric-row">
-                            <div class="metric-label">Risco de Mercado</div>
-                            <div class="metric-value">${dest.risco}</div>
-                        </div>
                         
                         <div class="metric-row">
                             <div class="metric-label">Share PA</div>
