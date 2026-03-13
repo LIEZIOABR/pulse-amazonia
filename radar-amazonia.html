@@ -1982,8 +1982,8 @@ renderizarCards = function(dados) {
         extraHTML.style.opacity = "0.85";
 
         extraHTML.innerHTML = `
-            ${rankingHist ? `<span>Média 5 análises: <strong>${rankingHist}</strong></span>` : ''}
-            <span style="margin-left:6px;">${selo}</span>
+            ${rankingHist ? `<div>Média 5 análises: <strong>${rankingHist}</strong></div>` : ''}
+            <div>${selo}</div>
         `;
 
         card.appendChild(extraHTML);
