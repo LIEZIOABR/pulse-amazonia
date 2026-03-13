@@ -1679,17 +1679,17 @@
                         ${dest.origem_1 ? `
                         <div class="origins-list">
                             <div class="origin-item">
-                                <span class="origin-name">🥇 ${dest.origem_1}</span>
+                                <span class="origin-name">🥇 ${formatarOrigem(dest.origem_1)}</span>
                                 <span class="origin-pct">${dest.origem_1_pct}%</span>
                             </div>
                             ${dest.origem_2 ? `
                             <div class="origin-item">
-                                <span class="origin-name">🥈 ${dest.origem_2}</span>
+                                <span class="origin-name">🥈 ${formatarOrigem(dest.origem_2)}</span>
                                 <span class="origin-pct">${dest.origem_2_pct}%</span>
                             </div>
                             ` : ''}
                             ${dest.origem_3 ? `
-                            <div class="origin-item">
+                            <span class="origin-name">🥉 ${formatarOrigem(dest.origem_3)}</span>
                                 <span class="origin-name">🥉 ${dest.origem_3}</span>
                                 <span class="origin-pct">${dest.origem_3_pct}%</span>
                             </div>
