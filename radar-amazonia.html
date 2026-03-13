@@ -318,7 +318,7 @@
                 
                 <!-- GEO MAP -->
                 <section class="map-section">
-                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Interesse</h2>
+                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Pulso de Demanda</h2>
                     <div id="map" class="map-container"></div>
                 </section>
                 
@@ -1482,13 +1482,13 @@
             
             const html = `
                 <div class="boletim-section">
-                    <div class="boletim-section-title">${info.emoji} ${info.nome}</div>
+                    <div class="boletim-section-title">${info.nome}</div>
                     <p style="font-size: 0.75rem; color: var(--text-dim);">${dataFormatada}</p>
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
-                        <li>Interesse Atual: ${destino.interesse}/100</li>
+                        <li>Pulso: ${destino.interesse}/100</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
                         ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
@@ -1599,13 +1599,13 @@
                 return `
                     <div class="dest-card" data-index="${index}">
                         <div class="dest-header">
-                            <div class="dest-name">${info.emoji} ${info.nome}</div>
+                            <div class="dest-name">${info.nome}</div>
                             <div class="dest-rank">#${index + 1} PA</div>
                         </div>
                         ${(function(){ var v = gerarVeredito(dest); return '<div style="padding:10px 14px;border-radius:10px;margin-bottom:12px;border-left:3px solid ' + v.borda + ';background:' + v.cor + '"><div style="font-size:13px;font-weight:700;color:white">' + v.titulo + '</div><div style="font-size:11px;color:#9ca3af;margin-top:2px">' + v.frase + '</div></div>'; })()} 
                         
                         <div class="metric-row">
-                            <div class="metric-label">Interesse</div>
+                            <div class="metric-label">Pulso</div>
                             <div class="metric-value">${dest.interesse}/100</div>
                         </div>
                         
@@ -1769,7 +1769,7 @@
                 .slice(0, 3)
                 .map(d => {
                     const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' });
-                    return `${info.emoji} ${info.nome} (${d.interesse})`;
+                    return `${info.nome} (${d.interesse})`;
                 });
             
             const origensMap = {};
