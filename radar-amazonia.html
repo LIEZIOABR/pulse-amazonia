@@ -1981,10 +1981,10 @@ renderizarCards = function(dados) {
         
         extraHTML.style.opacity = "0.85";
 
-        extraHTML.innerHTML = `
-            ${rankingHist ? `<div>Média 5 análises: <strong>${rankingHist}</strong></div>` : ''}
-            <div>${selo}</div>
-        `;
+        extraHTML.innerHTML = `<div class="indice-destaque">`
+${rankingHist ? `Média 5 análises: <strong>${rankingHist}</strong><br>` : ''}
+${selo}
+</div>`;
 
         card.appendChild(extraHTML);
     });
