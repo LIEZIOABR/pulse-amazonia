@@ -365,7 +365,7 @@
     <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
 
     <div class="kpi-item">
-        <div class="kpi-name">Interesse (0–100)</div>
+        <div class="kpi-name">Pulso (0–100)</div>
         <div class="kpi-desc">
             Representa o pulso digital do destino. Funciona como peso estatístico nas métricas agregadas 
             e indica a força relativa de atração de demanda no ambiente online.
@@ -388,37 +388,7 @@
         </div>
     </div>
 
-    <div class="kpi-item">
-        <div class="kpi-name">Pressão de Demanda</div>
-        <div class="kpi-desc">
-            Índice composto que identifica intensidade competitiva e risco de concentração de mercado. 
-            Auxilia decisões de precificação e posicionamento.
-        </div>
-    </div>
 
-    <div class="kpi-item">
-        <div class="kpi-name">Momentum</div>
-        <div class="kpi-desc">
-            Avalia velocidade e consistência do movimento da demanda. 
-            Indica tendência estrutural de crescimento ou perda de tração.
-        </div>
-    </div>
-
-    <div class="kpi-item">
-        <div class="kpi-name">IPCR – Competitividade Regional</div>
-        <div class="kpi-desc">
-            Compara desempenho do destino com concorrentes nacionais diretos. 
-            Identifica ganho ou perda de competitividade fora do estado.
-        </div>
-    </div>
-
-    <div class="kpi-item">
-        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
-        <div class="kpi-desc">
-            Ajuste estatístico que reduz viés endógeno e identifica mercados externos recorrentes. 
-            Melhora leitura estratégica de origem real da demanda.
-        </div>
-    </div>
 </section>
 
             </aside>
@@ -867,7 +837,7 @@
                 
                 if (direcao === 1 && velocidade > 5 && consistencia > 60) return "🚀 Forte";
                 if (direcao === -1) return "📉 Perdendo";
-                return "⚡ Moderado";
+                return "Moderado";
             } catch (error) {
                 return "N/A";
             }
@@ -1416,14 +1386,14 @@
             if (ipcr) {
                 if (ipcr.variacaoPA === null) {
                     ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>' +
+                        '<div class="boletim-section-title">Competitividade Nacional (IPCR)</div>' +
                         '<div class="ipcr-item">' +
                         '<div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">⏳ Aguardando 2ª coleta para calcular variação</div>' +
                         '<div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>' +
                         '</div></div>';
                 } else if (ipcr.semConcorrentes) {
                     ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">🌍 Performance Nacional</div>' +
+                        '<div class="boletim-section-title">Performance Nacional</div>' +
                         '<div class="ipcr-item">' +
                         '<div class="ipcr-comparacao">Variação PA: ' + 
                         (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
@@ -1434,7 +1404,7 @@
                     const principais = ipcr.concorrentes.slice(0, 3);
                     const indiceHTML = ipcr.ipcr !== null ? '<div class="ipcr-comparacao" style="margin-top: 4px;">Índice: ' + ipcr.ipcr.toFixed(2) + '</div>' : '';
                     ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>' +
+                        '<div class="boletim-section-title">Competitividade Nacional (IPCR)</div>' +
                         '<div class="ipcr-item">' +
                         '<div class="ipcr-comparacao">PA: ' +
                         (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') +
@@ -1447,7 +1417,7 @@
                         '</div></div>';
                 } else {
                     ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">🌍 Competitividade Nacional</div>' +
+                        '<div class="boletim-section-title">Competitividade Nacional</div>' +
                         '<div class="ipcr-item">' +
                         '<div class="ipcr-comparacao">Variação PA: ' +
                         (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
@@ -1466,14 +1436,14 @@
             if (camada2.mode === 'observada' || camada2.mode === 'inferida') {
                 const badgeClass = camada2.mode === 'observada' ? 'ganhando' : 'perdendo';
                 camada2HTML = '<div class="boletim-section">' +
-                    '<div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div>' +
+                    '<div class="boletim-section-title">Mercado Emissor (Camada 2)</div>' +
                     '<div class="ipcr-item">' +
                     '<div class="ipcr-status ' + badgeClass + '" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
                     '<div class="ipcr-comparacao" style="font-size: 0.75rem; line-height: 1.4;">' + camada2.text + '</div>' +
                     '</div></div>';
             } else if (camada2.mode === 'insuficiente') {
                 camada2HTML = '<div class="boletim-section">' +
-                    '<div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div>' +
+                    '<div class="boletim-section-title">Mercado Emissor (Camada 2)</div>' +
                     '<div class="ipcr-item">' +
                     '<div class="ipcr-status estavel" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
                     '<div class="ipcr-comparacao" style="font-size: 0.75rem; color: var(--text-dim);">' + camada2.text + '</div>' +
@@ -1495,7 +1465,7 @@
                     </ul>
                 </div>
                 <div class="boletim-section">
-                    <div class="boletim-section-title">⚡ Análise Estratégica</div>
+                    <div class="boletim-section-title">Análise Estratégica</div>
                     <ul class="boletim-list">
                         <li>Momentum: ${momentum}</li>
                         <li>Risco de Mercado: ${risco}</li>
@@ -1669,7 +1639,7 @@
                 document.querySelectorAll('.dest-card').forEach((card, index) => {
                     card.addEventListener('click', () => {
                         const destino = destinosOrdenados[index];
-                        console.log(`🎯 Card clicado: ${destino.destino_id}`);
+                        console.log(`Card clicado: ${destino.destino_id}`);
                         gerarBoletimDestino(destino, dados, dadosConcorrentes);
                         
                         // Scroll suave para o boletim em mobile
@@ -1791,7 +1761,7 @@
                     <div class="boletim-section-title">Data: ${dataFormatada}</div>
                 </div>
                 <div class="boletim-section">
-                    <div class="boletim-section-title">🏆 Top 3 Destinos PA</div>
+                    <div class="boletim-section-title">Top 3 Destinos PA</div>
                     <ul class="boletim-list">
                         ${top3.map(t => `<li>${t}</li>`).join('')}
                     </ul>
