@@ -644,7 +644,7 @@
                 textParts.push('Origem (Top 3 ajustado): ' + o1.state + ' ' + o1.pct + '%');
                 if (o2) textParts.push(o2.state + ' ' + o2.pct + '%');
                 if (o3) textParts.push(o3.state + ' ' + o3.pct + '%');
-                if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' coletas recentes');
+                if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' análises recentes');
                 if (adjInfo.mode === 'local_pondered') textParts.push('• Local ponderado (capital/hub)');
                 if (adjInfo.mode === 'local_removed') textParts.push('• Local removido (viés endógeno)');
                 
@@ -662,7 +662,7 @@
             return {
                 mode: 'insuficiente',
                 badge: '⚠️ Baixa diversidade',
-                text: 'Origem não confiável (poucos estados nas fontes digitais / dominância alta). Aguarde mais coletas.'
+                text: 'Origem não confiável (poucos estados nas fontes digitais / dominância alta). Aguarde mais análises.'
             };
         }
         
@@ -1595,6 +1595,13 @@
                             <div class="metric-value">${dest.share}%</div>
                         </div>
                         
+                        ${dest.ipcr_final !== null && dest.ipcr_final !== undefined ? `
+                        <div class="metric-row">
+                            <div class="metric-label">Competitividade</div>
+                            <div class="metric-value ${dest.ipcr_final >= 70 ? 'positive' : dest.ipcr_final >= 40 ? 'neutral' : 'negative'}">${dest.ipcr_final}/100</div>
+                        </div>
+                        ` : ''}
+                        
                         ${dest.origem_1 ? `
                         <div class="origins-list">
                             <div class="origin-item" style="flex-direction:column;align-items:flex-start;gap:4px;">
@@ -1897,7 +1904,7 @@ function gerarSeloEstrategico(destino) {
             const i = destino.interesse || 0;
             if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
             if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
-            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas coletas' };
+            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
         }
 
 // Override leve do render de cards (sem alterar estrutura principal)
