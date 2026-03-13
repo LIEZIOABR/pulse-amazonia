@@ -453,6 +453,7 @@
         
         // ========== VARIÁVEIS GLOBAIS ==========
         function normData(d) { return String(d).slice(0,10); }
+        function formatarOrigem(s) { if (!s) return ''; return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
         let dadosGlobais = [];
         let dadosConcorrentes = [];
         let chartInstance = null;
