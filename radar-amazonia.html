@@ -1996,6 +1996,11 @@ renderizarCards = function(dados) {
 
 
         card.appendChild(extraHTML);
+
+        // Borda do card reflete o veredito
+        const vCard = gerarVeredito(destino);
+        card.style.borderColor = vCard.borda;
+        card.style.boxShadow = '0 0 12px ' + vCard.borda + '40';
     });
 };
     </script>
