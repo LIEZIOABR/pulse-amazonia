@@ -60,7 +60,7 @@
         /* ========== TIMELINE CHART ========== */
         .timeline-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
         .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 12px; }
-        .chart-wrapper { position: relative; height: 400px; }
+        .chart-wrapper { position: relative; height: 260px; }
         
         /* ========== GEO MAP ========== */
         .map-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
@@ -282,6 +282,9 @@
             <p class="subtitle">
                 Radar de Inteligência Turística do Pará - Monitoramento de 15 destinos amazônicos
             </p>
+            <p style="font-size:0.75rem;color:rgba(0,198,255,0.6);margin-top:8px;letter-spacing:1px;text-transform:uppercase;">
+                Sinais digitais agregados &nbsp;·&nbsp; Modelagem proprietária ABR &nbsp;·&nbsp; Atualização contínua
+            </p>
         </header>
         
         <div class="layout">
@@ -308,20 +311,6 @@
                     <button class="btn-update" onclick="window.location.href = window.location.pathname + '?v=' + Date.now()">ATUALIZAR DADOS</button>
                 </section> 
                 
-                <!-- TIMELINE CHART -->
-                <section class="timeline-section">
-                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
-                    <div class="chart-wrapper">
-                        <canvas id="timeline-chart"></canvas>
-                    </div>
-                </section>
-                
-                <!-- GEO MAP -->
-                <section class="map-section">
-                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Pulso de Demanda</h2>
-                    <div id="map" class="map-container"></div>
-                </section>
-                
                 <!-- DESTINATION CARDS -->
                 <div id="destinations-container" class="destinations-grid">
                     <div class="loading">
@@ -329,6 +318,20 @@
                         <p>Carregando dados...</p>
                     </div>
                 </div>
+                
+                <!-- GEO MAP -->
+                <section class="map-section">
+                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Pulso de Demanda</h2>
+                    <div id="map" class="map-container"></div>
+                </section>
+                
+                <!-- TIMELINE CHART -->
+                <section class="timeline-section">
+                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+                </section>
             </div>
             
             <!-- SIDEBAR -->
@@ -1786,7 +1789,7 @@
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Insights</div>
-                    <p>Total de ${dadosUltimos.length} destinos monitorados. Fontes públicas + modelagem proprietária ABR.</p>
+                    <p>Total de ${dadosUltimos.length} destinos monitorados. Sinais digitais agregados + modelagem proprietária ABR.</p>
                     <p style="margin-top: 8px; font-size: 0.75rem;"><strong>Dica:</strong> Clique em qualquer destino para ver a análise detalhada.</p>
                 </div>
             `;
