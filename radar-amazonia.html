@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMAND PULSE AMAZÔNIA - ABR Consultoria</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌴%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23000' stroke='%2300c6ff' stroke-width='2'/%3E%3Cpath d='M12 38 L22 28 L30 34 L40 18 L52 26' fill='none' stroke='%2300c6ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='40' cy='18' r='4' fill='%2300c6ff'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
@@ -296,8 +296,7 @@
                         <div>
                             <div class="filter-label">Período</div>
                             <select id="period-select">
-                                <option value="3" selected>Últimos 3 dias</option>
-                                <option value="7">Últimos 7 dias</option>
+                                <option value="7" selected>Últimos 7 dias</option>
                                 <option value="14">Últimos 14 dias</option>
                                 <option value="30">Últimos 30 dias</option>
                                 <option value="90">Últimos 90 dias</option>
@@ -312,6 +311,14 @@
                     <button class="btn-update" onclick="window.location.href = window.location.pathname + '?v=' + Date.now()">ATUALIZAR DADOS</button>
                 </section> 
                 
+                <!-- TIMELINE CHART -->
+                <section class="timeline-section">
+                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+                </section>
+                
                 <!-- DESTINATION CARDS -->
                 <div id="destinations-container" class="destinations-grid">
                     <div class="loading">
@@ -324,14 +331,6 @@
                 <section class="map-section">
                     <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Pulso de Demanda</h2>
                     <div id="map" class="map-container"></div>
-                </section>
-                
-                <!-- TIMELINE CHART -->
-                <section class="timeline-section">
-                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
-                    <div class="chart-wrapper">
-                        <canvas id="timeline-chart"></canvas>
-                    </div>
                 </section>
             </div>
             
@@ -402,10 +401,10 @@
     
     <!-- FOOTER -->
     <footer style="text-align: center; padding: 30px 20px; margin-top: 50px; border-top: 1px solid rgba(0,198,255,0.15); color: rgba(255,255,255,0.4); font-size: 12px; position: relative; z-index: 1;">
-        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="mailto:abrantes@abrconsult.com.br" style="color: rgba(0,198,255,0.6); text-decoration: none;">abrantes@abrconsult.com.br</a></p>
+        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#1a7b78687b746e7f695a7b7868797574696f766e34797577347868" style="color: rgba(0,198,255,0.6); text-decoration: none;"><span class="__cf_email__" data-cfemail="2b4a49594a455f4e586b4a4959484445585e475f05484446054959">[email&#160;protected]</span></a></p>
     </footer>
     
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ========== CONFIGURAÇÃO SUPABASE ==========
         const SUPABASE_URL = 'https://ljeoxnxezjmfbqngoqxz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqZW94bnhlemptZmJxbmdvcXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzI3ODUsImV4cCI6MjA4NDYwODc4NX0.B112AG5HTFvJTXaxL2IrdoJf5fcSC-GEHKLsDwdsFgc';
@@ -1140,14 +1139,15 @@
             const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
             const top5 = dadosUltimos.sort((a, b) => b.interesse - a.interesse).slice(0, 5).map(d => d.destino_id);
             
-            const periodoSelecionado = parseInt(document.getElementById('period-select').value) || 3;
+            const periodoSelecionado = parseInt(document.getElementById('period-select').value);
+            const pontosGrafico = (periodoSelecionado === 7 || isNaN(periodoSelecionado)) ? 5 : periodoSelecionado;
             
             const datasetsData = {};
             top5.forEach(destId => {
                 datasetsData[destId] = dados
                     .filter(d => d.destino_id === destId && d.interesse > 0)
                     .reverse()
-                    .slice(-periodoSelecionado);
+                    .slice(-pontosGrafico);
             });
             
             const labels = datasetsData[top5[0]].map(d => {
@@ -1318,14 +1318,4 @@ renderizarCards = function(dados) {
     const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
     const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
     document.querySelectorAll('.dest-card').forEach((card, index) => {
-        const destino = dadosUltimos.sort((a,b)=>b.interesse-a.interesse)[index];
-        if (!destino) return;
-        const vCard = gerarVeredito(destino);
-        card.style.borderColor = vCard.borda;
-        card.style.boxShadow = '0 0 12px ' + vCard.borda + '40';
-    });
-};
-</script>
-
-</body>
-</html>
+        const destino = dadosUltimos.sort((a,b)=>b
