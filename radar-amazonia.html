@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMAND PULSE AMAZÔNIA - ABR Consultoria</title>
-    <link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌴%3C/text%3E%3C/svg%3E\">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌴%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
@@ -296,7 +296,8 @@
                         <div>
                             <div class="filter-label">Período</div>
                             <select id="period-select">
-                                <option value="7" selected>Últimos 7 dias</option>
+                                <option value="3" selected>Últimos 3 dias</option>
+                                <option value="7">Últimos 7 dias</option>
                                 <option value="14">Últimos 14 dias</option>
                                 <option value="30">Últimos 30 dias</option>
                                 <option value="90">Últimos 90 dias</option>
@@ -368,10 +369,11 @@
     <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
 
     <div class="kpi-item">
-        <div class="kpi-name">Pulso (0–100)</div>
+        <div class="kpi-name">Pulso ABR (0–10)</div>
         <div class="kpi-desc">
-            Representa o pulso digital do destino. Funciona como peso estatístico nas métricas agregadas 
-            e indica a força relativa de atração de demanda no ambiente online.
+            Escala proprietária ABR que mede a força de atração digital do destino.
+            Funciona como peso estatístico nas métricas agregadas e indica intensidade
+            relativa de demanda no ambiente online. Quanto mais próximo de 10, maior a pressão de busca.
         </div>
     </div>
 
@@ -420,6 +422,10 @@
         // ========== VARIÁVEIS GLOBAIS ==========
         function normData(d) { return String(d).slice(0,10); }
         function formatarOrigem(s) { if (!s) return ''; return s.replace(/_/g, ' ').replace(/(^\w|\s\w)/g, c => c.toUpperCase()); }
+
+        // ========== ESCALA ABR (0-10) ==========
+        function escalaABR(valor) { return (valor / 10).toFixed(1); }
+
         let dadosGlobais = [];
         let dadosConcorrentes = [];
         let chartInstance = null;
@@ -480,53 +486,28 @@
         
         // ============================================================
         // PULSE CAMADA 2 (PROXY DE MERCADO EMISSOR) — BLOCO ISOLADO
-        // Objetivo: neutralizar viés endógeno (origem local)
         // ============================================================
         
-        // CONFIG: UF local de cada destino
         const PULSE_LOCAL_UF_BY_DESTINO = {
-            'belem': 'PA',
-            'alter_do_chao': 'PA',
-            'ilha_marajo': 'PA',
-            'santarem': 'PA',
-            'salinopolis': 'PA',
-            'soure': 'PA',
-            'salvaterra': 'PA',
-            'mosqueiro': 'PA',
-            'braganca': 'PA',
-            'monte_alegre': 'PA',
-            'algodoal': 'PA',
-            'obidos': 'PA',
-            'parauapebas': 'PA',
-            'castanhal': 'PA',
-            'cameta': 'PA'
+            'belem': 'PA', 'alter_do_chao': 'PA', 'ilha_marajo': 'PA',
+            'santarem': 'PA', 'salinopolis': 'PA', 'soure': 'PA',
+            'salvaterra': 'PA', 'mosqueiro': 'PA', 'braganca': 'PA',
+            'monte_alegre': 'PA', 'algodoal': 'PA', 'obidos': 'PA',
+            'parauapebas': 'PA', 'castanhal': 'PA', 'cameta': 'PA'
         };
         
-        // CONFIG: Destinos que são capitais/hubs (mantém local ponderado)
-        const PULSE_IS_CAPITAL_OR_HUB = {
-            'belem': true
-        };
-        
-        // CONFIG: Redutor do peso local para capitais (40%)
+        const PULSE_IS_CAPITAL_OR_HUB = { 'belem': true };
         const PULSE_LOCAL_REDUCER_FOR_CAPITAL = 0.40;
+        const PULSE_MIN_ORIGENS = 3;
+        const PULSE_DOMINANCE_LIMIT = 70;
+        const PULSE_MIN_RECURRENCES = 2;
+        const PULSE_LOOKBACK = 6;
         
-        // CONFIG: Critérios de validade
-        const PULSE_MIN_ORIGENS = 3;          // diversidade mínima
-        const PULSE_DOMINANCE_LIMIT = 70;     // se 1 origem >70%, sinal fraco
-        const PULSE_MIN_RECURRENCES = 2;      // recorrência mínima
-        const PULSE_LOOKBACK = 6;             // últimas N coletas
-        
-        /** Normalização de nomes de estados */
         function pulseNormState(s) {
             if (!s) return '';
-            return String(s)
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .toUpperCase();
+            return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
         }
         
-        /** Extrai top 3 origens de 1 linha */
         function pulseExtractTop3(row) {
             const out = [];
             const pushIf = function(name, pct) {
@@ -541,29 +522,21 @@
             return out.sort(function(a, b) { return b.pct - a.pct; });
         }
         
-        /** Aplica correção do viés local */
         function pulseAdjustLocalBias(destinoId, top3) {
             const localUF = pulseNormState(PULSE_LOCAL_UF_BY_DESTINO[destinoId] || '');
             const isCapital = !!PULSE_IS_CAPITAL_OR_HUB[destinoId];
-            
             if (!localUF) return { adjusted: top3.slice(), localUF: localUF, mode: 'no_local_config' };
-            
             if (!isCapital) {
                 const filtered = top3.filter(function(x) { return x.state !== localUF; });
                 return { adjusted: filtered, localUF: localUF, mode: 'local_removed' };
             }
-            
             const adjusted = top3.map(function(x) {
-                if (x.state === localUF) {
-                    return { state: x.state, pct: Math.round(x.pct * PULSE_LOCAL_REDUCER_FOR_CAPITAL) };
-                }
+                if (x.state === localUF) return { state: x.state, pct: Math.round(x.pct * PULSE_LOCAL_REDUCER_FOR_CAPITAL) };
                 return x;
             }).sort(function(a, b) { return b.pct - a.pct; });
-            
             return { adjusted: adjusted, localUF: localUF, mode: 'local_pondered' };
         }
         
-        /** Verifica se 1 coleta tem diversidade estatística mínima */
         function pulseIsObservedValid(adjustedTop) {
             const n = adjustedTop.length;
             if (n < PULSE_MIN_ORIGENS) return false;
@@ -572,70 +545,46 @@
             return true;
         }
         
-        /** Conta recorrência das origens nas últimas N coletas */
         function pulseRecurrence(destinoId, rows) {
             const last = rows.slice(-PULSE_LOOKBACK);
             const counts = new Map();
-            
             for (let i = 0; i < last.length; i++) {
                 const row = last[i];
                 const top3 = pulseExtractTop3(row);
                 const adjInfo = pulseAdjustLocalBias(destinoId, top3);
                 const adjusted = adjInfo.adjusted;
-                
                 for (let j = 0; j < adjusted.length; j++) {
                     const x = adjusted[j];
                     counts.set(x.state, (counts.get(x.state) || 0) + 1);
                 }
             }
-            
             const arr = [];
-            counts.forEach(function(n, state) {
-                arr.push({ state: state, n: n });
-            });
-            
+            counts.forEach(function(n, state) { arr.push({ state: state, n: n }); });
             arr.sort(function(a, b) { return b.n - a.n; });
             return arr;
         }
         
-        /** Função principal: devolve leitura Camada 2 para 1 destino */
         function pulseCamada2Compute(destinoId, rowsDoDestino) {
             const rows = Array.isArray(rowsDoDestino) ? rowsDoDestino : [];
             if (rows.length === 0) {
-                return { 
-                    mode: 'insuficiente', 
-                    badge: 'Sem histórico', 
-                    text: 'Sem dados suficientes para leitura de origem.' 
-                };
+                return { mode: 'insuficiente', badge: 'Sem histórico', text: 'Sem dados suficientes para leitura de origem.' };
             }
-            
             const lastRow = rows[rows.length - 1];
             const top3 = pulseExtractTop3(lastRow);
             const adjInfo = pulseAdjustLocalBias(destinoId, top3);
             const adjusted = adjInfo.adjusted;
-            
             if (adjusted.length === 0) {
-                return {
-                    mode: 'insuficiente',
-                    badge: 'Baixo volume',
-                    text: 'Origem não observável (baixa diversidade nas fontes digitais).'
-                };
+                return { mode: 'insuficiente', badge: 'Baixo volume', text: 'Origem não observável (baixa diversidade nas fontes digitais).' };
             }
-            
             const observedOk = pulseIsObservedValid(adjusted);
             const rec = pulseRecurrence(destinoId, rows);
             const topRec = rec[0];
             const isRecurring = topRec && topRec.n >= PULSE_MIN_RECURRENCES;
-            
             if (observedOk) {
-                const o1 = adjusted[0];
-                const o2 = adjusted[1];
-                const o3 = adjusted[2];
-                
+                const o1 = adjusted[0]; const o2 = adjusted[1]; const o3 = adjusted[2];
                 const badge = isRecurring
                     ? 'Origem recorrente: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')'
                     : 'Origem observada (Top 3)';
-                
                 const textParts = [];
                 textParts.push('Origem (Top 3 ajustado): ' + o1.state + ' ' + o1.pct + '%');
                 if (o2) textParts.push(o2.state + ' ' + o2.pct + '%');
@@ -643,10 +592,8 @@
                 if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' análises recentes');
                 if (adjInfo.mode === 'local_pondered') textParts.push('• Local ponderado (capital/hub)');
                 if (adjInfo.mode === 'local_removed') textParts.push('• Local removido (viés endógeno)');
-                
                 return { mode: 'observada', badge: badge, text: textParts.join(' | ') };
             }
-            
             if (isRecurring) {
                 return {
                     mode: 'inferida',
@@ -654,73 +601,39 @@
                     text: 'Baixa diversidade nas fontes digitais. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
                 };
             }
-            
-            return {
-                mode: 'insuficiente',
-                badge: '⚠️ Baixa diversidade',
-                text: 'Origem não confiável (poucos estados nas fontes digitais / dominância alta). Aguarde mais análises.'
-            };
+            return { mode: 'insuficiente', badge: '⚠️ Baixa diversidade', text: 'Origem não confiável (poucos estados nas fontes digitais / dominância alta). Aguarde mais análises.' };
         }
-        
-        // ============================================================
-        // FIM DA CAMADA 2
-        // ============================================================
         
         // ========== FUNÇÃO PARA DETERMINAR COR DO MARKER ==========
         function getMarkerColor(interesse) {
-            if (interesse >= 70) return '#ff3860'; // Vermelho
-            if (interesse >= 40) return '#ffea00'; // Amarelo
-            return '#39ff14'; // Verde
+            if (interesse >= 70) return '#ff3860';
+            if (interesse >= 40) return '#ffea00';
+            return '#39ff14';
         }
         
         // ========== FUNÇÕES DE CÁLCULO DE ÍNDICES ==========
         
-        /**
-         * NOWCASTING: Previsão de interesse para próximos 7 dias
-         */
         function calcularNowcasting(destino, dadosHistoricos) {
             try {
-                const historico = dadosHistoricos
-                    .filter(d => d.destino_id === destino.destino_id)
-                    .slice(0, 10)
-                    .reverse();
-                
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 10).reverse();
                 if (historico.length < 3) return null;
-                
                 const alpha = 0.3;
                 let ema = historico[0].interesse;
-                
-                for (let i = 1; i < historico.length; i++) {
-                    ema = alpha * historico[i].interesse + (1 - alpha) * ema;
-                }
-                
+                for (let i = 1; i < historico.length; i++) { ema = alpha * historico[i].interesse + (1 - alpha) * ema; }
                 const ultimo = historico[historico.length - 1].interesse;
                 const penultimo = historico[historico.length - 2].interesse;
                 const antepenultimo = historico[historico.length - 3].interesse;
-                
                 const tendencia = ((ultimo - penultimo) + (penultimo - antepenultimo)) / 2;
                 const previsao = Math.max(0, Math.min(100, Math.round(ema + (tendencia * 0.5))));
                 const direcao = tendencia > 1 ? '↗️' : tendencia < -1 ? '↘️' : '➡️';
-                
                 return { valor: previsao, direcao };
-            } catch (error) {
-                return null;
-            }
+            } catch (error) { return null; }
         }
         
-        /**
-         * CONFIABILIDADE DO SINAL (0-100)
-         */
         function calcularConfiabilidade(destino, dadosHistoricos) {
             try {
-                const historico = dadosHistoricos
-                    .filter(d => d.destino_id === destino.destino_id)
-                    .slice(0, 5);
-                
-                if (historico.length < 3) {
-                    return { score: null, nivel: 'Dados Insuficientes', classe: 'baixa' };
-                }
-                
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 5);
+                if (historico.length < 3) return { score: null, nivel: 'Dados Insuficientes', classe: 'baixa' };
                 let consistencia = 0;
                 if (historico.length >= 4) {
                     let direcoes = [];
@@ -733,50 +646,32 @@
                     const maxConsistente = Math.max(positivas, negativas);
                     consistencia = (maxConsistente / direcoes.length) * 100;
                 }
-                
                 const valores = historico.map(h => h.interesse);
                 const media = valores.reduce((a,b) => a+b, 0) / valores.length;
                 const variancia = valores.reduce((sum, v) => sum + Math.pow(v - media, 2), 0) / valores.length;
                 const desvioPadrao = Math.sqrt(variancia);
                 const estabilidade = Math.max(0, 100 - (desvioPadrao * 2));
-                
-                const origens = [
-                    destino.origem_1_pct || 0,
-                    destino.origem_2_pct || 0,
-                    destino.origem_3_pct || 0
-                ];
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0];
                 const somaOrigens = origens.reduce((a, b) => a + b, 0);
-                
                 let diversificacao = 50;
                 if (somaOrigens > 0) {
                     const proporcoes = origens.map(o => o / somaOrigens);
                     const hhi = proporcoes.reduce((sum, p) => sum + (p * p), 0);
                     diversificacao = Math.max(0, (1 - hhi) * 100);
                 }
-                
-                const scoreConfianca = Math.round(
-                    (consistencia * 0.4) + (estabilidade * 0.3) + (diversificacao * 0.3)
-                );
-                
+                const scoreConfianca = Math.round((consistencia * 0.4) + (estabilidade * 0.3) + (diversificacao * 0.3));
                 let nivel, classe;
                 if (scoreConfianca >= 70) { nivel = '🟢 Alta'; classe = 'alta'; }
                 else if (scoreConfianca >= 40) { nivel = '🟡 Média'; classe = 'media'; }
                 else { nivel = '🔴 Baixa'; classe = 'baixa'; }
-                
                 return { score: scoreConfianca, nivel, classe };
-            } catch (error) {
-                return { score: null, nivel: 'N/A', classe: 'baixa' };
-            }
+            } catch (error) { return { score: null, nivel: 'N/A', classe: 'baixa' }; }
         }
         
-        /**
-         * Índice de Pressão de Demanda (IPD)
-         */
         function calcularIPD(destino, dadosHistoricos, todosDestinos) {
             try {
                 const variacao = destino.variacao || 0;
                 const variacaoNorm = Math.min(Math.abs(variacao), 100);
-                
                 let aceleracao = 0;
                 const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id);
                 if (historico.length >= 3) {
@@ -785,345 +680,150 @@
                     aceleracao = Math.abs(var1 - var2);
                 }
                 const aceleracaoNorm = Math.min(aceleracao * 2, 100);
-                
                 let concentracao = 0;
-                const origens = [
-                    destino.origem_1_pct || 0,
-                    destino.origem_2_pct || 0,
-                    destino.origem_3_pct || 0
-                ];
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0];
                 const somaOrigens = origens.reduce((a, b) => a + b, 0);
                 if (somaOrigens > 0) {
                     const proporcoes = origens.map(o => o / somaOrigens);
                     concentracao = proporcoes.reduce((sum, p) => sum + (p * p), 0) * 100;
                 }
-                
                 const ipd = (0.4 * variacaoNorm) + (0.3 * aceleracaoNorm) + (0.3 * concentracao);
                 return Math.round(ipd);
-            } catch (error) {
-                return null;
-            }
+            } catch (error) { return null; }
         }
         
         function calcularMomentum(destino, dadosHistoricos) {
             try {
-                const historico = dadosHistoricos
-                    .filter(d => d.destino_id === destino.destino_id)
-                    .slice(0, 5);
-                
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 5);
                 if (historico.length < 3) return "Dados Insuficientes";
-                
                 const ultimo = historico[0].interesse;
                 const penultimo = historico[1].interesse;
                 const antepenultimo = historico[2].interesse;
-                
                 const direcao = ultimo > penultimo && penultimo > antepenultimo ? 1 :
                                ultimo < penultimo && penultimo < antepenultimo ? -1 : 0;
-                
                 let somaVar = 0;
-                for (let i = 0; i < historico.length - 1; i++) {
-                    somaVar += Math.abs(historico[i].interesse - historico[i+1].interesse);
-                }
+                for (let i = 0; i < historico.length - 1; i++) { somaVar += Math.abs(historico[i].interesse - historico[i+1].interesse); }
                 const velocidade = somaVar / (historico.length - 1);
-                
                 const valores = historico.map(h => h.interesse);
                 const media = valores.reduce((a,b) => a+b, 0) / valores.length;
                 const variancia = valores.reduce((sum, v) => sum + Math.pow(v - media, 2), 0) / valores.length;
                 const consistencia = 100 - Math.min(Math.sqrt(variancia), 100);
-                
                 if (direcao === 1 && velocidade > 5 && consistencia > 60) return "🚀 Forte";
                 if (direcao === -1) return "📉 Perdendo";
                 return "Moderado";
-            } catch (error) {
-                return "N/A";
-            }
+            } catch (error) { return "N/A"; }
         }
-        
         
         function calcularOportunidade(destino, todosDestinos) {
             try {
-                // ==========================
-                // MÉDIA PONDERADA (Peso = Interesse)
-                // ==========================
-
-                const itens = (todosDestinos || [])
-                    .map(function(d) {
-                        return {
-                            variacao: Number(d.variacao),
-                            peso: Number(d.interesse)
-                        };
-                    })
-                    .filter(function(x) {
-                        return Number.isFinite(x.variacao) && 
-                               Number.isFinite(x.peso) && 
-                               x.peso > 0;
-                    });
-
+                const itens = (todosDestinos || []).map(function(d) {
+                    return { variacao: Number(d.variacao), peso: Number(d.interesse) };
+                }).filter(function(x) { return Number.isFinite(x.variacao) && Number.isFinite(x.peso) && x.peso > 0; });
                 if (itens.length === 0) return null;
-
-                const somaPesos = itens.reduce(function(sum, x) {
-                    return sum + x.peso;
-                }, 0);
-
+                const somaPesos = itens.reduce(function(sum, x) { return sum + x.peso; }, 0);
                 if (somaPesos === 0) return null;
-
-                const mediaPonderada = itens.reduce(function(sum, x) {
-                    return sum + (x.variacao * x.peso);
-                }, 0) / somaPesos;
-
+                const mediaPonderada = itens.reduce(function(sum, x) { return sum + (x.variacao * x.peso); }, 0) / somaPesos;
                 const variacaoDestino = Number(destino.variacao);
                 if (!Number.isFinite(variacaoDestino)) return null;
                 if (mediaPonderada === 0) return null;
-
                 return variacaoDestino / mediaPonderada;
-
-            } catch (error) {
-                return null;
-            }
+            } catch (error) { return null; }
         }
 
-        /**
-         * IPCR FINAL (0-100) — índice composto simples e interpretável
-         * Componentes (já existentes no painel):
-         * - Variação (%), com travas anti-outlier
-         * - Pressão de Demanda (IPD, 0-100)
-         * - Share PA (participação entre os 15 destinos)
-         * - Momentum (qualitativo → score)
-         *
-         * Pesos (simples de explicar):
-         * Variação 40% | IPD 30% | Share 20% | Momentum 10%
-         */
         function calcularIPCRFinal(destino, todosHistoricos, todosDestinosUltimos) {
             try {
-                // Helpers locais (sem dependências externas)
                 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-                const toNum = (v) => {
-                    const n = Number(v);
-                    return Number.isFinite(n) ? n : null;
-                };
-
-                // 1) Variação (%): trava em -50%..+50% para evitar explosão
+                const toNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : null; };
                 const variacao = toNum(destino.variacao);
                 const variacaoClamped = variacao === null ? null : clamp(variacao, -50, 50);
-                const scoreVariacao = variacaoClamped === null ? 50 : Math.round(((variacaoClamped + 50) / 100) * 100); // 0..100
-
-                // 2) IPD (0..100) já calculado
+                const scoreVariacao = variacaoClamped === null ? 50 : Math.round(((variacaoClamped + 50) / 100) * 100);
                 const ipd = toNum(destino.ipd);
                 const scoreIPD = ipd === null ? 50 : clamp(Math.round(ipd), 0, 100);
-
-                // 3) Share PA (%): normaliza pelo maior share do dia (0..100)
                 const share = toNum(destino.share);
                 let scoreShare = 50;
                 if (share !== null && Array.isArray(todosDestinosUltimos) && todosDestinosUltimos.length > 0) {
-                    const shares = todosDestinosUltimos
-                        .map(d => Number(d.share))
-                        .filter(x => Number.isFinite(x) && x > 0);
+                    const shares = todosDestinosUltimos.map(d => Number(d.share)).filter(x => Number.isFinite(x) && x > 0);
                     const maxShare = shares.length ? Math.max.apply(null, shares) : 0;
-                    if (maxShare > 0) {
-                        scoreShare = clamp(Math.round((share / maxShare) * 100), 0, 100);
-                    }
+                    if (maxShare > 0) scoreShare = clamp(Math.round((share / maxShare) * 100), 0, 100);
                 }
-
-                // 4) Momentum (qualitativo → score simples)
                 const mom = String(destino.momentum || '').toLowerCase();
                 let scoreMomentum = 50;
                 if (mom.includes('forte') || mom.includes('🚀')) scoreMomentum = 80;
                 else if (mom.includes('moderado') || mom.includes('⚡')) scoreMomentum = 60;
                 else if (mom.includes('perdendo') || mom.includes('📉')) scoreMomentum = 30;
-
-                // Índice composto (0..100)
-                const ipcrFinal = Math.round(
-                    (scoreVariacao * 0.40) +
-                    (scoreIPD * 0.30) +
-                    (scoreShare * 0.20) +
-                    (scoreMomentum * 0.10)
-                );
-
+                const ipcrFinal = Math.round((scoreVariacao * 0.40) + (scoreIPD * 0.30) + (scoreShare * 0.20) + (scoreMomentum * 0.10));
                 return clamp(ipcrFinal, 0, 100);
-            } catch (e) {
-                return null;
-            }
+            } catch (e) { return null; }
         }
-
                 
         function calcularRisco(destino) {
             try {
-                const origens = [
-                    destino.origem_1_pct || 0,
-                    destino.origem_2_pct || 0,
-                    destino.origem_3_pct || 0
-                ];
-                
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0];
                 const somaOrigens = origens.reduce((a, b) => a + b, 0);
                 if (somaOrigens === 0) return "N/A";
-                
                 const proporcoes = origens.map(o => o / somaOrigens);
                 const hhi = proporcoes.reduce((sum, p) => sum + (p * p), 0);
-                
                 if (hhi > 0.5) return "🔴 Alto";
                 if (hhi > 0.35) return "🟡 Médio";
                 return "🟢 Baixo";
-            } catch (error) {
-                return "N/A";
-            }
+            } catch (error) { return "N/A"; }
         }
         
-        /**
-         * CALCULAR IPCR (Índice de Pressão Comparativa Regional)
-         * CORREÇÃO: Agora SEMPRE retorna um objeto válido, mesmo sem concorrentes
-         */
         function calcularIPCR(destinoPA, dadosConcorrentesNacionais) {
             try {
                 console.log(`🔍 Calculando IPCR para ${destinoPA.destino_id}...`);
-                
                 const variacaoPA = parseFloat(destinoPA.variacao);
                 if (isNaN(variacaoPA) || destinoPA.variacao === null || destinoPA.variacao === undefined) {
-                    console.log('⚠️ Sem variação PA');
-                    return {
-                        ipcr: null,
-                        status: '⏸️ Sem Dados de Variação',
-                        classe: 'estavel',
-                        variacaoPA: null,
-                        mediaConcorrentes: null,
-                        concorrentes: []
-                    };
+                    return { ipcr: null, status: '⏸️ Sem Dados de Variação', classe: 'estavel', variacaoPA: null, mediaConcorrentes: null, concorrentes: [] };
                 }
-                
                 const concorrentes = MAPA_CONCORRENCIA[destinoPA.destino_id];
-                
-                // SE NÃO TEM CONCORRENTES MAPEADOS
                 if (!concorrentes || concorrentes.length === 0) {
-                    console.log(`⚠️ ${destinoPA.destino_id} não tem concorrentes mapeados`);
-                    
                     let status, classe;
-                    if (variacaoPA > 10) {
-                        status = '📈 Crescimento Forte';
-                        classe = 'ganhando';
-                    } else if (variacaoPA < -10) {
-                        status = '📉 Queda Acentuada';
-                        classe = 'perdendo';
-                    } else if (variacaoPA > 0) {
-                        status = '✅ Crescimento Moderado';
-                        classe = 'ganhando';
-                    } else {
-                        status = '➡️ Estável';
-                        classe = 'estavel';
-                    }
-                    
-                    return {
-                        ipcr: null,
-                        status: status,
-                        classe: classe,
-                        variacaoPA: variacaoPA,
-                        mediaConcorrentes: null,
-                        concorrentes: [],
-                        semConcorrentes: true
-                    };
+                    if (variacaoPA > 10) { status = '📈 Crescimento Forte'; classe = 'ganhando'; }
+                    else if (variacaoPA < -10) { status = '📉 Queda Acentuada'; classe = 'perdendo'; }
+                    else if (variacaoPA > 0) { status = '✅ Crescimento Moderado'; classe = 'ganhando'; }
+                    else { status = '➡️ Estável'; classe = 'estavel'; }
+                    return { ipcr: null, status, classe, variacaoPA, mediaConcorrentes: null, concorrentes: [], semConcorrentes: true };
                 }
-                
-                // TEM CONCORRENTES - Buscar dados
                 if (!dadosConcorrentesNacionais || dadosConcorrentesNacionais.length === 0) {
-                    console.log('⚠️ Sem dados de concorrentes nacionais');
-                    return {
-                        ipcr: null,
-                        status: '⏸️ Aguardando Dados Nacionais',
-                        classe: 'estavel',
-                        variacaoPA: variacaoPA,
-                        mediaConcorrentes: null,
-                        concorrentes: []
-                    };
+                    return { ipcr: null, status: '⏸️ Aguardando Dados Nacionais', classe: 'estavel', variacaoPA, mediaConcorrentes: null, concorrentes: [] };
                 }
-                
                 const ultimaData = [...new Set(dadosConcorrentesNacionais.map(d => d.data_coleta.split('T')[0]))].sort().pop();
-                const concorrentesData = dadosConcorrentesNacionais.filter(c => String(c.data_coleta).split('T')[0] === String(ultimaData).split('T')[0]);
-                
-                const variacoesConcorrentes = concorrentes
-                    .map(concId => {
-                        const historicoConc = dadosConcorrentesNacionais.filter(d => d.destino_id === concId);
-                        if (historicoConc.length < 2) return null;
-                        
-                        const atual = historicoConc[0].interesse;
-                        const anterior = historicoConc[1].interesse;
-                        const variacao = anterior !== 0 ? ((atual - anterior) / anterior * 100) : 0;
-                        
-                        return {
-                            id: concId,
-                            nome: CONCORRENTES_INFO[concId]?.nome || concId,
-                            variacao: variacao,
-                            interesse: atual
-                        };
-                    })
-                    .filter(v => v !== null);
-                
-                // Proteção contra array vazio
+                const variacoesConcorrentes = concorrentes.map(concId => {
+                    const historicoConc = dadosConcorrentesNacionais.filter(d => d.destino_id === concId);
+                    if (historicoConc.length < 2) return null;
+                    const atual = historicoConc[0].interesse;
+                    const anterior = historicoConc[1].interesse;
+                    const variacao = anterior !== 0 ? ((atual - anterior) / anterior * 100) : 0;
+                    return { id: concId, nome: CONCORRENTES_INFO[concId]?.nome || concId, variacao, interesse: atual };
+                }).filter(v => v !== null);
                 if (variacoesConcorrentes.length === 0) {
-                    console.log('⚠️ Nenhum concorrente com dados válidos');
-                    return {
-                        ipcr: null,
-                        status: '⏸️ Dados Insuficientes',
-                        classe: 'estavel',
-                        variacaoPA: variacaoPA,
-                        mediaConcorrentes: null,
-                        concorrentes: []
-                    };
+                    return { ipcr: null, status: '⏸️ Dados Insuficientes', classe: 'estavel', variacaoPA, mediaConcorrentes: null, concorrentes: [] };
                 }
-                
                 const mediaConcorrentes = variacoesConcorrentes.reduce((sum, c) => sum + c.variacao, 0) / variacoesConcorrentes.length;
-                
-                // ========== LÓGICA IPCR CORRIGIDA ==========
-                let ipcr = null;
-                let status, classe;
-                
+                let ipcr = null; let status, classe;
                 if (mediaConcorrentes === 0) {
-                    if (variacaoPA > 0)      { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                    if (variacaoPA > 0) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
                     else if (variacaoPA < 0) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
-                    else                     { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
-                }
-                // Sinais opostos → quem está positivo ganha
-                else if (variacaoPA > 0 && mediaConcorrentes < 0) {
-                    status = '✅ Ganhando Competitividade'; classe = 'ganhando';
-                }
-                else if (variacaoPA < 0 && mediaConcorrentes > 0) {
-                    status = '⚠️ Perdendo Competitividade'; classe = 'perdendo';
-                }
-                // Mesmo sinal → razão das magnitudes
+                    else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; }
+                } else if (variacaoPA > 0 && mediaConcorrentes < 0) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                else if (variacaoPA < 0 && mediaConcorrentes > 0) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
                 else {
                     const ratio = Math.abs(variacaoPA) / Math.abs(mediaConcorrentes);
                     ipcr = ratio;
-                    
                     if (variacaoPA > 0) {
-                        // Ambos positivos: ratio > 1.2 = PA sobe mais = ganhando
-                        if (ratio > 1.2)      { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                        if (ratio > 1.2) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
                         else if (ratio < 0.8) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
-                        else                  { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
+                        else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; }
                     } else {
-                        // Ambos negativos: ratio > 1.2 = PA cai mais = perdendo
-                        if (ratio > 1.2)      { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
+                        if (ratio > 1.2) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
                         else if (ratio < 0.8) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
-                        else                  { status = '➡️ Estável vs Concorrentes';  classe = 'estavel'; }
+                        else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; }
                     }
                 }
-                
-                console.log(`✅ IPCR: ratio=${ipcr !== null ? ipcr.toFixed(2) : 'N/A'} | PA=${Number(variacaoPA).toFixed(1)}% | Conc=${Number(mediaConcorrentes).toFixed(1)}%`);
-                
-                return {
-                    ipcr: ipcr,
-                    status: status,
-                    classe: classe,
-                    variacaoPA: variacaoPA,
-                    mediaConcorrentes: mediaConcorrentes,
-                    concorrentes: variacoesConcorrentes
-                };
+                return { ipcr, status, classe, variacaoPA, mediaConcorrentes, concorrentes: variacoesConcorrentes };
             } catch (error) {
-                console.error('❌ Erro ao calcular IPCR:', error);
-                return {
-                    ipcr: null,
-                    status: '⏸️ Dados Insuficientes',
-                    classe: 'estavel',
-                    variacaoPA: destinoPA.variacao || null,
-                    mediaConcorrentes: null,
-                    concorrentes: []
-                };
+                return { ipcr: null, status: '⏸️ Dados Insuficientes', classe: 'estavel', variacaoPA: destinoPA.variacao || null, mediaConcorrentes: null, concorrentes: [] };
             }
         }
         
@@ -1132,18 +832,15 @@
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
         const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
         const fontSize = 14;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
-        
         function drawMatrix() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#00c6ff';
             ctx.font = `${fontSize}px monospace`;
-            
             drops.forEach((y, i) => {
                 const text = chars[Math.floor(Math.random() * chars.length)];
                 const x = i * fontSize;
@@ -1152,114 +849,44 @@
                 drops[i]++;
             });
         }
-        
         setInterval(drawMatrix, 50);
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         
         // ========== INICIALIZAR MAPA ==========
         function inicializarMapa() {
             try {
-                if (typeof L === 'undefined') {
-                    console.error('❌ Leaflet não carregado! Tentando novamente em 1s...');
-                    setTimeout(inicializarMapa, 1000);
-                    return;
-                }
-                
-                console.log('🗺️ Iniciando mapa...');
-                
-                if (mapInstance) {
-                    console.log('Removendo instância anterior do mapa...');
-                    mapInstance.remove();
-                }
-                
+                if (typeof L === 'undefined') { setTimeout(inicializarMapa, 1000); return; }
+                if (mapInstance) mapInstance.remove();
                 const mapElement = document.getElementById('map');
-                if (!mapElement) {
-                    console.error('❌ Elemento #map não encontrado no DOM!');
-                    return;
-                }
-                
-                mapInstance = L.map('map', {
-                    center: [-3.5, -52.5],
-                    zoom: 6,
-                    zoomControl: true,
-                    scrollWheelZoom: true
-                });
-                
+                if (!mapElement) return;
+                mapInstance = L.map('map', { center: [-3.5, -52.5], zoom: 6, zoomControl: true, scrollWheelZoom: true });
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    className: 'map-tiles'
+                    attribution: '© OpenStreetMap contributors', className: 'map-tiles'
                 }).addTo(mapInstance);
-                
                 mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
-                
-                console.log('✅ Mapa inicializado com sucesso!');
-            } catch (error) {
-                console.error('❌ Erro ao inicializar mapa:', error);
-            }
+            } catch (error) { console.error('❌ Erro ao inicializar mapa:', error); }
         }
         
         // ========== RENDERIZAR MARKERS NO MAPA ==========
         function renderizarMapa(dados) {
             try {
-                console.log('🗺️ Renderizando mapa com dados...');
-                
-                if (!mapInstance) {
-                    console.warn('⚠️ Mapa não inicializado, tentando inicializar...');
-                    inicializarMapa();
-                    setTimeout(() => renderizarMapa(dados), 500);
-                    return;
-                }
-                
-                if (typeof L === 'undefined') {
-                    console.error('❌ Leaflet não disponível ao renderizar markers!');
-                    return;
-                }
-                
-                mapInstance.eachLayer((layer) => {
-                    if (layer instanceof L.Marker) {
-                        mapInstance.removeLayer(layer);
-                    }
-                });
-                
+                if (!mapInstance) { inicializarMapa(); setTimeout(() => renderizarMapa(dados), 500); return; }
+                if (typeof L === 'undefined') return;
+                mapInstance.eachLayer((layer) => { if (layer instanceof L.Marker) mapInstance.removeLayer(layer); });
                 const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
                 const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
-                
-                console.log(`📍 Adicionando ${dadosUltimos.length} markers ao mapa...`);
-                
-                let markersAdicionados = 0;
                 dadosUltimos.forEach((dest, index) => {
                     const info = (DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' });
-                    if (!info || !info.lat || !info.lng) {
-                        console.warn(`⚠️ Coordenadas ausentes para ${dest.destino_id}`);
-                        return;
-                    }
-                    
+                    if (!info || !info.lat || !info.lng) return;
                     const cor = getMarkerColor(dest.interesse);
-                    
                     const customIcon = L.divIcon({
                         className: 'custom-marker',
-                        html: `<div style="
-                            background: ${cor};
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 50%;
-                            border: 3px solid rgba(0, 0, 0, 0.5);
-                            box-shadow: 0 0 15px ${cor}, 0 4px 10px rgba(0,0,0,0.3);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 14px;
-                        ">${info.emoji}</div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
+                        html: `<div style="background:${cor};width:24px;height:24px;border-radius:50%;border:3px solid rgba(0,0,0,0.5);box-shadow:0 0 15px ${cor},0 4px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">${info.emoji}</div>`,
+                        iconSize: [24, 24], iconAnchor: [12, 12]
                     });
-                    
                     const popupContent = `
                         <div class="popup-title">${info.emoji} ${info.nome}</div>
-                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                        <div class="popup-metric"><strong>Pulso ABR:</strong> ${escalaABR(dest.interesse)}</div>
                         <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
                         ${dest.origem_1 ? `
                             <div class="popup-origins">
@@ -1269,194 +896,92 @@
                             </div>
                         ` : ''}
                     `;
-                    
-                    L.marker([info.lat, info.lng], { icon: customIcon })
-                        .addTo(mapInstance)
-                        .bindPopup(popupContent);
-                    
-                    markersAdicionados++;
+                    L.marker([info.lat, info.lng], { icon: customIcon }).addTo(mapInstance).bindPopup(popupContent);
                 });
-                
-                console.log(`✅ ${markersAdicionados} markers adicionados ao mapa com sucesso!`);
-            } catch (error) {
-                console.error('❌ Erro ao renderizar mapa:', error);
-            }
+            } catch (error) { console.error('❌ Erro ao renderizar mapa:', error); }
         }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
         async function buscarDados() {
             try {
-                console.log('🔍 Buscando dados do Supabase...');
-                const { data, error } = await supabaseClient
-                    .from('pulse_amazonia')
-                    .select('*')
-                   .order('data_coleta', { ascending: false }).order('created_at', { ascending: false })
-                    .limit(5000)
-                
-                if (error) {
-                    console.error('❌ Erro Supabase:', error);
-                    throw error;
-                }
-                
-                if (!data || data.length === 0) {
-                    console.warn('⚠️ Nenhum dado encontrado');
-                    mostrarEstadoVazio();
-                    return [];
-                }
-                
-                console.log(`✅ ${data.length} registros carregados (pulse_amazonia)`);
+                const { data, error } = await supabaseClient.from('pulse_amazonia').select('*')
+                    .order('data_coleta', { ascending: false }).order('created_at', { ascending: false }).limit(5000);
+                if (error) throw error;
+                if (!data || data.length === 0) { mostrarEstadoVazio(); return []; }
+                console.log(`✅ ${data.length} registros carregados`);
                 return data;
-            } catch (error) {
-                console.error('❌ Erro ao buscar dados:', error);
-                mostrarErro('Erro ao conectar com banco de dados');
-                return [];
-            }
+            } catch (error) { mostrarErro('Erro ao conectar com banco de dados'); return []; }
         }
         
         async function buscarDadosConcorrentes() {
             try {
-                console.log('🔍 Buscando dados de concorrentes nacionais...');
-                const { data, error } = await supabaseClient
-                    .from('concorrentes_nacionais')
-                    .select('*')
-                    .order('data_coleta', { ascending: false })
-                    .limit(5000)
-                
-                if (error) {
-                    console.error('❌ Erro Supabase (concorrentes):', error);
-                    return [];
-                }
-                
-                if (!data || data.length === 0) {
-                    console.warn('⚠️ Nenhum dado de concorrentes encontrado');
-                    return [];
-                }
-                
-                console.log(`✅ ${data.length} registros de concorrentes carregados`);
-                return data;
-            } catch (error) {
-                console.error('❌ Erro ao buscar dados de concorrentes:', error);
-                return [];
-            }
+                const { data, error } = await supabaseClient.from('concorrentes_nacionais').select('*')
+                    .order('data_coleta', { ascending: false }).limit(5000);
+                if (error) return [];
+                return data || [];
+            } catch (error) { return []; }
         }
         
         // ========== PROCESSAR E RENDERIZAR ==========
         async function atualizarDados() {
-            console.log('🔄 Atualizando dados...');
             const dados = await buscarDados();
             const concorrentes = await buscarDadosConcorrentes();
-            
             if (dados.length === 0) return;
-            
             dadosGlobais = dados;
             dadosConcorrentes = concorrentes;
-            
             renderizarCards(dados);
             renderizarTimeline(dados);
             renderizarMapa(dados);
             gerarBoletim(dados, concorrentes);
             renderizarCalendario();
-            
-            console.log('✅ Dashboard atualizado com sucesso!');
         }
         
         // ========== GERAR BOLETIM POR DESTINO ==========
         function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
-            console.log(`📊 Gerando boletim para ${destino.destino_id}...`);
-            
             const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
             const dataFormatada = new Date(destino.data_coleta + 'T12:00:00').toLocaleDateString('pt-BR');
-            
             const nowcasting = calcularNowcasting(destino, todosDestinos);
             const confiabilidade = calcularConfiabilidade(destino, todosDestinos);
             const momentum = calcularMomentum(destino, todosDestinos);
             const risco = calcularRisco(destino);
-            
-            // Calcular IPCR
             const ipcr = calcularIPCR(destino, concorrentes);
-            console.log('IPCR retornado:', ipcr);
-            console.log('🔍 IPCR JSON COMPLETO:', JSON.stringify(ipcr, null, 2));
             
-            // IPCR HTML - SEMPRE MOSTRAR ALGO
             let ipcrHTML = '';
             if (ipcr) {
                 if (ipcr.variacaoPA === null) {
-                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">Competitividade Nacional (IPCR)</div>' +
-                        '<div class="ipcr-item">' +
-                        '<div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">⏳ Aguardando 2ª coleta para calcular variação</div>' +
-                        '<div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>' +
-                        '</div></div>';
+                    ipcrHTML = '<div class="boletim-section ipcr-section"><div class="boletim-section-title">Competitividade Nacional (IPCR)</div><div class="ipcr-item"><div class="ipcr-comparacao" style="font-size:0.85rem;color:var(--text-dim);">⏳ Aguardando 2ª coleta para calcular variação</div><div class="ipcr-status estavel">⏸️ Dados Insuficientes</div></div></div>';
                 } else if (ipcr.semConcorrentes) {
-                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">Performance Nacional</div>' +
-                        '<div class="ipcr-item">' +
-                        '<div class="ipcr-comparacao">Variação PA: ' + 
-                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
-                        '<div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 4px; color: var(--text-dim);">Sem concorrentes diretos mapeados</div>' +
-                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
-                        '</div></div>';
+                    ipcrHTML = '<div class="boletim-section ipcr-section"><div class="boletim-section-title">Performance Nacional</div><div class="ipcr-item"><div class="ipcr-comparacao">Variação PA: ' + (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div><div class="ipcr-comparacao" style="font-size:0.7rem;margin-top:4px;color:var(--text-dim);">Sem concorrentes diretos mapeados</div><div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div></div></div>';
                 } else if (ipcr.concorrentes.length > 0) {
                     const principais = ipcr.concorrentes.slice(0, 3);
-                    const indiceHTML = ipcr.ipcr !== null ? '<div class="ipcr-comparacao" style="margin-top: 4px;">Índice: ' + ipcr.ipcr.toFixed(2) + '</div>' : '';
-                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">Competitividade Nacional (IPCR)</div>' +
-                        '<div class="ipcr-item">' +
-                        '<div class="ipcr-comparacao">PA: ' +
-                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') +
-                        ' | Concorrentes: ' +
-                        (ipcr.mediaConcorrentes !== null ? (ipcr.mediaConcorrentes >= 0 ? '+' : '') + Number(ipcr.mediaConcorrentes).toFixed(1) + '%' : 'N/A') +
-                        '</div>' +
-                        '<div class="ipcr-comparacao" style="font-size: 0.7rem; margin-top: 6px;">vs ' + principais.map(c => c.nome).join(', ') + '</div>' +
-                        indiceHTML +
-                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
-                        '</div></div>';
+                    const indiceHTML = ipcr.ipcr !== null ? '<div class="ipcr-comparacao" style="margin-top:4px;">Índice: ' + ipcr.ipcr.toFixed(2) + '</div>' : '';
+                    ipcrHTML = '<div class="boletim-section ipcr-section"><div class="boletim-section-title">Competitividade Nacional (IPCR)</div><div class="ipcr-item"><div class="ipcr-comparacao">PA: ' + (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + ' | Concorrentes: ' + (ipcr.mediaConcorrentes !== null ? (ipcr.mediaConcorrentes >= 0 ? '+' : '') + Number(ipcr.mediaConcorrentes).toFixed(1) + '%' : 'N/A') + '</div><div class="ipcr-comparacao" style="font-size:0.7rem;margin-top:6px;">vs ' + principais.map(c => c.nome).join(', ') + '</div>' + indiceHTML + '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div></div></div>';
                 } else {
-                    ipcrHTML = '<div class="boletim-section ipcr-section">' +
-                        '<div class="boletim-section-title">Competitividade Nacional</div>' +
-                        '<div class="ipcr-item">' +
-                        '<div class="ipcr-comparacao">Variação PA: ' +
-                        (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div>' +
-                        '<div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div>' +
-                        '</div></div>';
+                    ipcrHTML = '<div class="boletim-section ipcr-section"><div class="boletim-section-title">Competitividade Nacional</div><div class="ipcr-item"><div class="ipcr-comparacao">Variação PA: ' + (ipcr.variacaoPA !== null ? (ipcr.variacaoPA >= 0 ? '+' : '') + Number(ipcr.variacaoPA).toFixed(1) + '%' : 'N/A') + '</div><div class="ipcr-status ' + ipcr.classe + '">' + ipcr.status + '</div></div></div>';
                 }
             }
             
-            // Calcular Camada 2 (Origem Ajustada)
             const historico = todosDestinos.filter(d => d.destino_id === destino.destino_id);
             const camada2 = pulseCamada2Compute(destino.destino_id, historico);
-            console.log('🔍 Camada 2 resultado:', camada2);
-            
-            // HTML Camada 2
             let camada2HTML = '';
             if (camada2.mode === 'observada' || camada2.mode === 'inferida') {
                 const badgeClass = camada2.mode === 'observada' ? 'ganhando' : 'perdendo';
-                camada2HTML = '<div class="boletim-section">' +
-                    '<div class="boletim-section-title">Mercado Emissor (Camada 2)</div>' +
-                    '<div class="ipcr-item">' +
-                    '<div class="ipcr-status ' + badgeClass + '" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
-                    '<div class="ipcr-comparacao" style="font-size: 0.75rem; line-height: 1.4;">' + camada2.text + '</div>' +
-                    '</div></div>';
+                camada2HTML = '<div class="boletim-section"><div class="boletim-section-title">Mercado Emissor (Camada 2)</div><div class="ipcr-item"><div class="ipcr-status ' + badgeClass + '" style="font-size:0.75rem;margin-bottom:8px;">' + camada2.badge + '</div><div class="ipcr-comparacao" style="font-size:0.75rem;line-height:1.4;">' + camada2.text + '</div></div></div>';
             } else if (camada2.mode === 'insuficiente') {
-                camada2HTML = '<div class="boletim-section">' +
-                    '<div class="boletim-section-title">Mercado Emissor (Camada 2)</div>' +
-                    '<div class="ipcr-item">' +
-                    '<div class="ipcr-status estavel" style="font-size: 0.75rem; margin-bottom: 8px;">' + camada2.badge + '</div>' +
-                    '<div class="ipcr-comparacao" style="font-size: 0.75rem; color: var(--text-dim);">' + camada2.text + '</div>' +
-                    '</div></div>';
+                camada2HTML = '<div class="boletim-section"><div class="boletim-section-title">Mercado Emissor (Camada 2)</div><div class="ipcr-item"><div class="ipcr-status estavel" style="font-size:0.75rem;margin-bottom:8px;">' + camada2.badge + '</div><div class="ipcr-comparacao" style="font-size:0.75rem;color:var(--text-dim);">' + camada2.text + '</div></div></div>';
             }
             
             const html = `
                 <div class="boletim-section">
                     <div class="boletim-section-title">${info.nome}</div>
-                    <p style="font-size: 0.75rem; color: var(--text-dim);">${dataFormatada}</p>
+                    <p style="font-size:0.75rem;color:var(--text-dim);">${dataFormatada}</p>
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
-                        <li>Pulso: ${destino.interesse}/100</li>
+                        <li>Pulso ABR: ${escalaABR(destino.interesse)}</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
-                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
+                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${escalaABR(nowcasting.valor)} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
                     </ul>
                 </div>
@@ -1482,33 +1007,24 @@
                 ${camada2HTML}
                 ${ipcrHTML}
             `;
-            
-            console.log('📝 HTML length:', html.length);
-            console.log('📝 ipcrHTML length:', ipcrHTML.length);
-            console.log('📝 ipcrHTML content:', ipcrHTML || 'VAZIO');
             document.getElementById('boletim-content').innerHTML = html;
-            console.log('✅ Boletim gerado com sucesso');
         }
         
         // ========== RENDERIZAR CARDS ==========
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
-            
             const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
             const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
-            
             const somaInteresse = dadosUltimos.reduce((sum, d) => sum + d.interesse, 0);
             
             const destinosProcessados = dadosUltimos.map(d => {
                 const share = ((d.interesse / somaInteresse) * 100).toFixed(1);
-                
                 const coletas = dados.filter(dd => dd.destino_id === d.destino_id);
                 let variacao = null;
                 if (coletas.length > 1) {
                     const anterior = coletas[1].interesse;
                     variacao = anterior !== 0 ? ((d.interesse - anterior) / anterior * 100).toFixed(1) : 0;
                 }
-                
                 return { ...d, share, variacao };
             });
             
@@ -1519,15 +1035,7 @@
                 const momentum = calcularMomentum(dest, dados);
                 const oportunidade = calcularOportunidade(dest, destinosProcessados);
                 const risco = calcularRisco(dest);
-
-                // IPCR Final (0-100) — índice composto simples
-                const ipcr_final = calcularIPCRFinal(
-                    { ...dest, ipd, momentum },
-                    dados,
-                    destinosProcessados
-                );
-
-                // IPCR comparativo com concorrentes nacionais
+                const ipcr_final = calcularIPCRFinal({ ...dest, ipd, momentum }, dados, destinosProcessados);
                 const ipcr_comp = calcularIPCR(dest, dadosConcorrentes);
                 return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final, ipcr_comp };
             });
@@ -1536,33 +1044,6 @@
             
             container.innerHTML = destinosOrdenados.map((dest, index) => {
                 const info = DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' };
-                
-                let ipdClass = 'neutral';
-                let ipdLabel = 'Moderada';
-                if (dest.ipd !== null) {
-                    if (dest.ipd >= 70) { ipdClass = 'negative'; ipdLabel = '🔴 Alta'; }
-                    else if (dest.ipd >= 40) { ipdClass = 'neutral'; ipdLabel = '🟡 Moderada'; }
-                    else { ipdClass = 'positive'; ipdLabel = '🟢 Baixa'; }
-                }
-                
-                let ipdDesc = '';
-                if (dest.ipd !== null && dest.ipd >= 60) {
-                    ipdDesc = dest.risco === '🔴 Alto' ? 'Crescimento concentrado em poucos mercados' : 'Crescimento acelerado com demanda distribuída';
-                } else if (dest.ipd !== null) {
-                    ipdDesc = 'Demanda estável';
-                }
-                
-                let oportunidadeTexto = '';
-                if (dest.oportunidade !== null && !isNaN(dest.oportunidade)) {
-                    const mult = Math.abs(dest.oportunidade).toFixed(1);
-                    if (dest.oportunidade > 1.5) {
-                        oportunidadeTexto = `Crescendo ${mult}x mais rápido que média PA`;
-                    } else if (dest.oportunidade < 0.5) {
-                        oportunidadeTexto = `Crescendo ${mult}x mais devagar que média PA`;
-                    } else {
-                        oportunidadeTexto = `Crescimento próximo à média estadual`;
-                    }
-                }
                 
                 return `
                     <div class="dest-card" data-index="${index}">
@@ -1573,11 +1054,9 @@
                         ${(function(){ var v = gerarVeredito(dest); return '<div style="padding:10px 14px;border-radius:10px;margin-bottom:12px;border-left:3px solid ' + v.borda + ';background:' + v.cor + '"><div style="font-size:13px;font-weight:700;color:white">' + v.titulo + '</div><div style="font-size:11px;color:#9ca3af;margin-top:2px">' + v.frase + '</div></div>'; })()} 
                         
                         <div class="metric-row">
-                            <div class="metric-label">Pulso</div>
-                            <div class="metric-value">${dest.interesse}/100</div>
+                            <div class="metric-label">Pulso ABR</div>
+                            <div class="metric-value">${escalaABR(dest.interesse)}</div>
                         </div>
-                        
-
                         
                         ${dest.variacao !== null ? `
                         <div class="metric-row">
@@ -1642,15 +1121,11 @@
                 `;
             }).join('');
             
-            // ADICIONAR EVENTOS DE CLIQUE NOS CARDS
             setTimeout(() => {
                 document.querySelectorAll('.dest-card').forEach((card, index) => {
                     card.addEventListener('click', () => {
                         const destino = destinosOrdenados[index];
-                        console.log(`Card clicado: ${destino.destino_id}`);
                         gerarBoletimDestino(destino, dados, dadosConcorrentes);
-                        
-                        // Scroll suave para o boletim em mobile
                         if (window.innerWidth <= 1200) {
                             document.querySelector('.boletim').scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
@@ -1663,17 +1138,16 @@
         function renderizarTimeline(dados) {
             const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
             const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
-                        const top5 = dadosUltimos
-                .sort((a, b) => b.interesse - a.interesse)
-                .slice(0, 5)
-                .map(d => d.destino_id);
+            const top5 = dadosUltimos.sort((a, b) => b.interesse - a.interesse).slice(0, 5).map(d => d.destino_id);
+            
+            const periodoSelecionado = parseInt(document.getElementById('period-select').value) || 3;
             
             const datasetsData = {};
             top5.forEach(destId => {
                 datasetsData[destId] = dados
                     .filter(d => d.destino_id === destId && d.interesse > 0)
                     .reverse()
-                    .slice(-( parseInt(document.getElementById('period-select').value) || 7 ));
+                    .slice(-periodoSelecionado);
             });
             
             const labels = datasetsData[top5[0]].map(d => {
@@ -1687,7 +1161,7 @@
                 const info = (DESTINOS_INFO[destId] || { nome: destId, emoji: '📍' });
                 return {
                     label: info.nome,
-                    data: datasetsData[destId].map((d,i,arr) => i === 0 ? 0 : d.interesse - arr[i-1].interesse),
+                    data: datasetsData[destId].map(d => (d.interesse / 10)),
                     borderColor: cores[i],
                     backgroundColor: cores[i] + '20',
                     borderWidth: 3,
@@ -1707,166 +1181,99 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: { color: '#eaf3ff', font: { size: 12, weight: 600 } }
-                        },
+                        legend: { display: true, position: 'top', labels: { color: '#eaf3ff', font: { size: 12, weight: 600 } } },
                         tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(15, 18, 22, 0.95)',
-                            titleColor: '#00c6ff',
-                            bodyColor: '#eaf3ff',
-                            borderColor: '#00c6ff',
-                            borderWidth: 1
+                            mode: 'index', intersect: false,
+                            backgroundColor: 'rgba(15, 18, 22, 0.95)', titleColor: '#00c6ff', bodyColor: '#eaf3ff', borderColor: '#00c6ff', borderWidth: 1,
+                            callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1); } }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            
-                            ticks: { color: '#9ca3af' },
+                            min: 0, max: 10,
+                            ticks: { color: '#9ca3af', stepSize: 2 },
                             grid: { color: 'rgba(255,255,255,0.05)' }
                         },
-                        x: {
-                            ticks: { color: '#9ca3af' },
-                            grid: { color: 'rgba(255,255,255,0.05)' }
-                        }
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
                     }
                 }
             });
         }
         
-        // ========== GERAR BOLETIM GERAL (VISÃO AGREGADA) ==========
+        // ========== GERAR BOLETIM GERAL ==========
         function gerarBoletim(dados, concorrentes) {
             const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
-            const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);                                    
-            const top3 = dadosUltimos
-                .sort((a, b) => b.interesse - a.interesse)
-                .slice(0, 3)
-                .map(d => {
-                    const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' });
-                    return `${info.nome} (${d.interesse})`;
-                });
-            
+            const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
+            const top3 = dadosUltimos.sort((a, b) => b.interesse - a.interesse).slice(0, 3).map(d => {
+                const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' });
+                return `${info.nome} (${escalaABR(d.interesse)})`;
+            });
             const origensMap = {};
             dadosUltimos.forEach(d => {
                 if (d.origem_1) origensMap[d.origem_1] = (origensMap[d.origem_1] || 0) + d.origem_1_pct * d.interesse;
                 if (d.origem_2) origensMap[d.origem_2] = (origensMap[d.origem_2] || 0) + d.origem_2_pct * d.interesse;
                 if (d.origem_3) origensMap[d.origem_3] = (origensMap[d.origem_3] || 0) + d.origem_3_pct * d.interesse;
             });
-            
-            const topOrigens = Object.entries(origensMap)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([cidade]) => cidade);
-            
+            const topOrigens = Object.entries(origensMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([cidade]) => cidade);
             const dataFormatada = new Date(ultimaData + 'T12:00:00').toLocaleDateString('pt-BR');
             
             const html = `
-                <div class="boletim-section">
-                    <div class="boletim-section-title">Data: ${dataFormatada}</div>
-                </div>
+                <div class="boletim-section"><div class="boletim-section-title">Data: ${dataFormatada}</div></div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Top 3 Destinos PA</div>
-                    <ul class="boletim-list">
-                        ${top3.map(t => `<li>${t}</li>`).join('')}
-                    </ul>
+                    <ul class="boletim-list">${top3.map(t => `<li>${t}</li>`).join('')}</ul>
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Top 3 Origens Agregadas</div>
-                    <ul class="boletim-list">
-                        ${topOrigens.map(o => `<li>${formatarOrigem(o)}</li>`).join('')}
-                    </ul>
+                    <ul class="boletim-list">${topOrigens.map(o => `<li>${formatarOrigem(o)}</li>`).join('')}</ul>
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Insights</div>
-                    <p>Total de ${dadosUltimos.length} destinos monitorados. Sinais digitais agregados + modelagem proprietária ABR.</p>
-                    <p style="margin-top: 8px; font-size: 0.75rem;"><strong>Dica:</strong> Clique em qualquer destino para ver a análise detalhada.</p>
+                    <p>Total de ${dadosUltimos.length} destinos monitorados. Escala proprietária ABR (0–10) + modelagem proprietária.</p>
+                    <p style="margin-top:8px;font-size:0.75rem;"><strong>Dica:</strong> Clique em qualquer destino para ver a análise detalhada.</p>
                 </div>
             `;
-            
             document.getElementById('boletim-content').innerHTML = html;
         }
         
         function copiarBoletim() {
             const content = document.getElementById('boletim-content').innerText;
-            navigator.clipboard.writeText(content).then(() => {
-                alert('✅ Boletim copiado para área de transferência!');
-            });
+            navigator.clipboard.writeText(content).then(() => { alert('✅ Boletim copiado!'); });
         }
         
         // ========== CALENDÁRIO ==========
         function renderizarCalendario() {
-            const ano = mesAtual.getFullYear();
-            const mes = mesAtual.getMonth();
-            
+            const ano = mesAtual.getFullYear(); const mes = mesAtual.getMonth();
             const nomeMes = mesAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             document.getElementById('calendar-month').textContent = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
-            
             const primeiroDia = new Date(ano, mes, 1).getDay();
             const ultimoDia = new Date(ano, mes + 1, 0).getDate();
-            
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            
             ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(dia => {
-                const label = document.createElement('div');
-                label.className = 'calendar-day-label';
-                label.textContent = dia;
-                grid.appendChild(label);
+                const label = document.createElement('div'); label.className = 'calendar-day-label'; label.textContent = dia; grid.appendChild(label);
             });
-            
-            for (let i = 0; i < primeiroDia; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'calendar-day disabled';
-                grid.appendChild(empty);
-            }
-            
+            for (let i = 0; i < primeiroDia; i++) { const empty = document.createElement('div'); empty.className = 'calendar-day disabled'; grid.appendChild(empty); }
             for (let dia = 1; dia <= ultimoDia; dia++) {
-                const dayEl = document.createElement('div');
-                dayEl.className = 'calendar-day';
-                dayEl.textContent = dia;
-                
+                const dayEl = document.createElement('div'); dayEl.className = 'calendar-day'; dayEl.textContent = dia;
                 const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
                 const temDados = dadosGlobais.some(d => d.data_coleta === dataStr);
-                
                 if (temDados) dayEl.classList.add('has-data');
-                
                 grid.appendChild(dayEl);
             }
         }
         
-        function navegarMes(direcao) {
-            mesAtual.setMonth(mesAtual.getMonth() + direcao);
-            renderizarCalendario();
-        }
+        function navegarMes(direcao) { mesAtual.setMonth(mesAtual.getMonth() + direcao); renderizarCalendario(); }
         
         function mostrarEstadoVazio() {
-            document.getElementById('destinations-container').innerHTML = `
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <div class="empty-state-icon">🌴</div>
-                    <p>Nenhum dado disponível ainda.<br>Aguardando primeira coleta...</p>
-                </div>
-            `;
+            document.getElementById('destinations-container').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">🌴</div><p>Nenhum dado disponível ainda.<br>Aguardando primeira coleta...</p></div>';
         }
-        
         function mostrarErro(msg) {
-            document.getElementById('destinations-container').innerHTML = `
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <div class="empty-state-icon">⚠️</div>
-                    <p>${msg}</p>
-                </div>
-            `;
+            document.getElementById('destinations-container').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">⚠️</div><p>' + msg + '</p></div>';
         }
         
         // ========== INICIALIZAÇÃO ==========
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Inicializando PULSE AMAZÔNIA...');
-            inicializarMapa();
-            atualizarDados();
-        });
+        window.addEventListener('DOMContentLoaded', () => { inicializarMapa(); atualizarDados(); });
         
         document.getElementById('period-select').addEventListener('change', (e) => {
             const customDates = document.getElementById('custom-dates');
@@ -1878,21 +1285,17 @@
 <script>
 // ===============================
 // EDIÇÃO 4 — EFEITO UAU
-// 1) Ranking Histórico Simplificado
-// 3) Selo Estratégico Automático
 // ===============================
 
 function calcularRankingHistorico(destinoId, dados) {
     const historico = dados.filter(d => d.destino_id === destinoId);
     if (historico.length < 5) return null;
-
     const media = historico.slice(0, 5).reduce((sum, d) => sum + d.interesse, 0) / 5;
     return Math.round(media);
 }
 
 function gerarSeloEstrategico(destino) {
     if (!destino.variacao) return "⚖️ Estável";
-
     const v = parseFloat(destino.variacao);
     if (v >= 15) return "🚀 Destino em Explosão";
     if (v >= 5) return "📈 Tendência de Alta";
@@ -1900,39 +1303,29 @@ function gerarSeloEstrategico(destino) {
     if (v < 0) return "📉 Ajuste de Demanda";
     return "⚖️ Estável";
 }
-    function gerarVeredito(destino) {
-            const v = parseFloat(destino.variacao) || 0;
-            const i = destino.interesse || 0;
-            if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
-            if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
-            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
-        }
 
-// Override leve do render de cards (sem alterar estrutura principal)
+function gerarVeredito(destino) {
+    const v = parseFloat(destino.variacao) || 0;
+    const i = destino.interesse || 0;
+    if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
+    if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
+    return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
+}
+
 const _renderizarCardsOriginal = renderizarCards;
 renderizarCards = function(dados) {
     _renderizarCardsOriginal(dados);
-
     const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
     const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
-
     document.querySelectorAll('.dest-card').forEach((card, index) => {
         const destino = dadosUltimos.sort((a,b)=>b.interesse-a.interesse)[index];
         if (!destino) return;
-
-        const rankingHist = calcularRankingHistorico(destino.destino_id, dados);
-        const selo = gerarSeloEstrategico(destino);
-
-
-
-        // Borda do card reflete o veredito
         const vCard = gerarVeredito(destino);
         card.style.borderColor = vCard.borda;
         card.style.boxShadow = '0 0 12px ' + vCard.borda + '40';
     });
 };
-    </script>
-
+</script>
 
 </body>
-</html> 
+</html>
