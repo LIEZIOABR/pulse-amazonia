@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEMAND PULSE AMAZÔNIA - ABR Consultoria</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23000' stroke='%2300c6ff' stroke-width='2'/%3E%3Cpath d='M12 38 L22 28 L30 34 L40 18 L52 26' fill='none' stroke='%2300c6ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='40' cy='18' r='4' fill='%2300c6ff'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌴%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
@@ -296,7 +296,8 @@
                         <div>
                             <div class="filter-label">Período</div>
                             <select id="period-select">
-                                <option value="7" selected>Últimos 7 dias</option>
+                                <option value="3" selected>Últimos 3 dias</option>
+                                <option value="7">Últimos 7 dias</option>
                                 <option value="14">Últimos 14 dias</option>
                                 <option value="30">Últimos 30 dias</option>
                                 <option value="90">Últimos 90 dias</option>
@@ -311,14 +312,6 @@
                     <button class="btn-update" onclick="window.location.href = window.location.pathname + '?v=' + Date.now()">ATUALIZAR DADOS</button>
                 </section> 
                 
-                <!-- TIMELINE CHART -->
-                <section class="timeline-section">
-                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
-                    <div class="chart-wrapper">
-                        <canvas id="timeline-chart"></canvas>
-                    </div>
-                </section>
-                
                 <!-- DESTINATION CARDS -->
                 <div id="destinations-container" class="destinations-grid">
                     <div class="loading">
@@ -331,6 +324,14 @@
                 <section class="map-section">
                     <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Pulso de Demanda</h2>
                     <div id="map" class="map-container"></div>
+                </section>
+                
+                <!-- TIMELINE CHART -->
+                <section class="timeline-section">
+                    <h2 class="section-title">Pulso da Demanda - Top 5 Destinos</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
                 </section>
             </div>
             
@@ -401,7 +402,7 @@
     
     <!-- FOOTER -->
     <footer style="text-align: center; padding: 30px 20px; margin-top: 50px; border-top: 1px solid rgba(0,198,255,0.15); color: rgba(255,255,255,0.4); font-size: 12px; position: relative; z-index: 1;">
-        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#1a7b78687b746e7f695a7b7868797574696f766e34797577347868" style="color: rgba(0,198,255,0.6); text-decoration: none;"><span class="__cf_email__" data-cfemail="2b4a49594a455f4e586b4a4959484445585e475f05484446054959">[email&#160;protected]</span></a></p>
+        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#0a6b68786b647e6f794a6b6878696564797f667e24696567246878" style="color: rgba(0,198,255,0.6); text-decoration: none;"><span class="__cf_email__" data-cfemail="f9989b8b98978d9c8ab9989b8b9a96978a8c958dd79a9694d79b8b">[email&#160;protected]</span></a></p>
     </footer>
     
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -1009,6 +1010,15 @@
             document.getElementById('boletim-content').innerHTML = html;
         }
         
+        // ========== VEREDITO ESTRATÉGICO ==========
+        function gerarVeredito(destino) {
+            const v = parseFloat(destino.variacao) || 0;
+            const i = destino.interesse || 0;
+            if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
+            if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
+            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
+        }
+        
         // ========== RENDERIZAR CARDS ==========
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
@@ -1139,15 +1149,14 @@
             const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
             const top5 = dadosUltimos.sort((a, b) => b.interesse - a.interesse).slice(0, 5).map(d => d.destino_id);
             
-            const periodoSelecionado = parseInt(document.getElementById('period-select').value);
-            const pontosGrafico = (periodoSelecionado === 7 || isNaN(periodoSelecionado)) ? 5 : periodoSelecionado;
+            const periodoSelecionado = parseInt(document.getElementById('period-select').value) || 3;
             
             const datasetsData = {};
             top5.forEach(destId => {
                 datasetsData[destId] = dados
                     .filter(d => d.destino_id === destId && d.interesse > 0)
                     .reverse()
-                    .slice(-pontosGrafico);
+                    .slice(-periodoSelecionado);
             });
             
             const labels = datasetsData[top5[0]].map(d => {
@@ -1302,14 +1311,6 @@ function gerarSeloEstrategico(destino) {
     if (v <= -15) return "⚠️ Queda Relevante";
     if (v < 0) return "📉 Ajuste de Demanda";
     return "⚖️ Estável";
-}
-
-function gerarVeredito(destino) {
-    const v = parseFloat(destino.variacao) || 0;
-    const i = destino.interesse || 0;
-    if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
-    if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
-    return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
 }
 
 const _renderizarCardsOriginal = renderizarCards;
