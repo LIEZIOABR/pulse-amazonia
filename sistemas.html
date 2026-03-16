@@ -235,11 +235,11 @@
             </div>
 
             <!-- CARD 2: HOTEL PULSE -->
-            <div class="card disabled">
+            <div class="card active">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><circle cx="9" cy="7" r="1"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="7" r="1"/><circle cx="15" cy="11" r="1"/></svg>
                 <div class="card-title">Hotel Pulse</div>
                 <p class="kpi-desc" style="text-align: center;">Monitoramento de performance e competitividade para meios de hospedagem.</p>
-                <div class="card-status status-homolog">Sistema em Homologação</div>
+                <div class="btn-access" onclick="showModal('hotel')">Acessar Hotel Pulse</div>
                 <div class="btn-kpi" onclick="showKpi('hotel', event)">Ver Dicionário de KPIs</div>
             </div>
 
@@ -315,48 +315,48 @@
                 <div>
                     <div class="kpi-group-title">Performance</div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Interesse (0-100)</div>
-                        <div class="kpi-desc">Pulso digital do meio de hospedagem. Mede a força de atração do hotel ou pousada no ambiente online em relação ao período analisado.</div>
+                        <div class="kpi-name">Tarifa Mínima (R$)</div>
+                        <div class="kpi-desc">Menor tarifa pública disponível no Google Hotels para o hotel na data de coleta. Fonte: tarifas públicas agregadas.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Variação Percentual</div>
-                        <div class="kpi-desc">Quanto o interesse cresceu ou caiu em relação à coleta anterior. Indica se a propriedade está aquecendo ou perdendo tração.</div>
+                        <div class="kpi-name">Variação Tarifária</div>
+                        <div class="kpi-desc">Variação percentual da tarifa mínima em relação à coleta anterior. Indica movimento de precificação de curto prazo.</div>
                     </div>
                     <div class="kpi-item">
                         <div class="kpi-name">Selo Estratégico</div>
-                        <div class="kpi-desc">Classificação executiva da propriedade: Explosão, Aquecendo, Estável, Resfriando ou Crítico. Resume o momento em uma palavra.</div>
+                        <div class="kpi-desc">Classificação executiva da propriedade: Tarifa em Alta, Estável ou Tarifa em Queda. Resume o momento em uma palavra.</div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="kpi-group-title">Mercado & Origens</div>
+                    <div class="kpi-group-title">Competitividade</div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Top 3 Origens</div>
-                        <div class="kpi-desc">Principais mercados emissores da propriedade. Orienta estratégia de canais, campanhas e perfil do hóspede.</div>
+                        <div class="kpi-name">IPCR — Índice de Pressão Competitiva de Receita</div>
+                        <div class="kpi-desc">Compara a tarifa do hotel âncora com a média dos concorrentes monitorados. Acima de 1.0 = âncora pratica tarifa superior ao mercado.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Share no Destino</div>
-                        <div class="kpi-desc">Participação relativa da propriedade dentro do conjunto monitorado no mesmo destino. Mostra posição competitiva local.</div>
+                        <div class="kpi-name">Posição vs Âncora</div>
+                        <div class="kpi-desc">Para hotéis não-âncora: diferença percentual da tarifa em relação ao hotel âncora. Negativo = mais barato que a âncora.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
-                        <div class="kpi-desc">Identifica mercados externos reais, reduzindo o viés de demanda local. Melhora a leitura de hóspedes de fora da região.</div>
+                        <div class="kpi-name">Fonte de Dados</div>
+                        <div class="kpi-desc">Tarifas públicas coletadas via Google Hotels. Não representa valores negociados ou tarifas corporativas.</div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="kpi-group-title">Competitividade & Projeção</div>
+                    <div class="kpi-group-title">Análise Histórica</div>
                     <div class="kpi-item">
-                        <div class="kpi-name">IPCR — Competitividade Regional</div>
-                        <div class="kpi-desc">Compara a propriedade com concorrentes diretos no mesmo destino e fora dele. Indica ganho ou perda de posicionamento competitivo.</div>
+                        <div class="kpi-name">Evolução Tarifária</div>
+                        <div class="kpi-desc">Gráfico de linha comparando a evolução das tarifas de todos os hotéis monitorados no período selecionado.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Momentum</div>
-                        <div class="kpi-desc">Velocidade e consistência do movimento de demanda da propriedade. Diferencia crescimento real de picos isolados.</div>
+                        <div class="kpi-name">Mínima e Máxima 7 dias</div>
+                        <div class="kpi-desc">Faixa tarifária do hotel nos últimos 7 dias. Indica volatilidade de preço e estratégia de precificação dinâmica.</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-name">Nowcasting (Previsão 7 dias)</div>
-                        <div class="kpi-desc">Projeção de curto prazo para a propriedade. Apoia decisões de revenue management e gestão de disponibilidade.</div>
+                        <div class="kpi-name">Boletim Tarifário</div>
+                        <div class="kpi-desc">Resumo executivo copiável com ranking tarifário e análise IPCR do dia. Pronto para envio a gestores e clientes.</div>
                     </div>
                 </div>
             </div>
@@ -384,7 +384,7 @@
 
         <div class="modal-content">
             <h3 class="modal-title" id="modal-title">SISTEMA RESTRITO</h3>
-            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso para o Pulse Amazônia.</p>
+            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso.</p>
             <div class="input-group">
                 <input type="password" id="modal-pass" class="modal-input" placeholder="CHAVE DE ACESSO" autofocus>
                 <svg class="toggle-password" id="toggle-pass" viewBox="0 0 24 24" onclick="togglePasswordVisibility()"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -408,6 +408,9 @@
             if (system === 'amazonia') {
                 document.getElementById('modal-title').textContent = 'PULSE AMAZÔNIA';
                 document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Pulse Amazônia.';
+            } else if (system === 'hotel') {
+                document.getElementById('modal-title').textContent = 'HOTEL PULSE';
+                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Hotel Pulse.';
             } else {
                 document.getElementById('modal-title').textContent = 'SISTEMA RESTRITO';
                 document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o sistema.';
@@ -439,6 +442,8 @@
             if (PASSWORDS.includes(input)) {
                 if (currentSystem === 'amazonia') {
                     window.location.href = 'radar-amazonia.html';
+                } else if (currentSystem === 'hotel') {
+                    window.location.href = 'hotel-pulse.html';
                 } else {
                     window.location.href = 'radar.html';
                 }
