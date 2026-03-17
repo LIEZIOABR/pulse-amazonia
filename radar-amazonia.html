@@ -32,7 +32,7 @@
         
         /* ========== HEADER ========== */
         .header { text-align: center; margin-bottom: 40px; padding-top: 20px; position: relative; }
-        .header-nav { display: flex; gap: 10px; justify-content: flex-start; margin-bottom: 10px; }
+        .header-nav { position: absolute; top: 20px; left: 0; display: flex; gap: 10px; z-index: 10; }
         .btn-nav { border: 1px solid var(--accent); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; text-transform: uppercase; background: transparent; color: var(--accent); text-decoration: none; display: inline-block; }
         .btn-nav:hover { background: rgba(0,198,255,0.15); box-shadow: 0 0 20px rgba(0, 198, 255, 0.4); }
         
@@ -401,10 +401,10 @@
     
     <!-- FOOTER -->
     <footer style="text-align: center; padding: 30px 20px; margin-top: 50px; border-top: 1px solid rgba(0,198,255,0.15); color: rgba(255,255,255,0.4); font-size: 12px; position: relative; z-index: 1;">
-        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#94f5f6e6f5fae0f1e7d4f5f6e6f7fbfae7e1f8e0baf7fbf9baf6e6" style="color: rgba(0,198,255,0.6); text-decoration: none;"><span class="__cf_email__" data-cfemail="05646777646b71607645646777666a6b767069712b666a682b6777">[email&#160;protected]</span></a></p>
+        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="mailto:abrantes@abrconsult.com.br" style="color: rgba(0,198,255,0.6); text-decoration: none;">abrantes@abrconsult.com.br</a></p>
     </footer>
     
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // ========== CONFIGURAÇÃO SUPABASE ==========
         const SUPABASE_URL = 'https://ljeoxnxezjmfbqngoqxz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqZW94bnhlemptZmJxbmdvcXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzI3ODUsImV4cCI6MjA4NDYwODc4NX0.B112AG5HTFvJTXaxL2IrdoJf5fcSC-GEHKLsDwdsFgc';
@@ -1333,7 +1333,6 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">Insights</div>
                     <p>Total de ${dadosUltimos.length} destinos monitorados. Escala proprietária ABR (0–10) + modelagem proprietária.</p>
-                    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-main);font-style:italic;">${(function(){ const top1 = dadosUltimos.sort((a,b)=>b.interesse-a.interesse)[0]; if(!top1) return ''; const mom = String(top1.momentum||'').toLowerCase(); let tipoMom='moderado'; if(mom.includes('forte')||mom.includes('🚀')) tipoMom='forte'; else if(mom.includes('perdendo')||mom.includes('📉')) tipoMom='perdendo'; const v=parseFloat(top1.variacao)||0; const i=top1.interesse||0; let tipoV='monitorar'; if(v>=5||i>=60) tipoV='agir'; else if(v<=-5) tipoV='atencao'; return sortearFrase(tipoV+'_'+tipoMom); })()}</p>
                     <p style="margin-top:8px;font-size:0.75rem;"><strong>Dica:</strong> Clique em qualquer destino para ver a análise detalhada.</p>
                 </div>
             `;
@@ -1380,4 +1379,10 @@
         window.addEventListener('DOMContentLoaded', () => { inicializarMapa(); atualizarDados(); });
         
         document.getElementById('period-select').addEventListener('change', (e) => {
-            const cu
+            const customDates = document.getElementById('custom-dates');
+            customDates.style.display = e.target.value === 'custom' ? 'flex' : 'none';
+            if (dadosGlobais.length > 0) renderizarTimeline(dadosGlobais);
+        });
+    </script>
+</body>
+</html>
