@@ -401,10 +401,10 @@
     
     <!-- FOOTER -->
     <footer style="text-align: center; padding: 30px 20px; margin-top: 50px; border-top: 1px solid rgba(0,198,255,0.15); color: rgba(255,255,255,0.4); font-size: 12px; position: relative; z-index: 1;">
-        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#0a6b68786b647e6f794a6b6878696564797f667e24696567246878" style="color: rgba(0,198,255,0.6); text-decoration: none;"><span class="__cf_email__" data-cfemail="f9989b8b98978d9c8ab9989b8b9a96978a8c958dd79a9694d79b8b">[email&#160;protected]</span></a></p>
+        <p style="margin: 0;">© 2026 ABR Consultoria &nbsp;·&nbsp; <a href="mailto:abrantes@abrconsult.com.br" style="color: rgba(0,198,255,0.6); text-decoration: none;">abrantes@abrconsult.com.br</a></p>
     </footer>
     
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // ========== CONFIGURAÇÃO SUPABASE ==========
         const SUPABASE_URL = 'https://ljeoxnxezjmfbqngoqxz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqZW94bnhlemptZmJxbmdvcXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzI3ODUsImV4cCI6MjA4NDYwODc4NX0.B112AG5HTFvJTXaxL2IrdoJf5fcSC-GEHKLsDwdsFgc';
@@ -430,6 +430,79 @@
         let chartInstance = null;
         let mapInstance = null;
         let mesAtual = new Date(Date.now() + 3 * 60 * 60 * 1000);
+
+        // ========== BANCO DE FRASES ROTATIVAS ABR ==========
+        const FRASES_VEREDITO = {
+            'agir_forte': [
+                'Janela aberta — demanda em aceleração consistente',
+                'Pulso em alta com velocidade — momento de posicionamento ativo',
+                'Tendência confirmada — mercado sinalizando tração real',
+                'Crescimento com consistência — decisão não pode esperar',
+                'Demanda acelerando em todas as camadas — agir agora'
+            ],
+            'agir_moderado': [
+                'Alta demanda com ritmo controlado — janela estratégica aberta',
+                'Pulso elevado sem volatilidade — condição favorável para ação',
+                'Pressão de demanda sustentada — momento de captura de mercado',
+                'Interesse consolidado — oportunidade de precificação ativa',
+                'Demanda firme com estabilidade — agir antes da virada'
+            ],
+            'agir_perdendo': [
+                'Demanda alta mas desacelerando — janela se fechando',
+                'Pulso elevado com sinais de reversão — decisão urgente',
+                'Pico identificado — capturar antes da queda',
+                'Interesse ainda forte, tendência preocupante — agir já',
+                'Alta com momentum negativo — priorizar conversão imediata'
+            ],
+            'monitorar_forte': [
+                'Crescimento em curso — ainda sem pressão para ação imediata',
+                'Momentum positivo confirmado — acompanhar próxima coleta',
+                'Destino em trajetória ascendente — posição estratégica favorável',
+                'Tendência de alta sem urgência crítica — manter vigilância',
+                'Aceleração observada — aguardar confirmação antes de agir'
+            ],
+            'monitorar_moderado': [
+                'Demanda estável sem sinais de ruptura — rotina de monitoramento',
+                'Pulso dentro da normalidade — sem ação necessária agora',
+                'Mercado equilibrado — próxima coleta definirá direção',
+                'Estabilidade com crescimento moderado — posição neutra',
+                'Sem anomalias — manter frequência de acompanhamento'
+            ],
+            'monitorar_perdendo': [
+                'Demanda moderada com leve desaceleração — atenção crescente',
+                'Pulso neutro com tendência de queda — monitorar de perto',
+                'Estabilidade aparente com momentum negativo — sinal de alerta',
+                'Mercado sem pressão, mas tendência preocupa — vigiar',
+                'Queda de ritmo em demanda mediana — próxima coleta decisiva'
+            ],
+            'atencao_forte': [
+                'Queda de demanda contra momentum positivo — contradição a investigar',
+                'Pulso baixo apesar da aceleração — mercado enviando sinais mistos',
+                'Anomalia detectada — crescimento sem sustentação de base',
+                'Momentum forte em destino fragilizado — avaliar contexto externo',
+                'Aceleração sem tração real — possível distorção de dados'
+            ],
+            'atencao_moderado': [
+                'Demanda baixa com estabilidade — queda consolidada sem reversão',
+                'Pulso em zona crítica com ritmo estável — situação preocupante',
+                'Interesse reduzido sem sinais de recuperação — revisar posicionamento',
+                'Mercado estagnado em patamar baixo — ação corretiva necessária',
+                'Baixa demanda estabilizada — investigar causas antes de agir'
+            ],
+            'atencao_perdendo': [
+                'Queda consistente em destino fragilizado — situação crítica',
+                'Pulso baixo com aceleração negativa — reversão improvável no curto prazo',
+                'Demanda em colapso progressivo — requer intervenção estratégica',
+                'Tendência de queda confirmada em múltiplas coletas — alerta máximo',
+                'Destino em deterioração — reavaliar presença e canais imediatamente'
+            ]
+        };
+
+        function sortearFrase(chave) {
+            const arr = FRASES_VEREDITO[chave];
+            if (!arr || arr.length === 0) return '';
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
         
         const DESTINOS_INFO = {
             'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
@@ -1009,13 +1082,34 @@
             document.getElementById('boletim-content').innerHTML = html;
         }
         
-        // ========== VEREDITO ESTRATÉGICO ==========
+        // ========== VEREDITO ESTRATÉGICO COM FRASES ROTATIVAS ==========
         function gerarVeredito(destino) {
             const v = parseFloat(destino.variacao) || 0;
             const i = destino.interesse || 0;
-            if (v >= 5 || i >= 60) return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', icone: '🟢', titulo: 'Agir agora', frase: i >= 60 ? 'Destino com alta demanda — janela de ação aberta' : 'Demanda acelerando — considere precificação ativa' };
-            if (v <= -5) return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', icone: '🔴', titulo: 'Atenção', frase: 'Queda relevante — revisar posicionamento e canais' };
-            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', icone: '🟡', titulo: 'Monitorar', frase: 'Demanda estável — acompanhar próximas análises' };
+            const mom = String(destino.momentum || '').toLowerCase();
+
+            // Determinar momentum
+            let tipoMom = 'moderado';
+            if (mom.includes('forte') || mom.includes('🚀')) tipoMom = 'forte';
+            else if (mom.includes('perdendo') || mom.includes('📉')) tipoMom = 'perdendo';
+
+            // Determinar veredito
+            let tipoVeredito = 'monitorar';
+            if (v >= 5 || i >= 60) tipoVeredito = 'agir';
+            else if (v <= -5) tipoVeredito = 'atencao';
+
+            // Montar chave e sortear frase
+            const chave = tipoVeredito + '_' + tipoMom;
+            const frase = sortearFrase(chave);
+
+            // Definir visual por veredito
+            if (tipoVeredito === 'agir') {
+                return { cor: 'rgba(57,255,20,0.15)', borda: '#39ff14', titulo: 'Agir agora', frase };
+            }
+            if (tipoVeredito === 'atencao') {
+                return { cor: 'rgba(255,56,96,0.15)', borda: '#ff3860', titulo: 'Atenção', frase };
+            }
+            return { cor: 'rgba(255,234,0,0.15)', borda: '#ffea00', titulo: 'Monitorar', frase };
         }
         
         // ========== RENDERIZAR CARDS ==========
@@ -1290,33 +1384,5 @@
             if (dadosGlobais.length > 0) renderizarTimeline(dadosGlobais);
         });
     </script>
-
-<script>
-// ===============================
-// EDIÇÃO 4 — EFEITO UAU
-// ===============================
-
-function calcularRankingHistorico(destinoId, dados) {
-    const historico = dados.filter(d => d.destino_id === destinoId);
-    if (historico.length < 5) return null;
-    const media = historico.slice(0, 5).reduce((sum, d) => sum + d.interesse, 0) / 5;
-    return Math.round(media);
-}
-
-function gerarSeloEstrategico(destino) {
-    if (!destino.variacao) return "⚖️ Estável";
-    const v = parseFloat(destino.variacao);
-    if (v >= 15) return "🚀 Destino em Explosão";
-    if (v >= 5) return "📈 Tendência de Alta";
-    if (v <= -15) return "⚠️ Queda Relevante";
-    if (v < 0) return "📉 Ajuste de Demanda";
-    return "⚖️ Estável";
-}
-
-const _renderizarCardsOriginal = renderizarCards;
-renderizarCards = function(dados) {
-    _renderizarCardsOriginal(dados);
-    const ultimaData = dados.map(d => normData(d.data_coleta)).sort().pop();
-    const dadosUltimos = dados.filter(d => normData(d.data_coleta) === ultimaData);
-    document.querySelectorAll('.dest-card').forEach((card, index) => {
-        const destino = dadosUltimos.sort((a,b)=>b
+</body>
+</html>
