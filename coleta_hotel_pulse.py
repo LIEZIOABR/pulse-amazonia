@@ -1,6 +1,6 @@
 import os
 import requests
-from datetime import date
+from datetime import date, timedelta
 
 SERPAPI_KEY = os.environ['SERPAPI_KEY']
 SUPABASE_URL = os.environ['SUPABASE_URL']
@@ -15,7 +15,7 @@ HOTEIS = [
 ]
 
 CHECK_IN  = str(date.today())
-CHECK_OUT = str(date.today().replace(day=date.today().day + 1))
+CHECK_OUT = str(date.today() + timedelta(days=1))
 
 def coletar_tarifa(hotel):
     params = {
