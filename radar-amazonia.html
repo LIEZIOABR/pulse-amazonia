@@ -1654,13 +1654,6 @@
                         </div>
                         ` : ''}
                         
-                        ${oportunidadeTexto ? `
-                        <div class="metric-row">
-                            <div class="metric-label">Oportunidade</div>
-                            <div class="metric-value" style="font-size: 0.8rem;">${oportunidadeTexto}</div>
-                        </div>
-                        ` : ''}
-                        
                         <div class="metric-row">
                             <div class="metric-label">Risco de Mercado</div>
                             <div class="metric-value">${dest.risco}</div>
@@ -2021,22 +2014,30 @@ const FRASES_VEREDITO = {
     ]
 };
 
-function sortearFrase(veredito, momentum) {
+function sortearFrase(selo, momentum) {
     let chave = 'monitorar_estavel';
-    const v = (veredito || '').toLowerCase();
+    const s = (selo || '').toLowerCase();
     const m = (momentum || '').toLowerCase();
 
-    if (v.includes('agir')) {
-        if (m.includes('ganhando')) chave = 'agir_ganhando';
-        else if (m.includes('perdendo')) chave = 'agir_perdendo';
+    // Mapeia selo estratégico para categoria de veredito
+    const isAlta = s.includes('explosão') || s.includes('alta');
+    const isQueda = s.includes('queda') || s.includes('ajuste');
+
+    // Mapeia momentum para direção
+    const mGanhando = m.includes('forte') || m.includes('🚀');
+    const mPerdendo = m.includes('perdendo') || m.includes('📉');
+
+    if (isAlta) {
+        if (mGanhando) chave = 'agir_ganhando';
+        else if (mPerdendo) chave = 'agir_perdendo';
         else chave = 'agir_estavel';
-    } else if (v.includes('aten')) {
-        if (m.includes('ganhando')) chave = 'atencao_ganhando';
-        else if (m.includes('perdendo')) chave = 'atencao_perdendo';
+    } else if (isQueda) {
+        if (mGanhando) chave = 'atencao_ganhando';
+        else if (mPerdendo) chave = 'atencao_perdendo';
         else chave = 'atencao_estavel';
     } else {
-        if (m.includes('ganhando')) chave = 'monitorar_ganhando';
-        else if (m.includes('perdendo')) chave = 'monitorar_perdendo';
+        if (mGanhando) chave = 'monitorar_ganhando';
+        else if (mPerdendo) chave = 'monitorar_perdendo';
         else chave = 'monitorar_estavel';
     }
 
