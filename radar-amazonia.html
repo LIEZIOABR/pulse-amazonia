@@ -1875,7 +1875,14 @@
         
         function copiarBoletim() {
             const content = document.getElementById('boletim-content').innerText;
-            navigator.clipboard.writeText(content).then(() => {
+            // Sorteia frase rotativa ABR para o CTA
+            const selosNoTexto = content.match(/(Explosão|Alta|Queda|Ajuste|Estável)/i);
+            const momentosNoTexto = content.match(/(Forte|Perdendo|Moderado)/i);
+            const selo = selosNoTexto ? selosNoTexto[0] : 'Estável';
+            const momentum = momentosNoTexto ? momentosNoTexto[0] : 'Moderado';
+            const fraseCTA = typeof sortearFrase === 'function' ? sortearFrase(selo, momentum) : '';
+            const textoFinal = content + (fraseCTA ? '\n\n📊 ' + fraseCTA + '\n— ABR Consultoria' : '');
+            navigator.clipboard.writeText(textoFinal).then(() => {
                 alert('✅ Boletim copiado para área de transferência!');
             });
         }
