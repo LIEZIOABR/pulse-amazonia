@@ -1313,14 +1313,44 @@
         }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
+        function calcularDataInicio() {
+            const periodo = document.getElementById('period-select').value;
+            if (periodo === 'custom') {
+                return document.getElementById('date-start').value || null;
+            }
+            const d = new Date();
+            d.setDate(d.getDate() - parseInt(periodo));
+            return d.toISOString().split('T')[0];
+        }
+
+        function calcularDataFim() {
+            const periodo = document.getElementById('period-select').value;
+            if (periodo === 'custom') {
+                return document.getElementById('date-end').value || null;
+            }
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function calcularLimitDinamico(destinosPorDia) {
+            const periodo = document.getElementById('period-select').value;
+            const dias = periodo === 'custom' ? 90 : (parseInt(periodo) || 90);
+            return (dias * destinosPorDia) + 50;
+        }
+
         async function buscarDados() {
             try {
                 console.log('🔍 Buscando dados do Supabase...');
-                const { data, error } = await supabaseClient
+                const dataInicio = calcularDataInicio();
+                const dataFim = calcularDataFim();
+                const limitDinamico = calcularLimitDinamico(15);
+                let query = supabaseClient
                     .from('pulse_amazonia')
                     .select('*')
                     .order('data_coleta', { ascending: false })
-                    .limit(300);
+                    .limit(limitDinamico);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim)    query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
                 
                 if (error) {
                     console.error('❌ Erro Supabase:', error);
@@ -1345,11 +1375,17 @@
         async function buscarDadosConcorrentes() {
             try {
                 console.log('🔍 Buscando dados de concorrentes nacionais...');
-                const { data, error } = await supabaseClient
+                const dataInicio = calcularDataInicio();
+                const dataFim = calcularDataFim();
+                const limitConcorrentes = calcularLimitDinamico(8);
+                let query = supabaseClient
                     .from('concorrentes_nacionais')
                     .select('*')
                     .order('data_coleta', { ascending: false })
-                    .limit(200);
+                    .limit(limitConcorrentes);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim)    query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
                 
                 if (error) {
                     console.error('❌ Erro Supabase (concorrentes):', error);
