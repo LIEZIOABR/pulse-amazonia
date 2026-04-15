@@ -362,58 +362,86 @@
     <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
 
     <div class="kpi-item">
-        <div class="kpi-name">Interesse (0–100)</div>
+        <div class="kpi-name">Interesse (0–10) — Índice Proprietário ABR</div>
         <div class="kpi-desc">
-            Representa o pulso digital do destino. Funciona como peso estatístico nas métricas agregadas 
-            e indica a força relativa de atração de demanda no ambiente online.
+            Pulso digital do destino. Mede a força de atração de cada lugar no ambiente online em escala exclusiva ABR de 0 a 10. Quanto maior, mais o destino está sendo buscado por viajantes. 10 representa o pico histórico do período analisado.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Variação Percentual</div>
         <div class="kpi-desc">
-            Mede aceleração ou desaceleração da procura em relação à coleta anterior. 
-            Indica direção estratégica de curto prazo.
+            Quanto o interesse cresceu ou caiu em relação à coleta anterior. Positivo indica aquecimento de demanda; negativo indica arrefecimento. Referência de curto prazo para decisões táticas imediatas.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Share de Mercado PA</div>
         <div class="kpi-desc">
-            Participação relativa dentro dos 15 destinos monitorados. 
-            Demonstra posicionamento competitivo estadual.
+            Fatia que o destino ocupa dentro dos 15 monitorados no estado. Mostra quem domina e quem está perdendo espaço no portfólio paraense. Útil para comparar posicionamento relativo entre destinos concorrentes.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Pressão de Demanda</div>
         <div class="kpi-desc">
-            Índice composto que identifica intensidade competitiva e risco de concentração de mercado. 
-            Auxilia decisões de precificação e posicionamento.
+            Mede a intensidade da demanda em relação à capacidade de resposta do destino. Alta pressão indica risco de concentração e oportunidade de precificação agressiva. Baixa pressão indica demanda estável sem urgência de ação.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Momentum</div>
         <div class="kpi-desc">
-            Avalia velocidade e consistência do movimento da demanda. 
-            Indica tendência estrutural de crescimento ou perda de tração.
+            Velocidade e consistência do movimento da demanda nas últimas coletas. Forte indica crescimento consistente em múltiplas coletas seguidas. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Confiabilidade do Sinal</div>
+        <div class="kpi-desc">
+            Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Leva em conta volume de coletas, consistência histórica e diversidade de origens. Sinais de baixa confiabilidade devem ser interpretados com cautela.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Nowcasting — Previsão 7 dias</div>
+        <div class="kpi-desc">
+            Projeção de curto prazo baseada no histórico de coletas do destino. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Risco de Mercado</div>
+        <div class="kpi-desc">
+            Avalia a vulnerabilidade do destino a reversões bruscas de demanda. Leva em conta concentração de origem, volatilidade histórica e dependência de mercados emissores únicos. Alto risco exige estratégia de diversificação.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">IPCR Final (0–100)</div>
+        <div class="kpi-desc">
+            Índice composto que consolida variação, pressão de demanda, share e momentum em uma nota única de 0 a 100. Permite comparação direta entre destinos. Acima de 65 indica destino em janela de oportunidade.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">IPCR – Competitividade Regional</div>
         <div class="kpi-desc">
-            Compara desempenho do destino com concorrentes nacionais diretos. 
-            Identifica ganho ou perda de competitividade fora do estado.
+            Compara o desempenho do destino paraense com concorrentes nacionais diretos como Manaus, Fortaleza e Natal. Indica se o Pará está ganhando ou perdendo mercado fora do estado. Ex: PA +5% vs concorrentes +2% = Ganhando Competitividade.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Mercado Emissor (Camada 2)</div>
         <div class="kpi-desc">
-            Ajuste estatístico que reduz viés endógeno e identifica mercados externos recorrentes. 
-            Melhora leitura estratégica de origem real da demanda.
+            Identifica de onde realmente vem a demanda, removendo o viés do turista local que busca o próprio destino. Revela os mercados externos recorrentes e ajuda a direcionar campanhas para os estados certos.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Selo Estratégico</div>
+        <div class="kpi-desc">
+            Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%). Gerado a cada coleta.
         </div>
     </div>
 </section>
@@ -647,7 +675,7 @@
                 return {
                     mode: 'insuficiente',
                     badge: 'Baixo volume',
-                    text: 'Origem não observável (baixa diversidade no Trends).'
+                    text: 'Origem não observável (sinal insuficiente para leitura de mercado emissor).'
                 };
             }
             
@@ -680,14 +708,14 @@
                 return {
                     mode: 'inferida',
                     badge: '⚠️ Origem inferida: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')',
-                    text: 'Baixa diversidade no Trends. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
+                    text: 'Baixa diversidade de origem detectada. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
                 };
             }
             
             return {
                 mode: 'insuficiente',
                 badge: '⚠️ Baixa diversidade',
-                text: 'Origem não confiável (poucos estados no Trends / dominância alta). Aguarde mais coletas.'
+                text: 'Sinal de origem não confiável (dominância alta de mercado único). Aguarde mais coletas.'
             };
         }
         
@@ -1288,7 +1316,7 @@
                     
                     const popupContent = `
                         <div class="popup-title">${info.emoji} ${info.nome}</div>
-                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/10</div>
                         <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
                         ${dest.origem_1 ? `
                             <div class="popup-origins">
@@ -1529,7 +1557,7 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
-                        <li>Interesse Atual: ${destino.interesse}/100</li>
+                        <li>Interesse Atual: ${destino.interesse}/10</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
                         ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
@@ -1646,7 +1674,7 @@
                         
                         <div class="metric-row">
                             <div class="metric-label">Interesse Atual</div>
-                            <div class="metric-value">${dest.interesse}/100</div>
+                            <div class="metric-value">${dest.interesse}/10</div>
                         </div>
                         
                         ${dest.nowcasting && dest.nowcasting.valor !== null ? `
