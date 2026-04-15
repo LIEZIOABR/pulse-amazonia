@@ -1316,7 +1316,7 @@
                     
                     const popupContent = `
                         <div class="popup-title">${info.emoji} ${info.nome}</div>
-                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/10</div>
+                        <div class="popup-metric"><strong>Interesse:</strong> ${(dest.interesse/10).toFixed(1)}/10</div>
                         <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
                         ${dest.origem_1 ? `
                             <div class="popup-origins">
