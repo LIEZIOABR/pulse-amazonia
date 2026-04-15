@@ -1557,7 +1557,7 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
-                        <li>Interesse Atual: ${destino.interesse}/10</li>
+                        <li>Interesse Atual: ${(destino.interesse/10).toFixed(1)}/10</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
                         ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
@@ -1674,7 +1674,7 @@
                         
                         <div class="metric-row">
                             <div class="metric-label">Interesse Atual</div>
-                            <div class="metric-value">${dest.interesse}/10</div>
+                            <div class="metric-value">${(dest.interesse/10).toFixed(1)}/10</div>
                         </div>
                         
                         ${dest.nowcasting && dest.nowcasting.valor !== null ? `
@@ -1807,7 +1807,7 @@
                 const info = (DESTINOS_INFO[destId] || { nome: destId, emoji: '📍' });
                 return {
                     label: info.nome,
-                    data: datasetsData[destId].map(d => d.interesse),
+                    data: datasetsData[destId].map(d => (d.interesse/10).toFixed(1)),
                     borderColor: cores[i],
                     backgroundColor: cores[i] + '20',
                     borderWidth: 3,
@@ -1845,7 +1845,7 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
+                            max: 10,
                             ticks: { color: '#9ca3af' },
                             grid: { color: 'rgba(255,255,255,0.05)' }
                         },
@@ -1868,7 +1868,7 @@
                 .slice(0, 3)
                 .map(d => {
                     const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' });
-                    return `${info.emoji} ${info.nome} (${d.interesse})`;
+                    return `${info.emoji} ${info.nome} (${(d.interesse/10).toFixed(1)})`;
                 });
             
             const origensMap = {};
