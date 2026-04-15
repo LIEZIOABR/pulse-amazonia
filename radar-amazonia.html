@@ -1559,7 +1559,7 @@
                     <ul class="boletim-list">
                         <li>Interesse Atual: ${(destino.interesse/10).toFixed(1)}/10</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
-                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
+                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${(nowcasting.valor/10).toFixed(1)} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
                     </ul>
                 </div>
@@ -1681,7 +1681,7 @@
                         <div class="metric-row">
                             <div class="metric-label">Previsão 7 dias</div>
                             <div class="metric-value ${dest.nowcasting.valor > dest.interesse ? 'positive' : dest.nowcasting.valor < dest.interesse ? 'negative' : 'neutral'}">
-                                ${dest.nowcasting.valor} ${dest.nowcasting.direcao}
+                                ${(dest.nowcasting.valor/10).toFixed(1)} ${dest.nowcasting.direcao}
                             </div>
                         </div>
                         ` : ''}
