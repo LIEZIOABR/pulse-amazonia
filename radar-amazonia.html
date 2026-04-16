@@ -362,58 +362,86 @@
     <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
 
     <div class="kpi-item">
-        <div class="kpi-name">Interesse (0–100)</div>
+        <div class="kpi-name">Interesse (0–10) — Índice Proprietário ABR</div>
         <div class="kpi-desc">
-            Representa o pulso digital do destino. Funciona como peso estatístico nas métricas agregadas 
-            e indica a força relativa de atração de demanda no ambiente online.
+            Pulso digital do destino. Mede a força de atração de cada lugar no ambiente online em escala exclusiva ABR de 0 a 10. Quanto maior, mais o destino está sendo buscado por viajantes. 10 representa o pico histórico do período analisado.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Variação Percentual</div>
         <div class="kpi-desc">
-            Mede aceleração ou desaceleração da procura em relação à coleta anterior. 
-            Indica direção estratégica de curto prazo.
+            Quanto o interesse cresceu ou caiu em relação à coleta anterior. Positivo indica aquecimento de demanda; negativo indica arrefecimento. Referência de curto prazo para decisões táticas imediatas.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Share de Mercado PA</div>
         <div class="kpi-desc">
-            Participação relativa dentro dos 15 destinos monitorados. 
-            Demonstra posicionamento competitivo estadual.
+            Fatia que o destino ocupa dentro dos 15 monitorados no estado. Mostra quem domina e quem está perdendo espaço no portfólio paraense. Útil para comparar posicionamento relativo entre destinos concorrentes.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Pressão de Demanda</div>
         <div class="kpi-desc">
-            Índice composto que identifica intensidade competitiva e risco de concentração de mercado. 
-            Auxilia decisões de precificação e posicionamento.
+            Mede a intensidade da demanda em relação à capacidade de resposta do destino. Alta pressão indica risco de concentração e oportunidade de precificação agressiva. Baixa pressão indica demanda estável sem urgência de ação.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Momentum</div>
         <div class="kpi-desc">
-            Avalia velocidade e consistência do movimento da demanda. 
-            Indica tendência estrutural de crescimento ou perda de tração.
+            Velocidade e consistência do movimento da demanda nas últimas coletas. Forte indica crescimento consistente em múltiplas coletas seguidas. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Confiabilidade do Sinal</div>
+        <div class="kpi-desc">
+            Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Leva em conta volume de coletas, consistência histórica e diversidade de origens. Sinais de baixa confiabilidade devem ser interpretados com cautela.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Nowcasting — Previsão 7 dias</div>
+        <div class="kpi-desc">
+            Projeção de curto prazo baseada no histórico de coletas do destino. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Risco de Mercado</div>
+        <div class="kpi-desc">
+            Avalia a vulnerabilidade do destino a reversões bruscas de demanda. Leva em conta concentração de origem, volatilidade histórica e dependência de mercados emissores únicos. Alto risco exige estratégia de diversificação.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">IPCR Final (0–100)</div>
+        <div class="kpi-desc">
+            Índice composto que consolida variação, pressão de demanda, share e momentum em uma nota única de 0 a 100. Permite comparação direta entre destinos. Acima de 65 indica destino em janela de oportunidade.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">IPCR – Competitividade Regional</div>
         <div class="kpi-desc">
-            Compara desempenho do destino com concorrentes nacionais diretos. 
-            Identifica ganho ou perda de competitividade fora do estado.
+            Compara o desempenho do destino paraense com concorrentes nacionais diretos como Manaus, Fortaleza e Natal. Indica se o Pará está ganhando ou perdendo mercado fora do estado. Ex: PA +5% vs concorrentes +2% = Ganhando Competitividade.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Mercado Emissor (Camada 2)</div>
         <div class="kpi-desc">
-            Ajuste estatístico que reduz viés endógeno e identifica mercados externos recorrentes. 
-            Melhora leitura estratégica de origem real da demanda.
+            Identifica de onde realmente vem a demanda, removendo o viés do turista local que busca o próprio destino. Revela os mercados externos recorrentes e ajuda a direcionar campanhas para os estados certos.
+        </div>
+    </div>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Selo Estratégico</div>
+        <div class="kpi-desc">
+            Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%). Gerado a cada coleta.
         </div>
     </div>
 </section>
@@ -647,7 +675,7 @@
                 return {
                     mode: 'insuficiente',
                     badge: 'Baixo volume',
-                    text: 'Origem não observável (baixa diversidade no Trends).'
+                    text: 'Origem não observável (sinal insuficiente para leitura de mercado emissor).'
                 };
             }
             
@@ -680,14 +708,14 @@
                 return {
                     mode: 'inferida',
                     badge: '⚠️ Origem inferida: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')',
-                    text: 'Baixa diversidade no Trends. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
+                    text: 'Baixa diversidade de origem detectada. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
                 };
             }
             
             return {
                 mode: 'insuficiente',
                 badge: '⚠️ Baixa diversidade',
-                text: 'Origem não confiável (poucos estados no Trends / dominância alta). Aguarde mais coletas.'
+                text: 'Sinal de origem não confiável (dominância alta de mercado único). Aguarde mais coletas.'
             };
         }
         
@@ -1288,7 +1316,7 @@
                     
                     const popupContent = `
                         <div class="popup-title">${info.emoji} ${info.nome}</div>
-                        <div class="popup-metric"><strong>Interesse:</strong> ${dest.interesse}/100</div>
+                        <div class="popup-metric"><strong>Interesse:</strong> ${(dest.interesse/10).toFixed(1)}/10</div>
                         <div class="popup-metric"><strong>Ranking:</strong> #${index + 1} PA</div>
                         ${dest.origem_1 ? `
                             <div class="popup-origins">
@@ -1313,14 +1341,44 @@
         }
         
         // ========== BUSCAR DADOS DO SUPABASE ==========
+        function calcularDataInicio() {
+            const periodo = document.getElementById('period-select').value;
+            if (periodo === 'custom') {
+                return document.getElementById('date-start').value || null;
+            }
+            const d = new Date();
+            d.setDate(d.getDate() - parseInt(periodo));
+            return d.toISOString().split('T')[0];
+        }
+
+        function calcularDataFim() {
+            const periodo = document.getElementById('period-select').value;
+            if (periodo === 'custom') {
+                return document.getElementById('date-end').value || null;
+            }
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function calcularLimitDinamico(destinosPorDia) {
+            const periodo = document.getElementById('period-select').value;
+            const dias = periodo === 'custom' ? 90 : (parseInt(periodo) || 90);
+            return (dias * destinosPorDia) + 50;
+        }
+
         async function buscarDados() {
             try {
                 console.log('🔍 Buscando dados do Supabase...');
-                const { data, error } = await supabaseClient
+                const dataInicio = calcularDataInicio();
+                const dataFim = calcularDataFim();
+                const limitDinamico = calcularLimitDinamico(15);
+                let query = supabaseClient
                     .from('pulse_amazonia')
                     .select('*')
                     .order('data_coleta', { ascending: false })
-                    .limit(300);
+                    .limit(limitDinamico);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim)    query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
                 
                 if (error) {
                     console.error('❌ Erro Supabase:', error);
@@ -1345,11 +1403,17 @@
         async function buscarDadosConcorrentes() {
             try {
                 console.log('🔍 Buscando dados de concorrentes nacionais...');
-                const { data, error } = await supabaseClient
+                const dataInicio = calcularDataInicio();
+                const dataFim = calcularDataFim();
+                const limitConcorrentes = calcularLimitDinamico(8);
+                let query = supabaseClient
                     .from('concorrentes_nacionais')
                     .select('*')
                     .order('data_coleta', { ascending: false })
-                    .limit(200);
+                    .limit(limitConcorrentes);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim)    query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
                 
                 if (error) {
                     console.error('❌ Erro Supabase (concorrentes):', error);
@@ -1400,6 +1464,15 @@
             const confiabilidade = calcularConfiabilidade(destino, todosDestinos);
             const momentum = calcularMomentum(destino, todosDestinos);
             const risco = calcularRisco(destino);
+
+            // Ranking entre os 15 destinos na última data
+            const ultimaData = todosDestinos[0]?.data_coleta;
+            const ultimosDestinos = todosDestinos.filter(d => d.data_coleta === ultimaData);
+            const rankingAtual = ultimosDestinos
+                .slice()
+                .sort((a, b) => b.interesse - a.interesse)
+                .findIndex(d => d.destino_id === destino.destino_id) + 1;
+            const totalDestinos = ultimosDestinos.length;
             
             // Calcular IPCR
             const ipcr = calcularIPCR(destino, concorrentes);
@@ -1479,14 +1552,15 @@
                 <div class="boletim-section">
                     <div class="boletim-section-title">${info.emoji} ${info.nome}</div>
                     <p style="font-size: 0.75rem; color: var(--text-dim);">${dataFormatada}</p>
+                    ${rankingAtual > 0 ? `<p style="font-size: 0.75rem; color: var(--accent); font-weight: 700;">🏆 #${rankingAtual} de ${totalDestinos} destinos no Pará</p>` : ''}
                 </div>
                 <div class="boletim-section">
                     <div class="boletim-section-title">Métricas Principais</div>
                     <ul class="boletim-list">
-                        <li>Interesse Atual: ${destino.interesse}/100</li>
+                        <li>Interesse Atual: ${(destino.interesse/10).toFixed(1)}/10</li>
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
-                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${nowcasting.valor} ${nowcasting.direcao}</li>` : ''}
-                        ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${confiabilidade.score}/100)</li>` : ''}
+                        ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${(nowcasting.valor/10).toFixed(1)} ${nowcasting.direcao}</li>` : ''}
+                        ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${(confiabilidade.score/10).toFixed(1)}/10)</li>` : ''}
                     </ul>
                 </div>
                 <div class="boletim-section">
@@ -1494,7 +1568,7 @@
                     <ul class="boletim-list">
                         <li>Momentum: ${momentum}</li>
                         <li>Risco de Mercado: ${risco}</li>
-                        <li>IPCR Final (0-100): ${destino.ipcr_final !== null && destino.ipcr_final !== undefined ? (destino.ipcr_final + '/100') : 'N/A'}</li>
+                        <li>IPCR Final (0-10): ${destino.ipcr_final !== null && destino.ipcr_final !== undefined ? (destino.ipcr_final/10).toFixed(1) + '/10' : 'N/A'}</li>
                         <li>Share PA: ${destino.share}%</li>
                     </ul>
                 </div>
@@ -1567,13 +1641,13 @@
                 let ipdClass = 'neutral';
                 let ipdLabel = 'Moderada';
                 if (dest.ipd !== null) {
-                    if (dest.ipd >= 70) { ipdClass = 'negative'; ipdLabel = '🔴 Alta'; }
-                    else if (dest.ipd >= 40) { ipdClass = 'neutral'; ipdLabel = '🟡 Moderada'; }
+                    if (dest.ipd >= 7.0) { ipdClass = 'negative'; ipdLabel = '🔴 Alta'; }
+                    else if (dest.ipd >= 4.0) { ipdClass = 'neutral'; ipdLabel = '🟡 Moderada'; }
                     else { ipdClass = 'positive'; ipdLabel = '🟢 Baixa'; }
                 }
                 
                 let ipdDesc = '';
-                if (dest.ipd !== null && dest.ipd >= 60) {
+                if (dest.ipd !== null && dest.ipd >= 6.0) {
                     ipdDesc = dest.risco === '🔴 Alto' ? 'Crescimento concentrado em poucos mercados' : 'Crescimento acelerado com demanda distribuída';
                 } else if (dest.ipd !== null) {
                     ipdDesc = 'Demanda estável';
@@ -1600,14 +1674,14 @@
                         
                         <div class="metric-row">
                             <div class="metric-label">Interesse Atual</div>
-                            <div class="metric-value">${dest.interesse}/100</div>
+                            <div class="metric-value">${(dest.interesse/10).toFixed(1)}/10</div>
                         </div>
                         
                         ${dest.nowcasting && dest.nowcasting.valor !== null ? `
                         <div class="metric-row">
                             <div class="metric-label">Previsão 7 dias</div>
                             <div class="metric-value ${dest.nowcasting.valor > dest.interesse ? 'positive' : dest.nowcasting.valor < dest.interesse ? 'negative' : 'neutral'}">
-                                ${dest.nowcasting.valor} ${dest.nowcasting.direcao}
+                                ${(dest.nowcasting.valor/10).toFixed(1)} ${dest.nowcasting.direcao}
                             </div>
                         </div>
                         ` : ''}
@@ -1617,7 +1691,7 @@
                             <div class="metric-label">Confiabilidade</div>
                             <div class="metric-value">
                                 ${dest.confiabilidade.nivel}
-                                <span class="badge-confianca ${dest.confiabilidade.classe}">${dest.confiabilidade.score}/100</span>
+                                <span class="badge-confianca ${dest.confiabilidade.classe}">${(dest.confiabilidade.score/10).toFixed(1)}/10</span>
                             </div>
                         </div>
                         ` : ''}
@@ -1634,7 +1708,7 @@
                         ${dest.ipd !== null ? `
                         <div class="indice-destaque">
                             <div class="indice-titulo">💎 Pressão de Demanda</div>
-                            <div class="indice-valor ${ipdClass}">${ipdLabel} (${dest.ipd}/100)</div>
+                            <div class="indice-valor ${ipdClass}">${ipdLabel} (${(dest.ipd/10).toFixed(1)}/10)</div>
                             ${ipdDesc ? `<div class="indice-descricao">${ipdDesc}</div>` : ''}
                         </div>
                         ` : ''}
@@ -1648,8 +1722,8 @@
                         ${dest.ipcr_final !== null && dest.ipcr_final !== undefined ? `
                         <div class="metric-row">
                             <div class="metric-label">IPCR Final</div>
-                            <div class="metric-value ${dest.ipcr_final >= 70 ? 'positive' : dest.ipcr_final >= 40 ? 'neutral' : 'negative'}">
-                                ${dest.ipcr_final}/100
+                            <div class="metric-value ${dest.ipcr_final >= 7.0 ? 'positive' : dest.ipcr_final >= 4.0 ? 'neutral' : 'negative'}">
+                                ${(dest.ipcr_final/10).toFixed(1)}/10
                             </div>
                         </div>
                         ` : ''}
@@ -1733,7 +1807,7 @@
                 const info = (DESTINOS_INFO[destId] || { nome: destId, emoji: '📍' });
                 return {
                     label: info.nome,
-                    data: datasetsData[destId].map(d => d.interesse),
+                    data: datasetsData[destId].map(d => (d.interesse/10).toFixed(1)),
                     borderColor: cores[i],
                     backgroundColor: cores[i] + '20',
                     borderWidth: 3,
@@ -1771,7 +1845,7 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
+                            max: 10,
                             ticks: { color: '#9ca3af' },
                             grid: { color: 'rgba(255,255,255,0.05)' }
                         },
@@ -1794,7 +1868,7 @@
                 .slice(0, 3)
                 .map(d => {
                     const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' });
-                    return `${info.emoji} ${info.nome} (${d.interesse})`;
+                    return `${info.emoji} ${info.nome} (${(d.interesse/10).toFixed(1)})`;
                 });
             
             const origensMap = {};
@@ -1839,7 +1913,21 @@
         
         function copiarBoletim() {
             const content = document.getElementById('boletim-content').innerText;
-            navigator.clipboard.writeText(content).then(() => {
+            // Sorteia frase rotativa ABR para o CTA
+            const selosNoTexto = content.match(/(Explosão|Alta|Queda|Ajuste|Estável)/i);
+            const momentosNoTexto = content.match(/(Forte|Perdendo|Moderado)/i);
+            const selo = selosNoTexto ? selosNoTexto[0] : 'Estável';
+            const momentum = momentosNoTexto ? momentosNoTexto[0] : 'Moderado';
+            const fraseCTA = typeof sortearFrase === 'function' ? sortearFrase(selo, momentum) : '';
+
+            // Formatação otimizada para WhatsApp
+            const linhas = content.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const textoFormatado = linhas.join('\n');
+            const assinatura = '\n\n— ABR Consultoria · Inteligência de Demanda';
+            const ctaFinal = fraseCTA ? '\n\n📊 ' + fraseCTA + assinatura : assinatura;
+            const textoFinal = textoFormatado + ctaFinal;
+
+            navigator.clipboard.writeText(textoFinal).then(() => {
                 alert('✅ Boletim copiado para área de transferência!');
             });
         }
