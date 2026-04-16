@@ -305,7 +305,7 @@
                     </div>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <button class="btn-update" onclick="atualizarDados()" style="flex:1;">ATUALIZAR DADOS</button>
-                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:0 0 auto; padding:14px 18px; background:transparent; border:1px solid var(--accent); color:var(--accent);">⇅ Interesse</button>
+                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:0 0 auto; padding:14px 18px; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px;">Indice de Interesse por Destino</button>
                     </div>
                 </section>
                 
@@ -488,6 +488,7 @@
         let mapInstance = null;
         let mesAtual = new Date();
         let ordemAtual = 'interesse'; // 'interesse' ou 'ipcr'
+        let destinoSelecionado = null; // destino clicado para PDF
         
         const DESTINOS_INFO = {
             'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
@@ -1569,17 +1570,17 @@
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${(confiabilidade.score/10).toFixed(1)}/10)</li>` : ''}
                         ${(() => {
                             const hist = todosDestinos.filter(d => d.destino_id === destino.destino_id);
-                            const idx30 = hist.findIndex(d => {
+                            const idx15 = hist.findIndex(d => {
                                 const diff = (new Date(destino.data_coleta) - new Date(d.data_coleta)) / (1000*60*60*24);
-                                return diff >= 28;
+                                return diff >= 13;
                             });
-                            if (idx30 === -1) return '';
-                            const d30 = hist[idx30];
-                            const delta = destino.interesse - d30.interesse;
-                            const pct = d30.interesse !== 0 ? ((delta / d30.interesse) * 100).toFixed(1) : '0.0';
+                            if (idx15 === -1) return '';
+                            const d15 = hist[idx15];
+                            const delta = destino.interesse - d15.interesse;
+                            const pct = d15.interesse !== 0 ? ((delta / d15.interesse) * 100).toFixed(1) : '0.0';
                             const seta = delta > 0 ? '▲' : delta < 0 ? '▼' : '→';
                             const cor = delta > 0 ? 'color:#39ff14' : delta < 0 ? 'color:#ff3860' : '';
-                            return `<li>vs. 30 dias atrás: ${(d30.interesse/10).toFixed(1)}/10 <span style="${cor}">${seta} ${pct >= 0 ? '+' : ''}${pct}%</span></li>`;
+                            return `<li>vs. 15 dias atras: ${(d15.interesse/10).toFixed(1)}/10 <span style="${cor}">${seta} ${pct >= 0 ? '+' : ''}${pct}%</span></li>`;
                         })()}
                     </ul>
                 </div>
@@ -1617,7 +1618,7 @@
         function alternarOrdem() {
             ordemAtual = ordemAtual === 'interesse' ? 'ipcr' : 'interesse';
             const btn = document.getElementById('btn-ordem');
-            btn.textContent = ordemAtual === 'interesse' ? '⇅ Interesse' : '⇅ IPCR Final';
+            btn.textContent = ordemAtual === 'interesse' ? 'Indice de Interesse por Destino' : 'Indice de Pressao de Competitividade Regional';
             btn.style.borderColor = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
             btn.style.color = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
             if (dadosGlobais.length > 0) renderizarCards(dadosGlobais);
@@ -1803,6 +1804,7 @@
                     card.addEventListener('click', () => {
                         const destino = destinosOrdenados[index];
                         console.log(`🎯 Card clicado: ${destino.destino_id}`);
+                        destinoSelecionado = destino;
                         gerarBoletimDestino(destino, dados, dadosConcorrentes);
                         
                         // Scroll suave para o boletim em mobile
@@ -1946,56 +1948,105 @@
             document.getElementById('boletim-content').innerHTML = html;
         }
         
+        function limparEmojis(texto) {
+            return texto.replace(/[^\u0000-\u00FF\u0100-\u024F\u1E00-\u1EFF\n\r\t .,;:!?()\[\]{}<>\/\\@#$%^&*_+=|~`"'0-9A-Za-záàãâäéèêëíìîïóòõôöúùûüçñÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ-]/g, '');
+        }
+
         function exportarBoletimPDF() {
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-                
-                const content = document.getElementById('boletim-content').innerText;
-                const linhas = content.split('\n').filter(l => l.trim() !== '');
-                
+                const dataHoje = new Date().toLocaleDateString('pt-BR');
+
                 // Cabeçalho
-                doc.setFillColor(0, 0, 0);
-                doc.rect(0, 0, 210, 297, 'F');
+                doc.setFillColor(5, 10, 20);
+                doc.rect(0, 0, 210, 40, 'F');
                 doc.setTextColor(0, 198, 255);
-                doc.setFontSize(16);
+                doc.setFontSize(15);
                 doc.setFont('helvetica', 'bold');
-                doc.text('DEMAND PULSE AMAZÔNIA', 105, 20, { align: 'center' });
-                doc.setFontSize(9);
+                doc.text('DEMAND PULSE AMAZONIA', 105, 16, { align: 'center' });
+                doc.setFontSize(8);
                 doc.setTextColor(156, 163, 175);
-                doc.text('ABR Consultoria — Inteligência Turística do Pará', 105, 27, { align: 'center' });
-                
-                // Linha separadora
+                doc.text('ABR Consultoria - Inteligencia Turistica do Para', 105, 23, { align: 'center' });
+                doc.setFontSize(8);
+                doc.text('Gerado em: ' + dataHoje, 105, 30, { align: 'center' });
                 doc.setDrawColor(0, 198, 255);
-                doc.setLineWidth(0.5);
-                doc.line(15, 32, 195, 32);
-                
-                // Conteúdo
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                let y = 42;
-                linhas.forEach(linha => {
-                    if (y > 270) { doc.addPage(); y = 20; doc.setFillColor(0,0,0); doc.rect(0,0,210,297,'F'); }
-                    const isTitle = linha.length < 40 && !linha.includes(':') && !linha.includes('%');
-                    if (isTitle) {
-                        doc.setTextColor(0, 198, 255);
-                        doc.setFont('helvetica', 'bold');
-                    } else {
-                        doc.setTextColor(234, 243, 255);
-                        doc.setFont('helvetica', 'normal');
+                doc.setLineWidth(0.4);
+                doc.line(15, 36, 195, 36);
+
+                let y = 46;
+
+                const addLine = (texto, bold, cor) => {
+                    if (y > 275) {
+                        doc.addPage();
+                        doc.setFillColor(255, 255, 255);
+                        doc.rect(0, 0, 210, 297, 'F');
+                        y = 20;
                     }
-                    const wrapped = doc.splitTextToSize(linha, 170);
+                    const txt = limparEmojis(texto).trim();
+                    if (!txt) return;
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+                    if (cor) doc.setTextColor(...cor);
+                    else doc.setTextColor(30, 30, 30);
+                    const wrapped = doc.splitTextToSize(txt, 175);
                     doc.text(wrapped, 15, y);
-                    y += wrapped.length * 5 + 2;
-                });
-                
+                    y += wrapped.length * 5.5 + 1;
+                };
+
+                const addSection = (titulo) => {
+                    y += 3;
+                    doc.setFillColor(0, 198, 255);
+                    doc.rect(15, y - 4, 3, 5, 'F');
+                    addLine(titulo, true, [0, 100, 180]);
+                    y += 1;
+                };
+
+                if (destinoSelecionado) {
+                    // Boletim do destino selecionado
+                    const info = DESTINOS_INFO[destinoSelecionado.destino_id] || { nome: destinoSelecionado.destino_id };
+                    addLine(info.nome + ' — Boletim Estratégico', true, [0, 198, 255]);
+                    addLine('Data de referência: ' + new Date(destinoSelecionado.data_coleta).toLocaleDateString('pt-BR'), false, [100, 100, 100]);
+                    y += 4;
+
+                    addSection('Metricas Principais');
+                    addLine('Interesse Atual: ' + (destinoSelecionado.interesse/10).toFixed(1) + '/10', false);
+                    if (destinoSelecionado.variacao !== null) addLine('Variacao: ' + (parseFloat(destinoSelecionado.variacao) >= 0 ? '+' : '') + destinoSelecionado.variacao + '%', false);
+                    if (destinoSelecionado.share) addLine('Share PA: ' + destinoSelecionado.share + '%', false);
+
+                    addSection('Analise Estrategica');
+                    addLine('Momentum: ' + limparEmojis(String(destinoSelecionado.momentum || 'N/A')), false);
+                    addLine('Risco de Mercado: ' + limparEmojis(String(destinoSelecionado.risco || 'N/A')), false);
+                    if (destinoSelecionado.ipcr_final !== null && destinoSelecionado.ipcr_final !== undefined)
+                        addLine('IPCR Final: ' + (destinoSelecionado.ipcr_final/10).toFixed(1) + '/10', false);
+
+                    if (destinoSelecionado.origem_1) {
+                        addSection('Top 3 Origens');
+                        addLine('1. ' + destinoSelecionado.origem_1 + ' (' + destinoSelecionado.origem_1_pct + '%)', false);
+                        if (destinoSelecionado.origem_2) addLine('2. ' + destinoSelecionado.origem_2 + ' (' + destinoSelecionado.origem_2_pct + '%)', false);
+                        if (destinoSelecionado.origem_3) addLine('3. ' + destinoSelecionado.origem_3 + ' (' + destinoSelecionado.origem_3_pct + '%)', false);
+                    }
+                } else {
+                    // Boletim geral
+                    const textoGeral = document.getElementById('boletim-content').innerText;
+                    const linhas = textoGeral.split('\n').filter(l => l.trim() !== '');
+                    linhas.forEach(linha => {
+                        const isTitle = linha.length < 50 && !linha.includes(':') && !linha.includes('%');
+                        if (isTitle) addLine(linha, true, [0, 100, 180]);
+                        else addLine(linha, false);
+                    });
+                }
+
                 // Rodapé
-                doc.setTextColor(156, 163, 175);
+                doc.setTextColor(150, 150, 150);
                 doc.setFontSize(7);
-                doc.text('© ABR Marketing Estratégico & Consultoria Hoteleira', 105, 290, { align: 'center' });
-                
-                const data = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-                doc.save('boletim-abr-' + data + '.pdf');
+                doc.text('ABR Marketing Estrategico & Consultoria Hoteleira — Documento confidencial', 105, 290, { align: 'center' });
+
+                const dataNome = dataHoje.replace(/\//g, '-');
+                const nomeArq = destinoSelecionado
+                    ? 'boletim-abr-' + (DESTINOS_INFO[destinoSelecionado.destino_id]?.nome || destinoSelecionado.destino_id).replace(/\s/g, '-').toLowerCase() + '-' + dataNome + '.pdf'
+                    : 'boletim-abr-geral-' + dataNome + '.pdf';
+                doc.save(nomeArq);
             } catch(e) {
                 alert('Erro ao gerar PDF: ' + e.message);
             }
