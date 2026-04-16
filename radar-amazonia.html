@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Leaflet CSS e JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -302,7 +303,10 @@
                             <input type="date" id="date-end" />
                         </div>
                     </div>
-                    <button class="btn-update" onclick="atualizarDados()">ATUALIZAR DADOS</button>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button class="btn-update" onclick="atualizarDados()" style="flex:1;">ATUALIZAR DADOS</button>
+                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:0 0 auto; padding:14px 18px; background:transparent; border:1px solid var(--accent); color:var(--accent);">⇅ Interesse</button>
+                    </div>
                 </section>
                 
                 <!-- TIMELINE CHART -->
@@ -335,6 +339,7 @@
                     <div class="boletim-header">
                         <h3 class="boletim-title">Boletim Estratégico</h3>
                         <button class="btn-copy" onclick="copiarBoletim()">📋 Copiar</button>
+                        <button class="btn-copy" onclick="exportarBoletimPDF()" style="margin-left:8px;">📄 PDF</button>
                     </div>
                     <div class="boletim-content" id="boletim-content">
                         <div class="empty-state">
@@ -482,6 +487,7 @@
         let chartInstance = null;
         let mapInstance = null;
         let mesAtual = new Date();
+        let ordemAtual = 'interesse'; // 'interesse' ou 'ipcr'
         
         const DESTINOS_INFO = {
             'belem': { nome: 'Belém', emoji: '🏙️', lat: -1.4558, lng: -48.4902 },
@@ -1561,6 +1567,20 @@
                         ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
                         ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${(nowcasting.valor/10).toFixed(1)} ${nowcasting.direcao}</li>` : ''}
                         ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${(confiabilidade.score/10).toFixed(1)}/10)</li>` : ''}
+                        ${(() => {
+                            const hist = todosDestinos.filter(d => d.destino_id === destino.destino_id);
+                            const idx30 = hist.findIndex(d => {
+                                const diff = (new Date(destino.data_coleta) - new Date(d.data_coleta)) / (1000*60*60*24);
+                                return diff >= 28;
+                            });
+                            if (idx30 === -1) return '';
+                            const d30 = hist[idx30];
+                            const delta = destino.interesse - d30.interesse;
+                            const pct = d30.interesse !== 0 ? ((delta / d30.interesse) * 100).toFixed(1) : '0.0';
+                            const seta = delta > 0 ? '▲' : delta < 0 ? '▼' : '→';
+                            const cor = delta > 0 ? 'color:#39ff14' : delta < 0 ? 'color:#ff3860' : '';
+                            return `<li>vs. 30 dias atrás: ${(d30.interesse/10).toFixed(1)}/10 <span style="${cor}">${seta} ${pct >= 0 ? '+' : ''}${pct}%</span></li>`;
+                        })()}
                     </ul>
                 </div>
                 <div class="boletim-section">
@@ -1593,6 +1613,16 @@
             console.log('✅ Boletim gerado com sucesso');
         }
         
+        // ========== ALTERNAR ORDENAÇÃO ==========
+        function alternarOrdem() {
+            ordemAtual = ordemAtual === 'interesse' ? 'ipcr' : 'interesse';
+            const btn = document.getElementById('btn-ordem');
+            btn.textContent = ordemAtual === 'interesse' ? '⇅ Interesse' : '⇅ IPCR Final';
+            btn.style.borderColor = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
+            btn.style.color = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
+            if (dadosGlobais.length > 0) renderizarCards(dadosGlobais);
+        }
+
         // ========== RENDERIZAR CARDS ==========
         function renderizarCards(dados) {
             const container = document.getElementById('destinations-container');
@@ -1633,7 +1663,12 @@
                 return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final };
             });
             
-            const destinosOrdenados = destinosComIndices.sort((a, b) => b.interesse - a.interesse);
+            const destinosOrdenados = destinosComIndices.sort((a, b) => {
+                if (ordemAtual === 'ipcr') {
+                    return (b.ipcr_final || 0) - (a.ipcr_final || 0);
+                }
+                return b.interesse - a.interesse;
+            });
             
             container.innerHTML = destinosOrdenados.map((dest, index) => {
                 const info = DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' };
@@ -1911,6 +1946,61 @@
             document.getElementById('boletim-content').innerHTML = html;
         }
         
+        function exportarBoletimPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                
+                const content = document.getElementById('boletim-content').innerText;
+                const linhas = content.split('\n').filter(l => l.trim() !== '');
+                
+                // Cabeçalho
+                doc.setFillColor(0, 0, 0);
+                doc.rect(0, 0, 210, 297, 'F');
+                doc.setTextColor(0, 198, 255);
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('DEMAND PULSE AMAZÔNIA', 105, 20, { align: 'center' });
+                doc.setFontSize(9);
+                doc.setTextColor(156, 163, 175);
+                doc.text('ABR Consultoria — Inteligência Turística do Pará', 105, 27, { align: 'center' });
+                
+                // Linha separadora
+                doc.setDrawColor(0, 198, 255);
+                doc.setLineWidth(0.5);
+                doc.line(15, 32, 195, 32);
+                
+                // Conteúdo
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                let y = 42;
+                linhas.forEach(linha => {
+                    if (y > 270) { doc.addPage(); y = 20; doc.setFillColor(0,0,0); doc.rect(0,0,210,297,'F'); }
+                    const isTitle = linha.length < 40 && !linha.includes(':') && !linha.includes('%');
+                    if (isTitle) {
+                        doc.setTextColor(0, 198, 255);
+                        doc.setFont('helvetica', 'bold');
+                    } else {
+                        doc.setTextColor(234, 243, 255);
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    const wrapped = doc.splitTextToSize(linha, 170);
+                    doc.text(wrapped, 15, y);
+                    y += wrapped.length * 5 + 2;
+                });
+                
+                // Rodapé
+                doc.setTextColor(156, 163, 175);
+                doc.setFontSize(7);
+                doc.text('© ABR Marketing Estratégico & Consultoria Hoteleira', 105, 290, { align: 'center' });
+                
+                const data = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+                doc.save('boletim-abr-' + data + '.pdf');
+            } catch(e) {
+                alert('Erro ao gerar PDF: ' + e.message);
+            }
+        }
+
         function copiarBoletim() {
             const content = document.getElementById('boletim-content').innerText;
             // Sorteia frase rotativa ABR para o CTA
@@ -1967,7 +2057,20 @@
                 const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
                 const temDados = dadosGlobais.some(d => d.data_coleta === dataStr);
                 
-                if (temDados) dayEl.classList.add('has-data');
+                if (temDados) {
+                    dayEl.classList.add('has-data');
+                    dayEl.addEventListener('click', () => {
+                        // Remove seleção anterior
+                        document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+                        dayEl.classList.add('selected');
+                        // Filtra cards e boletim para a data clicada
+                        const dadosFiltrados = dadosGlobais.filter(d => d.data_coleta === dataStr);
+                        if (dadosFiltrados.length > 0) {
+                            renderizarCards(dadosFiltrados.concat(dadosGlobais.filter(d => d.data_coleta !== dataStr)));
+                            gerarBoletim(dadosFiltrados, dadosConcorrentes);
+                        }
+                    });
+                }
                 
                 grid.appendChild(dayEl);
             }
