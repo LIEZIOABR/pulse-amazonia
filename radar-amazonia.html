@@ -305,7 +305,7 @@
                     </div>
                     <div style="display:flex; gap:10px; align-items:stretch;">
                         <button class="btn-update" onclick="atualizarDados()" style="flex:0 0 auto; width:200px;">ATUALIZAR DADOS</button>
-                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:1; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.72rem; white-space:normal; line-height:1.3; text-align:center;">Indice de Interesse por Destino</button>
+                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:1; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.72rem; white-space:normal; line-height:1.3; text-align:center;">Índice de Interesse por Destino</button>
                     </div>
                 </section>
                 
@@ -1618,7 +1618,7 @@
         function alternarOrdem() {
             ordemAtual = ordemAtual === 'interesse' ? 'ipcr' : 'interesse';
             const btn = document.getElementById('btn-ordem');
-            btn.textContent = ordemAtual === 'interesse' ? 'Indice de Interesse por Destino' : 'Indice de Pressao de Competitividade Regional';
+            btn.textContent = ordemAtual === 'interesse' ? 'Índice de Interesse por Destino' : 'Índice de Pressão de Competitividade Regional';
             btn.style.borderColor = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
             btn.style.color = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
             if (dadosGlobais.length > 0) renderizarCards(dadosGlobais);
