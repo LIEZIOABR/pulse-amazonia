@@ -376,7 +376,7 @@
     <div class="kpi-item">
         <div class="kpi-name">Variação Percentual</div>
         <div class="kpi-desc">
-            Quanto o interesse cresceu ou caiu em relação à coleta anterior. Positivo indica aquecimento de demanda; negativo indica arrefecimento. Referência de curto prazo para decisões táticas imediatas.
+            Quanto o interesse cresceu ou caiu em relação à medição anterior. Positivo indica aquecimento de demanda; negativo indica arrefecimento. Referência de curto prazo para decisões táticas imediatas.
         </div>
     </div>
 
@@ -397,21 +397,21 @@
     <div class="kpi-item">
         <div class="kpi-name">Momentum</div>
         <div class="kpi-desc">
-            Velocidade e consistência do movimento da demanda nas últimas coletas. Forte indica crescimento consistente em múltiplas coletas seguidas. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.
+            Velocidade e consistência do movimento da demanda nos últimos registros. Forte indica crescimento consistente em múltiplos registros seguidos. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Confiabilidade do Sinal</div>
         <div class="kpi-desc">
-            Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Leva em conta volume de coletas, consistência histórica e diversidade de origens. Sinais de baixa confiabilidade devem ser interpretados com cautela.
+            Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Leva em conta volume de leituras, consistência histórica e diversidade de origens. Sinais de baixa confiabilidade devem ser interpretados com cautela.
         </div>
     </div>
 
     <div class="kpi-item">
         <div class="kpi-name">Nowcasting — Previsão 7 dias</div>
         <div class="kpi-desc">
-            Projeção de curto prazo baseada no histórico de coletas do destino. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado.
+            Projeção de curto prazo baseada no histórico de sinais do destino. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado.
         </div>
     </div>
 
@@ -446,7 +446,7 @@
     <div class="kpi-item">
         <div class="kpi-name">Selo Estratégico</div>
         <div class="kpi-desc">
-            Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%). Gerado a cada coleta.
+            Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%). Gerado a cada atualização.
         </div>
     </div>
 </section>
@@ -704,7 +704,7 @@
                 textParts.push('Origem (Top 3 ajustado): ' + o1.state + ' ' + o1.pct + '%');
                 if (o2) textParts.push(o2.state + ' ' + o2.pct + '%');
                 if (o3) textParts.push(o3.state + ' ' + o3.pct + '%');
-                if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' coletas recentes');
+                if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' períodos recentes');
                 if (adjInfo.mode === 'local_pondered') textParts.push('• Local ponderado (capital/hub)');
                 if (adjInfo.mode === 'local_removed') textParts.push('• Local removido (viés endógeno)');
                 
@@ -715,14 +715,14 @@
                 return {
                     mode: 'inferida',
                     badge: '⚠️ Origem inferida: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')',
-                    text: 'Baixa diversidade de origem detectada. Mercado mais recorrente nas últimas coletas: ' + topRec.state + '.'
+                    text: 'Baixa diversidade de origem detectada. Mercado mais recorrente nas últimas leituras: ' + topRec.state + '.'
                 };
             }
             
             return {
                 mode: 'insuficiente',
                 badge: '⚠️ Baixa diversidade',
-                text: 'Sinal de origem não confiável (dominância alta de mercado único). Aguarde mais coletas.'
+                text: 'Sinal de origem não confiável (dominância alta de mercado único). Aguarde mais leituras.'
             };
         }
         
@@ -1493,7 +1493,7 @@
                     ipcrHTML = '<div class="boletim-section ipcr-section">' +
                         '<div class="boletim-section-title">🌍 Competitividade Nacional (IPCR)</div>' +
                         '<div class="ipcr-item">' +
-                        '<div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">⏳ Aguardando 2ª coleta para calcular variação</div>' +
+                        '<div class="ipcr-comparacao" style="font-size: 0.85rem; color: var(--text-dim);">⏳ Aguardando 2ª medição para calcular variação</div>' +
                         '<div class="ipcr-status estavel">⏸️ Dados Insuficientes</div>' +
                         '</div></div>';
                 } else if (ipcr.semConcorrentes) {
@@ -2136,7 +2136,7 @@
             document.getElementById('destinations-container').innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1;">
                     <div class="empty-state-icon">🌴</div>
-                    <p>Nenhum dado disponível ainda.<br>Aguardando primeira coleta...</p>
+                    <p>Nenhum dado disponível ainda.<br>Aguardando primeiro registro...</p>
                 </div>
             `;
         }
@@ -2217,7 +2217,7 @@ const FRASES_VEREDITO = {
         'Momentum positivo em destino médio — potencial de crescimento',
         'Aceleração detectada em patamar moderado — sinal para acompanhar',
         'Destino em recuperação — aguarde confirmação antes de agir',
-        'Crescimento emergente — próximas coletas definirão tendência'
+        'Crescimento emergente — próximas leituras definirão tendência'
     ],
     'monitorar_estavel': [
         'Demanda estável — acompanhar próximas análises',
@@ -2227,7 +2227,7 @@ const FRASES_VEREDITO = {
         'Demanda previsível — mantenha estratégia atual e monitore'
     ],
     'monitorar_perdendo': [
-        'Demanda média com desaceleração — atenção nas próximas coletas',
+        'Demanda média com desaceleração — atenção nos próximos registros',
         'Momentum negativo em destino moderado — vigilância recomendada',
         'Queda de ritmo em patamar intermediário — revise posicionamento',
         'Destino estabilizando em queda — defina piso de preço',
@@ -2251,7 +2251,7 @@ const FRASES_VEREDITO = {
         'Queda consistente em destino fragilizado — situação crítica',
         'Pulso baixo com aceleração negativa — reversão improvável no curto prazo',
         'Demanda em declínio progressivo — requer intervenção estratégica',
-        'Tendência de queda confirmada em múltiplas coletas — alerta máximo',
+        'Tendência de queda confirmada em múltiplas leituras — alerta máximo',
         'Destino em deterioração — reavalie presença e canais imediatamente'
     ]
 };
@@ -2311,7 +2311,7 @@ renderizarCards = function(dados) {
         extraHTML.style.opacity = "0.85";
 
         extraHTML.innerHTML = `
-            ${rankingHist ? `<div>Média 5 coletas: <strong>${rankingHist}</strong></div>` : ''}
+            ${rankingHist ? `<div>Média 5 registros: <strong>${rankingHist}</strong></div>` : ''}
             <div style="margin-top:4px;">${selo}</div>
             <div style="margin-top:6px; font-style:italic; color: rgba(0,198,255,0.7);">${frase}</div>
         `;
