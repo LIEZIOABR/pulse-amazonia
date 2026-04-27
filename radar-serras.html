@@ -727,11 +727,7 @@
                     <div class="metric-row"><div class="metric-label">Risco de Mercado</div><div class="metric-value">${dest.risco}</div></div>
                     <div class="metric-row"><div class="metric-label">Share Serras</div><div class="metric-value">${dest.share}%</div></div>
                     ${dest.origem_1 ? `<div class="origins-list"><div class="origin-item"><span class="origin-name">🥇 ${dest.origem_1}</span><span class="origin-pct">${dest.origem_1_pct}%</span></div>${dest.origem_2 ? `<div class="origin-item"><span class="origin-name">🥈 ${dest.origem_2}</span><span class="origin-pct">${dest.origem_2_pct}%</span></div>` : ''}${dest.origem_3 ? `<div class="origin-item"><span class="origin-name">🥉 ${dest.origem_3}</span><span class="origin-pct">${dest.origem_3_pct}%</span></div>` : ''}</div>` : ''}
-                    ${dest.iae !== null && dest.iae !== undefined ? `<div class="indice-destaque" style="margin-top:10px;">
-                        <div class="indice-titulo">🌍 IAE — Índice ABR de Atração Externa</div>
-                        <div class="indice-valor ${dest.iae.classe}">${dest.iae.valor}% — ${dest.iae.nivel}</div>
-                        <div class="indice-descricao">${dest.iae.valor}% da demanda online vem de fora do estado dominante. Quanto maior, mais o destino atrai turistas externos.</div>
-                    </div>` : ''}
+                    ${gerarIAECardHTML(dest.iae)}
                 </div>`;
             }).join('');
             setTimeout(() => {
@@ -764,6 +760,15 @@
             const topOrigens = Object.entries(origensMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([cidade]) => cidade);
             const dataFormatada = new Date(ultimaData).toLocaleDateString('pt-BR');
             document.getElementById('boletim-content').innerHTML = `<div class="boletim-section"><div class="boletim-section-title">Data: ${dataFormatada}</div></div><div class="boletim-section"><div class="boletim-section-title">🏆 Top 3 Destinos Serras</div><ul class="boletim-list">${top3.map(t => `<li>${t}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Top 3 Origens Agregadas</div><ul class="boletim-list">${topOrigens.map(o => `<li>${o}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Insights</div><p>Total de ${dadosUltimos.length} destinos âncora monitorados. Clique em um destino para análise detalhada.</p></div>`;
+        }
+
+        function gerarIAECardHTML(iae) {
+            if (!iae) return '';
+            return '<div class="indice-destaque" style="margin-top:10px;">' +
+                '<div class="indice-titulo">🌍 IAE — Índice ABR de Atração Externa</div>' +
+                '<div class="indice-valor ' + iae.classe + '">' + iae.valor + '% — ' + iae.nivel + '</div>' +
+                '<div class="indice-descricao">' + iae.valor + '% da demanda vem de fora do estado dominante. Quanto maior, mais o destino atrai turistas externos.</div>' +
+                '</div>';
         }
 
         function gerarIAEBoletimHTML(destino) {
