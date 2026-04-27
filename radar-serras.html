@@ -766,6 +766,24 @@
             document.getElementById('boletim-content').innerHTML = `<div class="boletim-section"><div class="boletim-section-title">Data: ${dataFormatada}</div></div><div class="boletim-section"><div class="boletim-section-title">🏆 Top 3 Destinos Serras</div><ul class="boletim-list">${top3.map(t => `<li>${t}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Top 3 Origens Agregadas</div><ul class="boletim-list">${topOrigens.map(o => `<li>${o}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Insights</div><p>Total de ${dadosUltimos.length} destinos âncora monitorados. Clique em um destino para análise detalhada.</p></div>`;
         }
 
+        function gerarIAEBoletimHTML(destino) {
+            if (!destino.origem_1) return '';
+            const o1 = Number(destino.origem_1_pct)||0;
+            const o2 = Number(destino.origem_2_pct)||0;
+            const o3 = Number(destino.origem_3_pct)||0;
+            const total = o1 + o2 + o3;
+            if (!total) return '';
+            const iae = Math.round(((o2 + o3) / total) * 100);
+            const nivel = iae >= 40 ? '🟢 Alta' : iae >= 20 ? '🟡 Moderada' : '🔴 Baixa';
+            const ext1 = destino.origem_2 ? (destino.origem_2 + ' ' + o2 + '%') : '—';
+            const ext2 = destino.origem_3 ? (' + ' + destino.origem_3 + ' ' + o3 + '%') : '';
+            return '<div class="boletim-section"><div class="boletim-section-title">🌍 IAE — Índice ABR de Atração Externa</div>' +
+                '<ul class="boletim-list">' +
+                '<li>' + iae + '% da demanda vem de fora do estado dominante — Atração ' + nivel + '</li>' +
+                '<li>Fórmula: (' + ext1 + ext2 + ') / total ' + total + '</li>' +
+                '</ul></div>';
+        }
+
         function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
             const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
             const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
@@ -802,14 +820,7 @@
                     <li>Share Serras: ${destino.share}%</li>
                 </ul></div>
                 ${destino.origem_1 ? `<div class="boletim-section"><div class="boletim-section-title">Top 3 Origens</div><ul class="boletim-list"><li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}${destino.origem_3 ? `<li>🥉 ${destino.origem_3} (${destino.origem_3_pct}%)</li>` : ''}</ul></div>` : ''}
-                ${destino.origem_1 && (() => {
-                    const o1 = Number(destino.origem_1_pct)||0, o2 = Number(destino.origem_2_pct)||0, o3 = Number(destino.origem_3_pct)||0;
-                    const total = o1+o2+o3;
-                    if (!total) return '';
-                    const iae = Math.round(((o2+o3)/total)*100);
-                    const nivel = iae >= 40 ? '🟢 Alta' : iae >= 20 ? '🟡 Moderada' : '🔴 Baixa';
-                    return `<div class="boletim-section"><div class="boletim-section-title">🌍 IAE — Índice ABR de Atração Externa</div><ul class="boletim-list"><li>${iae}% da demanda vem de fora do estado dominante — Atração ${nivel}</li><li>Fórmula: (${destino.origem_2||'—'} ${o2}% + ${destino.origem_3||'—'} ${o3}%) / total ${total}</li></ul></div>`;
-                })()}
+                ${gerarIAEBoletimHTML(destino)}
                 ${camada2HTML}${ipcrHTML}\`;
         }
 
