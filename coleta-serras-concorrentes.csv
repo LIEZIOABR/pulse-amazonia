@@ -1,0 +1,13 @@
+data_coleta,destino_id,interesse,origem_1,origem_1_pct,origem_2,origem_2_pct,origem_3,origem_3_pct
+2026-04-27,penedo_rj,30,rio_de_janeiro,100,sergipe,12,minas_gerais,8
+2026-04-27,teresópolis,63,rio_de_janeiro,100,minas_gerais,5,goiás,5
+2026-04-27,tiradentes_mg,26,minas_gerais,100,roraima,30,rio_de_janeiro,21
+2026-04-27,itaipava_rj,14,rio_de_janeiro,100,espírito_santo,10,minas_gerais,7
+2026-04-27,lavras_novas,34,minas_gerais,100,espírito_santo,10,rio_de_janeiro,8
+2026-04-27,urubici,47,santa_catarina,100,paraná,13,rio_grande_do_sul,12
+2026-04-27,miguel_pereira_rj,16,rio_de_janeiro,100,minas_gerais,4,são_paulo,2
+2026-04-27,são_joaquim_sc,7,santa_catarina,100,rio_grande_do_sul,10,mato_grosso,7
+2026-04-27,ouro_preto,43,rondônia,100,minas_gerais,57,espírito_santo,8
+2026-04-27,diamantina_mg,39,minas_gerais,100,espírito_santo,8,distrito_federal,7
+2026-04-27,triunfo_pe,6,pernambuco,100,paraíba,44,rio_grande_do_norte,14
+2026-04-27,guaramiranga,35,ceará,100,rio_grande_do_norte,17,piauí,10

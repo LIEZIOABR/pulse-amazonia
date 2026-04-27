@@ -1,0 +1,13 @@
+data_coleta,destino_id,interesse,origem_1,origem_1_pct,origem_2,origem_2_pct,origem_3,origem_3_pct
+2026-04-27,monte_verde_mg,37,minas_gerais,100,são_paulo,47,rio_de_janeiro,34
+2026-04-27,campos_do_jordão,66,são_paulo,100,rio_de_janeiro,38,minas_gerais,29
+2026-04-27,gramado_rs,43,rio_grande_do_sul,100,santa_catarina,22,mato_grosso_do_sul,9
+2026-04-27,canela_rs,39,rio_grande_do_sul,100,santa_catarina,16,paraná,6
+2026-04-27,gonçalves_mg,27,minas_gerais,100,são_paulo,31,piauí,15
+2026-04-27,são_bento_do_sapucaí,10,são_paulo,100,minas_gerais,59,rio_de_janeiro,11
+2026-04-27,santo_antônio_do_pinhal,18,são_paulo,100,minas_gerais,28,rio_de_janeiro,18
+2026-04-27,serra_negra_sp,32,são_paulo,100,minas_gerais,14,rio_de_janeiro,9
+2026-04-27,petrópolis_rj,41,rio_de_janeiro,100,minas_gerais,4,piauí,3
+2026-04-27,visconde_de_mauá,15,rio_de_janeiro,100,ceará,13,minas_gerais,11
+2026-04-27,passa_quatro_mg,3,minas_gerais,100,rio_de_janeiro,32,são_paulo,27
+2026-04-27,nova_friburgo,63,rio_de_janeiro,100,espírito_santo,2,mato_grosso,2
