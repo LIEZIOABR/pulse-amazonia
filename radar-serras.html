@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMAND PULSE SERRAS - ABR Consultoria</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🏔️%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Leaflet CSS e JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <style>
+        /* ========== RESET & VARIÁVEIS ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+        body { background-color: var(--bg); color: var(--text-main); font-family: 'Poppins', sans-serif; overflow-x: hidden; min-height: 100vh; }
+        
+        :root {
+            --accent: #00c6ff; --bg: #000000; --panel: rgba(15, 18, 22, 0.75); --panel-border: rgba(255, 255, 255, 0.1); --text-main: #eaf3ff; --text-dim: #9ca3af; --accent-green: #39ff14;
+            --shadow: 0 8px 32px rgba(0, 198, 255, 0.15); --glow: 0 0 20px rgba(0, 198, 255, 0.4);
+        }
+        
+        /* ========== MATRIX BACKGROUND ========== */
+        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.2; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        
+        /* ========== HEADER ========== */
+        .header { text-align: center; margin-bottom: 40px; padding-top: 20px; position: relative; }
+        .header-nav { text-align: left; margin-bottom: 10px; }
+        .btn-nav { border: 1px solid var(--accent); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; text-transform: uppercase; background: transparent; color: var(--accent); text-decoration: none; display: inline-block; }
+        .btn-nav:hover { background: rgba(0,198,255,0.15); box-shadow: 0 0 20px rgba(0, 198, 255, 0.4); }
+        
+        .logo-section { margin-bottom: 30px; animation: fadeIn 1.5s ease-out; }
+        .logo-section img { max-width: 230px; filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.3)); pointer-events: none; }
+        
+        h1 { font-size: 3.6rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); }
+        .subtitle { color: var(--text-dim); font-size: 0.9rem; max-width: 800px; margin: 0 auto; line-height: 1.5; font-weight: 400; }
+        
+        /* ========== LAYOUT GRID ========== */
+        .layout { display: flex; gap: 20px; align-items: flex-start; }
+        .main-content { flex: 1; }
+        .sidebar { width: 380px; position: sticky; top: 20px; }
+        
+        /* ========== CONTROLS ========== */
+        .controls { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 24px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .date-filter-group { display: flex; flex-wrap: wrap; gap: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--panel-border); margin-bottom: 15px; align-items: center; }
+        .filter-label { font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        select, input[type="date"] { background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); color: white; padding: 10px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        
+        .btn-update { width: 100%; background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); color: #001018; border: none; padding: 14px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; transition: 0.3s; text-transform: uppercase; }
+        .btn-update:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,198,255,0.4); }
+        
+        /* ========== TIMELINE CHART ========== */
+        .timeline-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 12px; }
+        .chart-wrapper { position: relative; height: 400px; }
+        
+        /* ========== GEO MAP ========== */
+        .map-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .map-container { height: 550px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(0, 198, 255, 0.2); box-shadow: 0 0 30px rgba(0, 198, 255, 0.15); }
+        
+        .leaflet-popup-content-wrapper { background: rgba(15, 18, 22, 0.95) !important; color: #eaf3ff !important; border: 1px solid rgba(0, 198, 255, 0.3) !important; border-radius: 12px !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important; }
+        .leaflet-popup-content { margin: 16px !important; font-family: 'Poppins', sans-serif !important; }
+        .leaflet-popup-tip { background: rgba(15, 18, 22, 0.95) !important; border: 1px solid rgba(0, 198, 255, 0.3) !important; }
+        .popup-title { font-size: 1.1rem; font-weight: 700; color: #00c6ff; margin-bottom: 10px; }
+        .popup-metric { font-size: 0.85rem; margin: 6px 0; color: #eaf3ff; }
+        .popup-metric strong { color: #00c6ff; }
+        .popup-origins { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* ========== DESTINATION CARDS ========== */
+        .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .dest-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px; backdrop-filter: blur(14px); transition: 0.3s; cursor: pointer; }
+        .dest-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,198,255,0.25); border-color: var(--accent); }
+        
+        .dest-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .dest-name { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+        .dest-rank { background: rgba(0,198,255,0.2); color: var(--accent); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; }
+        
+        .metric-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1rem; font-weight: 700; color: white; }
+        .metric-value.positive { color: #39ff14; }
+        .metric-value.negative { color: #ff3860; }
+        .metric-value.neutral { color: #ffea00; }
+        
+        .indice-destaque { margin-top: 12px; padding: 12px; background: rgba(0, 198, 255, 0.05); border-left: 3px solid var(--accent); border-radius: 8px; }
+        .indice-titulo { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+        .indice-valor { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+        .indice-descricao { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
+        
+        .badge-confianca { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-top: 8px; }
+        .badge-confianca.alta { background: rgba(57, 255, 20, 0.15); color: #39ff14; }
+        .badge-confianca.media { background: rgba(255, 234, 0, 0.15); color: #ffea00; }
+        .badge-confianca.baixa { background: rgba(255, 56, 96, 0.15); color: #ff3860; }
+        
+        .origins-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .origin-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.85rem; }
+        .origin-name { color: var(--text-dim); }
+        .origin-pct { color: var(--accent); font-weight: 600; }
+        
+        /* ========== BOLETIM ESTRATÉGICO ========== */
+        .boletim { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 24px; backdrop-filter: blur(14px); box-shadow: var(--shadow); margin-bottom: 20px; }
+        .boletim-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .boletim-title { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+        .btn-copy { background: rgba(0,198,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-copy:hover { background: rgba(0,198,255,0.2); }
+        
+        .boletim-content { font-size: 0.85rem; line-height: 1.7; color: var(--text-dim); }
+        .boletim-section { margin-bottom: 16px; }
+        .boletim-section-title { font-weight: 700; color: white; margin-bottom: 8px; font-size: 0.9rem; }
+        .boletim-list { list-style: none; padding-left: 0; }
+        .boletim-list li { padding-left: 16px; position: relative; margin-bottom: 6px; }
+        .boletim-list li:before { content: "▸"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
+        
+        .ipcr-section { margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(0, 198, 255, 0.2); }
+        .ipcr-item { background: rgba(0, 198, 255, 0.05); border-left: 3px solid var(--accent); padding: 12px; margin-bottom: 12px; border-radius: 8px; }
+        .ipcr-destino { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+        .ipcr-comparacao { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px; }
+        .ipcr-status { font-size: 0.8rem; font-weight: 700; margin-top: 6px; }
+        .ipcr-status.ganhando { color: #39ff14; }
+        .ipcr-status.perdendo { color: #ff3860; }
+        .ipcr-status.estavel { color: #ffea00; }
+        
+        /* ========== CALENDÁRIO ========== */
+        .calendar-section { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 24px; backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-month { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+        .calendar-nav { display: flex; gap: 8px; }
+        .btn-cal-nav { background: rgba(0,198,255,0.1); border: 1px solid var(--panel-border); color: var(--accent); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .btn-cal-nav:hover { background: rgba(0,198,255,0.2); border-color: var(--accent); }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .calendar-day-label { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--text-dim); padding: 8px 0; text-transform: uppercase; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 10px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; position: relative; }
+        .calendar-day:hover { background: rgba(0,198,255,0.1); border-color: var(--accent); }
+        .calendar-day.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        .calendar-day.selected { background: var(--accent); color: #001018; font-weight: 800; border-color: var(--accent); }
+        .calendar-day.has-data:after { content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px; background: var(--accent-green); border-radius: 50%; }
+        
+        /* ========== DICIONÁRIO DE KPIs ========== */
+        .kpi-dict { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px; backdrop-filter: blur(14px); box-shadow: var(--shadow); margin-top: 20px; }
+        .kpi-dict-title { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .kpi-item { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .kpi-item:last-child { border-bottom: none; }
+        .kpi-name { font-size: 0.85rem; font-weight: 700; color: white; margin-bottom: 4px; }
+        .kpi-desc { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; }
+        
+        /* ========== LOADING & EMPTY STATES ========== */
+        .loading { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+        .loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(0,198,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+        
+        @media (max-width: 1200px) { .layout { flex-direction: column; } .sidebar { width: 100%; position: static; } }
+        @media (max-width: 768px) { h1 { font-size: 2rem; } .destinations-grid { grid-template-columns: 1fr; } .header-nav { text-align: center; } .map-container { height: 400px; } }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    
+    <div class="container">
+        <header class="header">
+            <div class="header-nav">
+                <a href="sistemas.html" class="btn-nav">← Voltar ao HUB</a>
+            </div>
+            <div class="logo-section">
+                <img src="abr-logo.png" alt="ABR Logo">
+            </div>
+            <h1>DEMAND PULSE SERRAS</h1>
+            <p class="subtitle">
+                Radar de Inteligência Turística de Destinos de Serra - Monitoramento de 12 destinos âncora + 12 concorrentes nacionais
+            </p>
+        </header>
+        
+        <div class="layout">
+            <div class="main-content">
+                <section class="controls">
+                    <div class="date-filter-group">
+                        <div>
+                            <div class="filter-label">Período</div>
+                            <select id="period-select">
+                                <option value="7">Últimos 7 dias</option>
+                                <option value="14">Últimos 14 dias</option>
+                                <option value="30" selected>Últimos 30 dias</option>
+                                <option value="90">Últimos 90 dias</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        <div id="custom-dates" style="display: none;">
+                            <input type="date" id="date-start" />
+                            <input type="date" id="date-end" />
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:stretch;">
+                        <button class="btn-update" onclick="atualizarDados()" style="flex:0 0 auto; width:200px;">ATUALIZAR DADOS</button>
+                        <button id="btn-ordem" class="btn-update" onclick="alternarOrdem()" style="flex:1; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.72rem; white-space:normal; line-height:1.3; text-align:center;">Índice de Interesse por Destino</button>
+                    </div>
+                </section>
+                
+                <section class="timeline-section">
+                    <h2 class="section-title">Timeline Comparativa - Top 5 Destinos</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+                </section>
+                
+                <section class="map-section">
+                    <h2 class="section-title">Mapa Geográfico - Distribuição Espacial do Interesse</h2>
+                    <div id="map" class="map-container"></div>
+                </section>
+                
+                <div id="destinations-container" class="destinations-grid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando dados...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <aside class="sidebar">
+                <section class="boletim">
+                    <div class="boletim-header">
+                        <h3 class="boletim-title">Boletim Estratégico</h3>
+                        <button class="btn-copy" onclick="copiarBoletim()">📋 Copiar</button>
+                        <button class="btn-copy" onclick="exportarBoletimPDF()" style="margin-left:8px;">📄 PDF</button>
+                    </div>
+                    <div class="boletim-content" id="boletim-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">—</div>
+                            <p>Clique em um destino para ver detalhes...</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="calendar-section">
+                    <div class="calendar-header">
+                        <div class="calendar-month" id="calendar-month">Janeiro 2026</div>
+                        <div class="calendar-nav">
+                            <button class="btn-cal-nav" onclick="navegarMes(-1)">◀</button>
+                            <button class="btn-cal-nav" onclick="navegarMes(1)">▶</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </section>
+                
+                <section class="kpi-dict">
+    <h3 class="kpi-dict-title">Dicionário Executivo de Inteligência</h3>
+
+    <div class="kpi-item">
+        <div class="kpi-name">Interesse (0–10) — Índice Proprietário ABR</div>
+        <div class="kpi-desc">Pulso digital do destino. Mede a força de atração de cada lugar no ambiente online em escala exclusiva ABR de 0 a 10. Quanto maior, mais o destino está sendo buscado por viajantes. 10 representa o pico histórico do período analisado.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Variação Percentual</div>
+        <div class="kpi-desc">Quanto o interesse cresceu ou caiu em relação à medição anterior. Positivo indica aquecimento de demanda; negativo indica arrefecimento.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Share de Mercado Serras</div>
+        <div class="kpi-desc">Fatia que o destino ocupa dentro dos 12 âncora monitorados. Mostra quem domina e quem está perdendo espaço no portfólio de serras. Útil para comparar posicionamento relativo entre destinos concorrentes.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Pressão de Demanda</div>
+        <div class="kpi-desc">Mede a intensidade da demanda em relação à capacidade de resposta do destino. Alta pressão indica risco de concentração e oportunidade de precificação agressiva.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Momentum</div>
+        <div class="kpi-desc">Velocidade e consistência do movimento da demanda nos últimos registros. Forte indica crescimento consistente. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Confiabilidade do Sinal</div>
+        <div class="kpi-desc">Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Sinais de baixa confiabilidade devem ser interpretados com cautela.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Nowcasting — Previsão 7 dias</div>
+        <div class="kpi-desc">Projeção de curto prazo baseada no histórico de sinais do destino. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado. Pico esperado no inverno (junho/julho).</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Risco de Mercado</div>
+        <div class="kpi-desc">Avalia a vulnerabilidade do destino a reversões bruscas de demanda. Alto risco exige estratégia de diversificação de mercados emissores.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">IPCR Final (0–10)</div>
+        <div class="kpi-desc">Índice composto que consolida variação, pressão de demanda, share e momentum em uma nota única de 0 a 10. Acima de 6,5 indica destino em janela de oportunidade.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">IPCR – Competitividade Regional</div>
+        <div class="kpi-desc">Compara o desempenho do destino âncora com os 12 concorrentes nacionais de serra. Indica se o destino está ganhando ou perdendo mercado. Ex: Monte Verde MG +5% vs concorrentes +2% = Ganhando Competitividade.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
+        <div class="kpi-desc">Identifica de onde realmente vem a demanda, removendo o viés do turista local. Revela os mercados externos recorrentes e ajuda a direcionar campanhas.</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">Selo Estratégico</div>
+        <div class="kpi-desc">Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%).</div>
+    </div>
+</section>
+            </aside>
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 30px 20px; margin-top: 50px; border-top: 1px solid rgba(0,198,255,0.3); color: rgba(255,255,255,0.6); font-size: 13px; position: relative; z-index: 1;">
+        <p style="margin: 8px 0; font-size: 14px;">
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+                🔒 <strong>Sistema Blindado</strong>
+            </span>
+        </p>
+        <p style="margin: 5px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
+            © 2026 ABR Consultoria · abrantes@abrconsult.com.br
+        </p>
+    </footer>
+    
+    <script>
+        // ========== CONFIGURAÇÃO SUPABASE ==========
+        const SUPABASE_URL = 'https://ljeoxnxezjmfbqngoqxz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqZW94bnhlemptZmJxbmdvcXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzI3ODUsImV4cCI6MjA4NDYwODc4NX0.B112AG5HTFvJTXaxL2IrdoJf5fcSC-GEHKLsDwdsFgc';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // ========== VARIÁVEIS GLOBAIS ==========
+        let dadosGlobais = [];
+        let dadosConcorrentes = [];
+        let chartInstance = null;
+        let mapInstance = null;
+        let mesAtual = new Date();
+        let ordemAtual = 'interesse';
+        let destinoSelecionado = null;
+        
+        // ========== DESTINOS SERRAS ==========
+        const DESTINOS_INFO = {
+            // ÂNCORA
+            'monte_verde_mg':          { nome: 'Monte Verde', tipo: 'ancora', emoji: '🏔️', lat: -22.8614, lng: -46.0239 },
+            'campos_do_jordao':        { nome: 'Campos do Jordão', tipo: 'ancora', emoji: '🏔️', lat: -22.7394, lng: -45.5919 },
+            'gramado_rs':              { nome: 'Gramado', tipo: 'ancora', emoji: '🌲', lat: -29.3789, lng: -50.8728 },
+            'canela_rs':               { nome: 'Canela', tipo: 'ancora', emoji: '🌲', lat: -29.3647, lng: -50.8142 },
+            'goncalves_mg':            { nome: 'Gonçalves', tipo: 'ancora', emoji: '🏔️', lat: -22.6581, lng: -45.8536 },
+            'sao_bento_do_sapucai':    { nome: 'São Bento do Sapucaí', tipo: 'ancora', emoji: '⛰️', lat: -22.6922, lng: -45.7311 },
+            'santo_antonio_do_pinhal': { nome: 'Santo Antônio do Pinhal', tipo: 'ancora', emoji: '⛰️', lat: -22.8239, lng: -45.6611 },
+            'serra_negra_sp':          { nome: 'Serra Negra', tipo: 'ancora', emoji: '🌿', lat: -22.6106, lng: -46.6997 },
+            'petropolis_rj':           { nome: 'Petrópolis', tipo: 'ancora', emoji: '🏰', lat: -22.5050, lng: -43.1789 },
+            'visconde_de_maua':        { nome: 'Visconde de Mauá', tipo: 'ancora', emoji: '🏕️', lat: -22.3447, lng: -44.4528 },
+            'passa_quatro_mg':         { nome: 'Passa Quatro', tipo: 'ancora', emoji: '🏔️', lat: -22.3883, lng: -45.1736 },
+            'nova_friburgo':           { nome: 'Nova Friburgo', tipo: 'ancora', emoji: '🇨🇭', lat: -22.2822, lng: -42.5311 },
+            // CONCORRENTES
+            'penedo_rj':               { nome: 'Penedo', tipo: 'concorrente', emoji: '🏡', lat: -22.4058, lng: -44.5086 },
+            'teresopolis':             { nome: 'Teresópolis', tipo: 'concorrente', emoji: '🌿', lat: -22.4122, lng: -42.9733 },
+            'tiradentes_mg':           { nome: 'Tiradentes', tipo: 'concorrente', emoji: '🏛️', lat: -21.1147, lng: -44.1758 },
+            'itaipava_rj':             { nome: 'Itaipava', tipo: 'concorrente', emoji: '🌄', lat: -22.3908, lng: -43.1200 },
+            'lavras_novas':            { nome: 'Lavras Novas', tipo: 'concorrente', emoji: '🏘️', lat: -20.4597, lng: -43.5058 },
+            'urubici':                 { nome: 'Urubici', tipo: 'concorrente', emoji: '❄️', lat: -28.0147, lng: -49.5919 },
+            'miguel_pereira_rj':       { nome: 'Miguel Pereira', tipo: 'concorrente', emoji: '🌲', lat: -22.4533, lng: -43.4769 },
+            'sao_joaquim_sc':          { nome: 'São Joaquim', tipo: 'concorrente', emoji: '🍎', lat: -28.2947, lng: -49.9319 },
+            'ouro_preto':              { nome: 'Ouro Preto', tipo: 'concorrente', emoji: '🏛️', lat: -20.3856, lng: -43.5036 },
+            'diamantina_mg':           { nome: 'Diamantina', tipo: 'concorrente', emoji: '💎', lat: -18.2408, lng: -43.6003 },
+            'triunfo_pe':              { nome: 'Triunfo', tipo: 'concorrente', emoji: '🌵', lat: -7.8353, lng: -38.1019 },
+            'guaramiranga':            { nome: 'Guaramiranga', tipo: 'concorrente', emoji: '🌿', lat: -4.2672, lng: -38.9289 },
+        };
+
+        // MAPEAMENTO DE CONCORRÊNCIA — âncora vs concorrentes de serra
+        const MAPA_CONCORRENCIA = {
+            'monte_verde_mg':          ['campos_do_jordao', 'gramado_rs', 'canela_rs', 'penedo_rj', 'visconde_de_maua'],
+            'campos_do_jordao':        ['monte_verde_mg', 'gramado_rs', 'canela_rs', 'penedo_rj', 'teresopolis'],
+            'gramado_rs':              ['canela_rs', 'campos_do_jordao', 'nova_friburgo', 'urubici', 'sao_joaquim_sc'],
+            'canela_rs':               ['gramado_rs', 'campos_do_jordao', 'urubici', 'sao_joaquim_sc'],
+            'goncalves_mg':            ['monte_verde_mg', 'campos_do_jordao', 'passa_quatro_mg', 'lavras_novas'],
+            'sao_bento_do_sapucai':    ['campos_do_jordao', 'monte_verde_mg', 'santo_antonio_do_pinhal', 'tiradentes_mg'],
+            'santo_antonio_do_pinhal': ['sao_bento_do_sapucai', 'campos_do_jordao', 'monte_verde_mg'],
+            'serra_negra_sp':          ['campos_do_jordao', 'monte_verde_mg', 'sao_bento_do_sapucai'],
+            'petropolis_rj':           ['nova_friburgo', 'teresopolis', 'itaipava_rj', 'miguel_pereira_rj'],
+            'visconde_de_maua':        ['penedo_rj', 'monte_verde_mg', 'itaipava_rj', 'lavras_novas'],
+            'passa_quatro_mg':         ['goncalves_mg', 'monte_verde_mg', 'campos_do_jordao', 'lavras_novas'],
+            'nova_friburgo':           ['teresopolis', 'petropolis_rj', 'itaipava_rj', 'miguel_pereira_rj'],
+        };
+
+        const CONCORRENTES_INFO = {
+            'penedo_rj':       { nome: 'Penedo (RJ)' },
+            'teresopolis':     { nome: 'Teresópolis (RJ)' },
+            'tiradentes_mg':   { nome: 'Tiradentes (MG)' },
+            'itaipava_rj':     { nome: 'Itaipava (RJ)' },
+            'lavras_novas':    { nome: 'Lavras Novas (MG)' },
+            'urubici':         { nome: 'Urubici (SC)' },
+            'miguel_pereira_rj': { nome: 'Miguel Pereira (RJ)' },
+            'sao_joaquim_sc':  { nome: 'São Joaquim (SC)' },
+            'ouro_preto':      { nome: 'Ouro Preto (MG)' },
+            'diamantina_mg':   { nome: 'Diamantina (MG)' },
+            'triunfo_pe':      { nome: 'Triunfo (PE)' },
+            'guaramiranga':    { nome: 'Guaramiranga (CE)' },
+        };
+
+        // CAMADA 2 — config local UF por destino
+        const PULSE_LOCAL_UF_BY_DESTINO = {
+            'monte_verde_mg': 'MG', 'campos_do_jordao': 'SP', 'gramado_rs': 'RS',
+            'canela_rs': 'RS', 'goncalves_mg': 'MG', 'sao_bento_do_sapucai': 'SP',
+            'santo_antonio_do_pinhal': 'SP', 'serra_negra_sp': 'SP', 'petropolis_rj': 'RJ',
+            'visconde_de_maua': 'MG', 'passa_quatro_mg': 'MG', 'nova_friburgo': 'RJ',
+            'penedo_rj': 'RJ', 'teresopolis': 'RJ', 'tiradentes_mg': 'MG',
+            'itaipava_rj': 'RJ', 'lavras_novas': 'MG', 'urubici': 'SC',
+            'miguel_pereira_rj': 'RJ', 'sao_joaquim_sc': 'SC', 'ouro_preto': 'MG',
+            'diamantina_mg': 'MG', 'triunfo_pe': 'PE', 'guaramiranga': 'CE',
+        };
+
+        const PULSE_IS_CAPITAL_OR_HUB = {};
+        const PULSE_LOCAL_REDUCER_FOR_CAPITAL = 0.40;
+        const PULSE_MIN_ORIGENS = 3;
+        const PULSE_DOMINANCE_LIMIT = 70;
+        const PULSE_MIN_RECURRENCES = 2;
+        const PULSE_LOOKBACK = 6;
+
+        function pulseNormState(s) {
+            if (!s) return '';
+            return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+        }
+        function pulseExtractTop3(row) {
+            const out = [];
+            const pushIf = function(name, pct) { const n = pulseNormState(name); const p = Number(pct); if (!n || !Number.isFinite(p)) return; out.push({ state: n, pct: p }); };
+            pushIf(row.origem_1, row.origem_1_pct); pushIf(row.origem_2, row.origem_2_pct); pushIf(row.origem_3, row.origem_3_pct);
+            return out.sort(function(a, b) { return b.pct - a.pct; });
+        }
+        function pulseAdjustLocalBias(destinoId, top3) {
+            const localUF = pulseNormState(PULSE_LOCAL_UF_BY_DESTINO[destinoId] || '');
+            const isCapital = !!PULSE_IS_CAPITAL_OR_HUB[destinoId];
+            if (!localUF) return { adjusted: top3.slice(), localUF: localUF, mode: 'no_local_config' };
+            if (!isCapital) { const filtered = top3.filter(function(x) { return x.state !== localUF; }); return { adjusted: filtered, localUF: localUF, mode: 'local_removed' }; }
+            const adjusted = top3.map(function(x) { if (x.state === localUF) { return { state: x.state, pct: Math.round(x.pct * PULSE_LOCAL_REDUCER_FOR_CAPITAL) }; } return x; }).sort(function(a, b) { return b.pct - a.pct; });
+            return { adjusted: adjusted, localUF: localUF, mode: 'local_pondered' };
+        }
+        function pulseIsObservedValid(adjustedTop) { const n = adjustedTop.length; if (n < PULSE_MIN_ORIGENS) return false; const maxPct = adjustedTop[0] ? adjustedTop[0].pct : 0; if (maxPct >= PULSE_DOMINANCE_LIMIT) return false; return true; }
+        function pulseRecurrence(destinoId, rows) {
+            const last = rows.slice(-PULSE_LOOKBACK); const counts = new Map();
+            for (let i = 0; i < last.length; i++) { const row = last[i]; const top3 = pulseExtractTop3(row); const adjInfo = pulseAdjustLocalBias(destinoId, top3); const adjusted = adjInfo.adjusted; for (let j = 0; j < adjusted.length; j++) { const x = adjusted[j]; counts.set(x.state, (counts.get(x.state) || 0) + 1); } }
+            const arr = []; counts.forEach(function(n, state) { arr.push({ state: state, n: n }); }); arr.sort(function(a, b) { return b.n - a.n; }); return arr;
+        }
+        function pulseCamada2Compute(destinoId, rowsDoDestino) {
+            const rows = Array.isArray(rowsDoDestino) ? rowsDoDestino : [];
+            if (rows.length === 0) return { mode: 'insuficiente', badge: 'Sem histórico', text: 'Sem dados suficientes para leitura de origem.' };
+            const lastRow = rows[rows.length - 1]; const top3 = pulseExtractTop3(lastRow); const adjInfo = pulseAdjustLocalBias(destinoId, top3); const adjusted = adjInfo.adjusted;
+            if (adjusted.length === 0) return { mode: 'insuficiente', badge: 'Baixo volume', text: 'Origem não observável.' };
+            const observedOk = pulseIsObservedValid(adjusted); const rec = pulseRecurrence(destinoId, rows); const topRec = rec[0]; const isRecurring = topRec && topRec.n >= PULSE_MIN_RECURRENCES;
+            if (observedOk) { const o1 = adjusted[0]; const o2 = adjusted[1]; const o3 = adjusted[2]; const badge = isRecurring ? 'Origem recorrente: ' + topRec.state + ' (' + topRec.n + '/' + Math.min(PULSE_LOOKBACK, rows.length) + ')' : 'Origem observada (Top 3)'; const textParts = ['Origem (Top 3 ajustado): ' + o1.state + ' ' + o1.pct + '%']; if (o2) textParts.push(o2.state + ' ' + o2.pct + '%'); if (o3) textParts.push(o3.state + ' ' + o3.pct + '%'); if (isRecurring) textParts.push('• Recorrência externa: ' + topRec.state + ' em ' + topRec.n + ' períodos recentes'); return { mode: 'observada', badge: badge, text: textParts.join(' | ') }; }
+            if (isRecurring) return { mode: 'inferida', badge: '⚠️ Origem inferida: ' + topRec.state, text: 'Mercado mais recorrente: ' + topRec.state + '.' };
+            return { mode: 'insuficiente', badge: '⚠️ Baixa diversidade', text: 'Sinal de origem não confiável.' };
+        }
+
+        function getMarkerColor(interesse) { if (interesse >= 70) return '#ff3860'; if (interesse >= 40) return '#ffea00'; return '#39ff14'; }
+
+        function calcularNowcasting(destino, dadosHistoricos) {
+            try {
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 10).reverse();
+                if (historico.length < 3) return null;
+                const alpha = 0.3; let ema = historico[0].interesse;
+                for (let i = 1; i < historico.length; i++) { ema = alpha * historico[i].interesse + (1 - alpha) * ema; }
+                const ultimo = historico[historico.length - 1].interesse; const penultimo = historico[historico.length - 2].interesse; const antepenultimo = historico[historico.length - 3].interesse;
+                const tendencia = ((ultimo - penultimo) + (penultimo - antepenultimo)) / 2;
+                const previsao = Math.max(0, Math.min(100, Math.round(ema + (tendencia * 0.5))));
+                const direcao = tendencia > 1 ? '↗️' : tendencia < -1 ? '↘️' : '➡️';
+                return { valor: previsao, direcao };
+            } catch (error) { return null; }
+        }
+
+        function calcularConfiabilidade(destino, dadosHistoricos) {
+            try {
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 5);
+                if (historico.length < 3) return { score: null, nivel: 'Dados Insuficientes', classe: 'baixa' };
+                let consistencia = 0;
+                if (historico.length >= 4) { let direcoes = []; for (let i = 0; i < historico.length - 1; i++) { const diff = historico[i].interesse - historico[i+1].interesse; direcoes.push(diff > 0 ? 1 : diff < 0 ? -1 : 0); } const positivas = direcoes.filter(d => d > 0).length; const negativas = direcoes.filter(d => d < 0).length; consistencia = (Math.max(positivas, negativas) / direcoes.length) * 100; }
+                const valores = historico.map(h => h.interesse); const media = valores.reduce((a,b) => a+b, 0) / valores.length; const variancia = valores.reduce((sum, v) => sum + Math.pow(v - media, 2), 0) / valores.length; const estabilidade = Math.max(0, 100 - (Math.sqrt(variancia) * 2));
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0]; const somaOrigens = origens.reduce((a, b) => a + b, 0); let diversificacao = 50; if (somaOrigens > 0) { const proporcoes = origens.map(o => o / somaOrigens); diversificacao = Math.max(0, (1 - proporcoes.reduce((sum, p) => sum + (p * p), 0)) * 100); }
+                const scoreConfianca = Math.round((consistencia * 0.4) + (estabilidade * 0.3) + (diversificacao * 0.3));
+                let nivel, classe; if (scoreConfianca >= 70) { nivel = '🟢 Alta'; classe = 'alta'; } else if (scoreConfianca >= 40) { nivel = '🟡 Média'; classe = 'media'; } else { nivel = '🔴 Baixa'; classe = 'baixa'; }
+                return { score: scoreConfianca, nivel, classe };
+            } catch (error) { return { score: null, nivel: 'N/A', classe: 'baixa' }; }
+        }
+
+        function calcularIPD(destino, dadosHistoricos, todosDestinos) {
+            try {
+                const variacao = destino.variacao || 0; const variacaoNorm = Math.min(Math.abs(variacao), 100);
+                let aceleracao = 0; const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id); if (historico.length >= 3) { const var1 = historico[0].interesse - historico[1].interesse; const var2 = historico[1].interesse - historico[2].interesse; aceleracao = Math.abs(var1 - var2); }
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0]; const somaOrigens = origens.reduce((a, b) => a + b, 0); let concentracao = 0; if (somaOrigens > 0) { const proporcoes = origens.map(o => o / somaOrigens); concentracao = proporcoes.reduce((sum, p) => sum + (p * p), 0) * 100; }
+                return Math.round((0.4 * variacaoNorm) + (0.3 * Math.min(aceleracao * 2, 100)) + (0.3 * concentracao));
+            } catch (error) { return null; }
+        }
+
+        function calcularMomentum(destino, dadosHistoricos) {
+            try {
+                const historico = dadosHistoricos.filter(d => d.destino_id === destino.destino_id).slice(0, 5);
+                if (historico.length < 3) return "Dados Insuficientes";
+                const ultimo = historico[0].interesse; const penultimo = historico[1].interesse; const antepenultimo = historico[2].interesse;
+                const direcao = ultimo > penultimo && penultimo > antepenultimo ? 1 : ultimo < penultimo && penultimo < antepenultimo ? -1 : 0;
+                let somaVar = 0; for (let i = 0; i < historico.length - 1; i++) { somaVar += Math.abs(historico[i].interesse - historico[i+1].interesse); } const velocidade = somaVar / (historico.length - 1);
+                const valores = historico.map(h => h.interesse); const media = valores.reduce((a,b) => a+b, 0) / valores.length; const variancia = valores.reduce((sum, v) => sum + Math.pow(v - media, 2), 0) / valores.length; const consistencia = 100 - Math.min(Math.sqrt(variancia), 100);
+                if (direcao === 1 && velocidade > 5 && consistencia > 60) return "🚀 Forte";
+                if (direcao === -1) return "📉 Perdendo";
+                return "⚡ Moderado";
+            } catch (error) { return "N/A"; }
+        }
+
+        function calcularOportunidade(destino, todosDestinos) {
+            try {
+                const itens = (todosDestinos || []).map(function(d) { return { variacao: Number(d.variacao), peso: Number(d.interesse) }; }).filter(function(x) { return Number.isFinite(x.variacao) && Number.isFinite(x.peso) && x.peso > 0; });
+                if (itens.length === 0) return null;
+                const somaPesos = itens.reduce(function(sum, x) { return sum + x.peso; }, 0);
+                if (somaPesos === 0) return null;
+                const mediaPonderada = itens.reduce(function(sum, x) { return sum + (x.variacao * x.peso); }, 0) / somaPesos;
+                const variacaoDestino = Number(destino.variacao); if (!Number.isFinite(variacaoDestino)) return null; if (mediaPonderada === 0) return null;
+                return variacaoDestino / mediaPonderada;
+            } catch (error) { return null; }
+        }
+
+        function calcularIPCRFinal(destino, todosHistoricos, todosDestinosUltimos) {
+            try {
+                const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+                const toNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : null; };
+                const variacao = toNum(destino.variacao); const variacaoClamped = variacao === null ? null : clamp(variacao, -50, 50); const scoreVariacao = variacaoClamped === null ? 50 : Math.round(((variacaoClamped + 50) / 100) * 100);
+                const ipd = toNum(destino.ipd); const scoreIPD = ipd === null ? 50 : clamp(Math.round(ipd), 0, 100);
+                const share = toNum(destino.share); let scoreShare = 50; if (share !== null && Array.isArray(todosDestinosUltimos) && todosDestinosUltimos.length > 0) { const shares = todosDestinosUltimos.map(d => Number(d.share)).filter(x => Number.isFinite(x) && x > 0); const maxShare = shares.length ? Math.max.apply(null, shares) : 0; if (maxShare > 0) { scoreShare = clamp(Math.round((share / maxShare) * 100), 0, 100); } }
+                const mom = String(destino.momentum || '').toLowerCase(); let scoreMomentum = 50; if (mom.includes('forte') || mom.includes('🚀')) scoreMomentum = 80; else if (mom.includes('moderado') || mom.includes('⚡')) scoreMomentum = 60; else if (mom.includes('perdendo') || mom.includes('📉')) scoreMomentum = 30;
+                return clamp(Math.round((scoreVariacao * 0.40) + (scoreIPD * 0.30) + (scoreShare * 0.20) + (scoreMomentum * 0.10)), 0, 100);
+            } catch (e) { return null; }
+        }
+
+        function calcularRisco(destino) {
+            try {
+                const origens = [destino.origem_1_pct || 0, destino.origem_2_pct || 0, destino.origem_3_pct || 0];
+                const somaOrigens = origens.reduce((a, b) => a + b, 0); if (somaOrigens === 0) return "N/A";
+                const hhi = origens.map(o => o / somaOrigens).reduce((sum, p) => sum + (p * p), 0);
+                if (hhi > 0.5) return "🔴 Alto"; if (hhi > 0.35) return "🟡 Médio"; return "🟢 Baixo";
+            } catch (error) { return "N/A"; }
+        }
+
+        function calcularIPCR(destinoSerras, dadosConcorrentesNacionais) {
+            try {
+                const variacaoSerras = parseFloat(destinoSerras.variacao);
+                if (isNaN(variacaoSerras) || destinoSerras.variacao === null || destinoSerras.variacao === undefined) {
+                    return { ipcr: null, status: '⏸️ Sem Dados de Variação', classe: 'estavel', variacaoPA: null, mediaConcorrentes: null, concorrentes: [] };
+                }
+                const concorrentes = MAPA_CONCORRENCIA[destinoSerras.destino_id];
+                if (!concorrentes || concorrentes.length === 0) {
+                    let status, classe;
+                    if (variacaoSerras > 10) { status = '📈 Crescimento Forte'; classe = 'ganhando'; }
+                    else if (variacaoSerras < -10) { status = '📉 Queda Acentuada'; classe = 'perdendo'; }
+                    else if (variacaoSerras > 0) { status = '✅ Crescimento Moderado'; classe = 'ganhando'; }
+                    else { status = '➡️ Estável'; classe = 'estavel'; }
+                    return { ipcr: null, status: status, classe: classe, variacaoPA: variacaoSerras, mediaConcorrentes: null, concorrentes: [], semConcorrentes: true };
+                }
+                if (!dadosConcorrentesNacionais || dadosConcorrentesNacionais.length === 0) {
+                    return { ipcr: null, status: '⏸️ Aguardando Dados de Concorrentes', classe: 'estavel', variacaoPA: variacaoSerras, mediaConcorrentes: null, concorrentes: [] };
+                }
+                const variacoesConcorrentes = concorrentes.map(concId => {
+                    const historicoConc = dadosConcorrentesNacionais.filter(d => d.destino_id === concId);
+                    if (historicoConc.length < 2) return null;
+                    const atual = historicoConc[0].interesse; const anterior = historicoConc[1].interesse;
+                    const variacao = anterior !== 0 ? ((atual - anterior) / anterior * 100) : 0;
+                    return { id: concId, nome: CONCORRENTES_INFO[concId]?.nome || concId, variacao: variacao, interesse: atual };
+                }).filter(v => v !== null);
+                if (variacoesConcorrentes.length === 0) return { ipcr: null, status: '⏸️ Dados Insuficientes', classe: 'estavel', variacaoPA: variacaoSerras, mediaConcorrentes: null, concorrentes: [] };
+                const mediaConcorrentes = variacoesConcorrentes.reduce((sum, c) => sum + c.variacao, 0) / variacoesConcorrentes.length;
+                let ipcr = null, status, classe;
+                if (mediaConcorrentes === 0) { if (variacaoSerras > 0) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; } else if (variacaoSerras < 0) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; } else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; } }
+                else if (variacaoSerras > 0 && mediaConcorrentes < 0) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; }
+                else if (variacaoSerras < 0 && mediaConcorrentes > 0) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; }
+                else { const ratio = Math.abs(variacaoSerras) / Math.abs(mediaConcorrentes); ipcr = ratio; if (variacaoSerras > 0) { if (ratio > 1.2) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; } else if (ratio < 0.8) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; } else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; } } else { if (ratio > 1.2) { status = '⚠️ Perdendo Competitividade'; classe = 'perdendo'; } else if (ratio < 0.8) { status = '✅ Ganhando Competitividade'; classe = 'ganhando'; } else { status = '➡️ Estável vs Concorrentes'; classe = 'estavel'; } } }
+                return { ipcr: ipcr, status: status, classe: classe, variacaoPA: variacaoSerras, mediaConcorrentes: mediaConcorrentes, concorrentes: variacoesConcorrentes };
+            } catch (error) { return { ipcr: null, status: '❌ Erro no Cálculo', classe: 'estavel', variacaoPA: null, mediaConcorrentes: null, concorrentes: [] }; }
+        }
+
+        // ========== MATRIX BACKGROUND ==========
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const fontSize = 14; const columns = canvas.width / fontSize; const drops = Array(Math.floor(columns)).fill(1);
+        function drawMatrix() { ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#00c6ff'; ctx.font = `${fontSize}px monospace`; drops.forEach((y, i) => { const text = chars[Math.floor(Math.random() * chars.length)]; ctx.fillText(text, i * fontSize, y * fontSize); if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; }); }
+        setInterval(drawMatrix, 50);
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        // ========== MAPA ==========
+        function inicializarMapa() {
+            try {
+                if (typeof L === 'undefined') { setTimeout(inicializarMapa, 1000); return; }
+                if (mapInstance) { mapInstance.remove(); }
+                const mapElement = document.getElementById('map');
+                if (!mapElement) return;
+                mapInstance = L.map('map', { center: [-22.5, -44.5], zoom: 6, zoomControl: true, scrollWheelZoom: true });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(mapInstance);
+                mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
+            } catch (error) { console.error('Erro ao inicializar mapa:', error); }
+        }
+
+        function renderizarMapa(dados) {
+            try {
+                if (!mapInstance) { inicializarMapa(); setTimeout(() => renderizarMapa(dados), 500); return; }
+                mapInstance.eachLayer((layer) => { if (layer instanceof L.Marker) mapInstance.removeLayer(layer); });
+                const ultimaData = dados[0].data_coleta;
+                const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+                dadosUltimos.forEach((dest, index) => {
+                    const info = (DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' });
+                    if (!info || !info.lat || !info.lng) return;
+                    const cor = getMarkerColor(dest.interesse);
+                    const customIcon = L.divIcon({ className: 'custom-marker', html: `<div style="background:${cor};width:24px;height:24px;border-radius:50%;border:3px solid rgba(0,0,0,0.5);box-shadow:0 0 15px ${cor};display:flex;align-items:center;justify-content:center;font-size:14px;">${info.emoji}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+                    const tipoLabel = info.tipo === 'concorrente' ? ' (Concorrente)' : ' (Âncora)';
+                    const popupContent = `<div class="popup-title">${info.emoji} ${info.nome}${tipoLabel}</div><div class="popup-metric"><strong>Interesse:</strong> ${(dest.interesse/10).toFixed(1)}/10</div><div class="popup-metric"><strong>Ranking:</strong> #${index + 1}</div>${dest.origem_1 ? `<div class="popup-origins"><div class="popup-metric">🥇 ${dest.origem_1} (${dest.origem_1_pct}%)</div>${dest.origem_2 ? `<div class="popup-metric">🥈 ${dest.origem_2} (${dest.origem_2_pct}%)</div>` : ''}${dest.origem_3 ? `<div class="popup-metric">🥉 ${dest.origem_3} (${dest.origem_3_pct}%)</div>` : ''}</div>` : ''}`;
+                    L.marker([info.lat, info.lng], { icon: customIcon }).addTo(mapInstance).bindPopup(popupContent);
+                });
+            } catch (error) { console.error('Erro ao renderizar mapa:', error); }
+        }
+
+        // ========== BUSCAR DADOS ==========
+        function calcularDataInicio() { const periodo = document.getElementById('period-select').value; if (periodo === 'custom') return document.getElementById('date-start').value || null; const d = new Date(); d.setDate(d.getDate() - parseInt(periodo)); return d.toISOString().split('T')[0]; }
+        function calcularDataFim() { const periodo = document.getElementById('period-select').value; if (periodo === 'custom') return document.getElementById('date-end').value || null; return new Date().toISOString().split('T')[0]; }
+        function calcularLimitDinamico(destinosPorDia) { const periodo = document.getElementById('period-select').value; const dias = periodo === 'custom' ? 90 : (parseInt(periodo) || 90); return (dias * destinosPorDia) + 50; }
+
+        async function buscarDados() {
+            try {
+                const dataInicio = calcularDataInicio(); const dataFim = calcularDataFim();
+                const limitDinamico = calcularLimitDinamico(24);
+                let query = supabaseClient.from('pulse_serras').select('*').eq('tipo', 'ancora').order('data_coleta', { ascending: false }).limit(limitDinamico);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim) query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
+                if (error) throw error;
+                if (!data || data.length === 0) { mostrarEstadoVazio(); return []; }
+                console.log(`✅ ${data.length} registros âncora carregados`);
+                return data;
+            } catch (error) { console.error('Erro ao buscar dados:', error); mostrarErro('Erro ao conectar com banco de dados'); return []; }
+        }
+
+        async function buscarDadosConcorrentes() {
+            try {
+                const dataInicio = calcularDataInicio(); const dataFim = calcularDataFim();
+                const limitConcorrentes = calcularLimitDinamico(12);
+                let query = supabaseClient.from('pulse_serras').select('*').eq('tipo', 'concorrente').order('data_coleta', { ascending: false }).limit(limitConcorrentes);
+                if (dataInicio) query = query.gte('data_coleta', dataInicio);
+                if (dataFim) query = query.lte('data_coleta', dataFim);
+                const { data, error } = await query;
+                if (error) return [];
+                console.log(`✅ ${data ? data.length : 0} registros concorrentes carregados`);
+                return data || [];
+            } catch (error) { return []; }
+        }
+
+        async function atualizarDados() {
+            const dados = await buscarDados();
+            const concorrentes = await buscarDadosConcorrentes();
+            if (dados.length === 0) return;
+            dadosGlobais = dados; dadosConcorrentes = concorrentes;
+            renderizarCards(dados); renderizarTimeline(dados); renderizarMapa(dados);
+            gerarBoletim(dados, concorrentes); renderizarCalendario();
+        }
+
+        function alternarOrdem() {
+            ordemAtual = ordemAtual === 'interesse' ? 'ipcr' : 'interesse';
+            const btn = document.getElementById('btn-ordem');
+            btn.textContent = ordemAtual === 'interesse' ? 'Índice de Interesse por Destino' : 'Índice de Pressão de Competitividade Regional';
+            btn.style.borderColor = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
+            btn.style.color = ordemAtual === 'ipcr' ? '#39ff14' : 'var(--accent)';
+            if (dadosGlobais.length > 0) renderizarCards(dadosGlobais);
+        }
+
+        function renderizarCards(dados) {
+            const container = document.getElementById('destinations-container');
+            const ultimaData = dados[0].data_coleta;
+            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+            const somaInteresse = dadosUltimos.reduce((sum, d) => sum + d.interesse, 0);
+            const destinosProcessados = dadosUltimos.map(d => {
+                const share = ((d.interesse / somaInteresse) * 100).toFixed(1);
+                const coletas = dados.filter(dd => dd.destino_id === d.destino_id);
+                let variacao = null; if (coletas.length > 1) { const anterior = coletas[1].interesse; variacao = anterior !== 0 ? ((d.interesse - anterior) / anterior * 100).toFixed(1) : 0; }
+                return { ...d, share, variacao };
+            });
+            const destinosComIndices = destinosProcessados.map(dest => {
+                const nowcasting = calcularNowcasting(dest, dados);
+                const confiabilidade = calcularConfiabilidade(dest, dados);
+                const ipd = calcularIPD(dest, dados, destinosProcessados);
+                const momentum = calcularMomentum(dest, dados);
+                const oportunidade = calcularOportunidade(dest, destinosProcessados);
+                const risco = calcularRisco(dest);
+                const ipcr_final = calcularIPCRFinal({ ...dest, ipd, momentum }, dados, destinosProcessados);
+                return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final };
+            });
+            const destinosOrdenados = destinosComIndices.sort((a, b) => ordemAtual === 'ipcr' ? (b.ipcr_final || 0) - (a.ipcr_final || 0) : b.interesse - a.interesse);
+            container.innerHTML = destinosOrdenados.map((dest, index) => {
+                const info = DESTINOS_INFO[dest.destino_id] || { nome: dest.destino_id, emoji: '📍' };
+                let ipdClass = 'neutral', ipdLabel = 'Moderada';
+                if (dest.ipd !== null) { if (dest.ipd >= 7.0) { ipdClass = 'negative'; ipdLabel = '🔴 Alta'; } else if (dest.ipd >= 4.0) { ipdClass = 'neutral'; ipdLabel = '🟡 Moderada'; } else { ipdClass = 'positive'; ipdLabel = '🟢 Baixa'; } }
+                return `<div class="dest-card" data-index="${index}">
+                    <div class="dest-header"><div class="dest-name">${info.emoji} ${info.nome}</div><div class="dest-rank">#${index + 1} Serras</div></div>
+                    <div class="metric-row"><div class="metric-label">Interesse Atual</div><div class="metric-value">${(dest.interesse/10).toFixed(1)}/10</div></div>
+                    ${dest.nowcasting && dest.nowcasting.valor !== null ? `<div class="metric-row"><div class="metric-label">Previsão 7 dias</div><div class="metric-value ${dest.nowcasting.valor > dest.interesse ? 'positive' : dest.nowcasting.valor < dest.interesse ? 'negative' : 'neutral'}">${(dest.nowcasting.valor/10).toFixed(1)} ${dest.nowcasting.direcao}</div></div>` : ''}
+                    ${dest.confiabilidade.score !== null ? `<div class="metric-row"><div class="metric-label">Confiabilidade</div><div class="metric-value">${dest.confiabilidade.nivel} <span class="badge-confianca ${dest.confiabilidade.classe}">${(dest.confiabilidade.score/10).toFixed(1)}/10</span></div></div>` : ''}
+                    ${dest.variacao !== null ? `<div class="metric-row"><div class="metric-label">Variação</div><div class="metric-value ${parseFloat(dest.variacao) >= 0 ? 'positive' : 'negative'}">${parseFloat(dest.variacao) >= 0 ? '+' : ''}${dest.variacao}%</div></div>` : ''}
+                    ${dest.ipd !== null ? `<div class="indice-destaque"><div class="indice-titulo">💎 Pressão de Demanda</div><div class="indice-valor ${ipdClass}">${ipdLabel} (${(dest.ipd/10).toFixed(1)}/10)</div></div>` : ''}
+                    <div class="metric-row"><div class="metric-label">Momentum</div><div class="metric-value">${dest.momentum}</div></div>
+                    ${dest.ipcr_final !== null && dest.ipcr_final !== undefined ? `<div class="metric-row"><div class="metric-label">IPCR Final</div><div class="metric-value ${dest.ipcr_final >= 7.0 ? 'positive' : dest.ipcr_final >= 4.0 ? 'neutral' : 'negative'}">${(dest.ipcr_final/10).toFixed(1)}/10</div></div>` : ''}
+                    <div class="metric-row"><div class="metric-label">Risco de Mercado</div><div class="metric-value">${dest.risco}</div></div>
+                    <div class="metric-row"><div class="metric-label">Share Serras</div><div class="metric-value">${dest.share}%</div></div>
+                    ${dest.origem_1 ? `<div class="origins-list"><div class="origin-item"><span class="origin-name">🥇 ${dest.origem_1}</span><span class="origin-pct">${dest.origem_1_pct}%</span></div>${dest.origem_2 ? `<div class="origin-item"><span class="origin-name">🥈 ${dest.origem_2}</span><span class="origin-pct">${dest.origem_2_pct}%</span></div>` : ''}${dest.origem_3 ? `<div class="origin-item"><span class="origin-name">🥉 ${dest.origem_3}</span><span class="origin-pct">${dest.origem_3_pct}%</span></div>` : ''}</div>` : ''}
+                </div>`;
+            }).join('');
+            setTimeout(() => {
+                document.querySelectorAll('.dest-card').forEach((card, index) => {
+                    card.addEventListener('click', () => {
+                        const destino = destinosOrdenados[index]; destinoSelecionado = destino;
+                        gerarBoletimDestino(destino, dados, dadosConcorrentes);
+                        if (window.innerWidth <= 1200) document.querySelector('.boletim').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                });
+            }, 100);
+        }
+
+        function renderizarTimeline(dados) {
+            const ultimaData = dados[0].data_coleta;
+            const top5 = dados.filter(d => d.data_coleta === ultimaData).sort((a, b) => b.interesse - a.interesse).slice(0, 5).map(d => d.destino_id);
+            const datasetsData = {}; top5.forEach(destId => { datasetsData[destId] = dados.filter(d => d.destino_id === destId).reverse().slice(-18); });
+            const labels = datasetsData[top5[0]].map(d => { const date = new Date(d.data_coleta); return `${date.getDate()}/${date.getMonth() + 1}`; });
+            const cores = ['#00c6ff', '#39ff14', '#ff3860', '#ffea00', '#9d4edd'];
+            const datasets = top5.map((destId, i) => { const info = (DESTINOS_INFO[destId] || { nome: destId }); return { label: info.nome, data: datasetsData[destId].map(d => (d.interesse/10).toFixed(1)), borderColor: cores[i], backgroundColor: cores[i] + '20', borderWidth: 3, tension: 0.4, pointRadius: 4, pointHoverRadius: 6 }; });
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(document.getElementById('timeline-chart').getContext('2d'), { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { color: '#eaf3ff', font: { size: 12, weight: 600 } } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 18, 22, 0.95)', titleColor: '#00c6ff', bodyColor: '#eaf3ff', borderColor: '#00c6ff', borderWidth: 1 } }, scales: { y: { beginAtZero: true, max: 10, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } } } } });
+        }
+
+        function gerarBoletim(dados, concorrentes) {
+            const ultimaData = dados[0].data_coleta;
+            const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+            const top3 = dadosUltimos.sort((a, b) => b.interesse - a.interesse).slice(0, 3).map(d => { const info = (DESTINOS_INFO[d.destino_id] || { nome: d.destino_id, emoji: '📍' }); return `${info.emoji} ${info.nome} (${(d.interesse/10).toFixed(1)})`; });
+            const origensMap = {}; dadosUltimos.forEach(d => { if (d.origem_1) origensMap[d.origem_1] = (origensMap[d.origem_1] || 0) + d.origem_1_pct * d.interesse; if (d.origem_2) origensMap[d.origem_2] = (origensMap[d.origem_2] || 0) + d.origem_2_pct * d.interesse; if (d.origem_3) origensMap[d.origem_3] = (origensMap[d.origem_3] || 0) + d.origem_3_pct * d.interesse; });
+            const topOrigens = Object.entries(origensMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([cidade]) => cidade);
+            const dataFormatada = new Date(ultimaData).toLocaleDateString('pt-BR');
+            document.getElementById('boletim-content').innerHTML = `<div class="boletim-section"><div class="boletim-section-title">Data: ${dataFormatada}</div></div><div class="boletim-section"><div class="boletim-section-title">🏆 Top 3 Destinos Serras</div><ul class="boletim-list">${top3.map(t => `<li>${t}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Top 3 Origens Agregadas</div><ul class="boletim-list">${topOrigens.map(o => `<li>${o}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Insights</div><p>Total de ${dadosUltimos.length} destinos âncora monitorados. Clique em um destino para análise detalhada.</p></div>`;
+        }
+
+        function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
+            const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
+            const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
+            const nowcasting = calcularNowcasting(destino, todosDestinos);
+            const confiabilidade = calcularConfiabilidade(destino, todosDestinos);
+            const momentum = calcularMomentum(destino, todosDestinos);
+            const risco = calcularRisco(destino);
+            const ultimaData = todosDestinos[0]?.data_coleta;
+            const ultimosDestinos = todosDestinos.filter(d => d.data_coleta === ultimaData);
+            const rankingAtual = ultimosDestinos.slice().sort((a, b) => b.interesse - a.interesse).findIndex(d => d.destino_id === destino.destino_id) + 1;
+            const ipcr = calcularIPCR(destino, concorrentes);
+            let ipcrHTML = '';
+            if (ipcr) {
+                if (ipcr.variacaoPA === null) { ipcrHTML = '<div class="boletim-section ipcr-section"><div class="boletim-section-title">🌍 Competitividade (IPCR)</div><div class="ipcr-item"><div class="ipcr-status estavel">⏸️ Aguardando 2ª medição</div></div></div>'; }
+                else if (ipcr.semConcorrentes) { ipcrHTML = `<div class="boletim-section ipcr-section"><div class="boletim-section-title">🌍 Performance Serras</div><div class="ipcr-item"><div class="ipcr-comparacao">Variação: ${ipcr.variacaoPA >= 0 ? '+' : ''}${Number(ipcr.variacaoPA).toFixed(1)}%</div><div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div></div></div>`; }
+                else if (ipcr.concorrentes.length > 0) { const principais = ipcr.concorrentes.slice(0, 3); ipcrHTML = `<div class="boletim-section ipcr-section"><div class="boletim-section-title">🌍 Competitividade (IPCR)</div><div class="ipcr-item"><div class="ipcr-comparacao">Destino: ${ipcr.variacaoPA >= 0 ? '+' : ''}${Number(ipcr.variacaoPA).toFixed(1)}% | Concorrentes: ${ipcr.mediaConcorrentes >= 0 ? '+' : ''}${Number(ipcr.mediaConcorrentes).toFixed(1)}%</div><div class="ipcr-comparacao" style="font-size:0.7rem;margin-top:6px;">vs ${principais.map(c => c.nome).join(', ')}</div><div class="ipcr-status ${ipcr.classe}">${ipcr.status}</div></div></div>`; }
+            }
+            const historico = todosDestinos.filter(d => d.destino_id === destino.destino_id);
+            const camada2 = pulseCamada2Compute(destino.destino_id, historico);
+            let camada2HTML = '';
+            if (camada2.mode === 'observada' || camada2.mode === 'inferida') { camada2HTML = `<div class="boletim-section"><div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div><div class="ipcr-item"><div class="ipcr-status ${camada2.mode === 'observada' ? 'ganhando' : 'perdendo'}" style="font-size:0.75rem;margin-bottom:8px;">${camada2.badge}</div><div class="ipcr-comparacao" style="font-size:0.75rem;">${camada2.text}</div></div></div>`; }
+            document.getElementById('boletim-content').innerHTML = `
+                <div class="boletim-section"><div class="boletim-section-title">${info.emoji} ${info.nome}</div><p style="font-size:0.75rem;color:var(--text-dim);">${dataFormatada}</p>${rankingAtual > 0 ? `<p style="font-size:0.75rem;color:var(--accent);font-weight:700;">🏆 #${rankingAtual} de ${ultimosDestinos.length} destinos Serras</p>` : ''}</div>
+                <div class="boletim-section"><div class="boletim-section-title">Métricas Principais</div><ul class="boletim-list">
+                    <li>Interesse Atual: ${(destino.interesse/10).toFixed(1)}/10</li>
+                    ${destino.variacao !== null ? `<li>Variação: ${parseFloat(destino.variacao) >= 0 ? '+' : ''}${destino.variacao}%</li>` : ''}
+                    ${nowcasting && nowcasting.valor !== null ? `<li>Previsão 7 dias: ${(nowcasting.valor/10).toFixed(1)} ${nowcasting.direcao}</li>` : ''}
+                    ${confiabilidade.score !== null ? `<li>Confiabilidade: ${confiabilidade.nivel} (${(confiabilidade.score/10).toFixed(1)}/10)</li>` : ''}
+                </ul></div>
+                <div class="boletim-section"><div class="boletim-section-title">⚡ Análise Estratégica</div><ul class="boletim-list">
+                    <li>Momentum: ${momentum}</li>
+                    <li>Risco de Mercado: ${risco}</li>
+                    ${destino.ipcr_final !== null && destino.ipcr_final !== undefined ? `<li>IPCR Final: ${(destino.ipcr_final/10).toFixed(1)}/10</li>` : ''}
+                    <li>Share Serras: ${destino.share}%</li>
+                </ul></div>
+                ${destino.origem_1 ? `<div class="boletim-section"><div class="boletim-section-title">Top 3 Origens</div><ul class="boletim-list"><li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}${destino.origem_3 ? `<li>🥉 ${destino.origem_3} (${destino.origem_3_pct}%)</li>` : ''}</ul></div>` : ''}
+                ${camada2HTML}${ipcrHTML}`;
+        }
+
+        function limparEmojis(texto) { return texto.replace(/[^\u0000-\u00FF\u0100-\u024F\u1E00-\u1EFF\n\r\t .,;:!?()\[\]{}<>\/\\@#$%^&*_+=|~\`"'0-9A-Za-záàãâäéèêëíìîïóòõôöúùûüçñÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ-]/g, ''); }
+
+        function exportarBoletimPDF() {
+            try {
+                const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'mm', format: 'a4' }); const dataHoje = new Date().toLocaleDateString('pt-BR');
+                doc.setFillColor(5, 10, 20); doc.rect(0, 0, 210, 40, 'F'); doc.setTextColor(0, 198, 255); doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.text('DEMAND PULSE SERRAS', 105, 16, { align: 'center' }); doc.setFontSize(8); doc.setTextColor(156, 163, 175); doc.text('ABR Consultoria - Inteligencia Turistica de Destinos de Serra', 105, 23, { align: 'center' }); doc.text('Gerado em: ' + dataHoje, 105, 30, { align: 'center' }); doc.setDrawColor(0, 198, 255); doc.setLineWidth(0.4); doc.line(15, 36, 195, 36);
+                let y = 46;
+                const addLine = (texto, bold, cor) => { if (y > 275) { doc.addPage(); y = 20; } const txt = limparEmojis(texto).trim(); if (!txt) return; doc.setFontSize(9); doc.setFont('helvetica', bold ? 'bold' : 'normal'); if (cor) doc.setTextColor(...cor); else doc.setTextColor(30, 30, 30); const wrapped = doc.splitTextToSize(txt, 175); doc.text(wrapped, 15, y); y += wrapped.length * 5.5 + 1; };
+                const addSection = (titulo) => { y += 3; doc.setFillColor(0, 198, 255); doc.rect(15, y - 4, 3, 5, 'F'); addLine(titulo, true, [0, 100, 180]); y += 1; };
+                if (destinoSelecionado) { const info = DESTINOS_INFO[destinoSelecionado.destino_id] || { nome: destinoSelecionado.destino_id }; addLine(info.nome + ' — Boletim Estratégico', true, [0, 198, 255]); addLine('Data: ' + new Date(destinoSelecionado.data_coleta).toLocaleDateString('pt-BR'), false, [100, 100, 100]); y += 4; addSection('Metricas Principais'); addLine('Interesse: ' + (destinoSelecionado.interesse/10).toFixed(1) + '/10', false); if (destinoSelecionado.variacao !== null) addLine('Variacao: ' + (parseFloat(destinoSelecionado.variacao) >= 0 ? '+' : '') + destinoSelecionado.variacao + '%', false); if (destinoSelecionado.share) addLine('Share Serras: ' + destinoSelecionado.share + '%', false); }
+                else { const textoGeral = document.getElementById('boletim-content').innerText; const linhas = textoGeral.split('\n').filter(l => l.trim() !== ''); linhas.forEach(linha => { const isTitle = linha.length < 50 && !linha.includes(':') && !linha.includes('%'); if (isTitle) addLine(linha, true, [0, 100, 180]); else addLine(linha, false); }); }
+                doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.text('ABR Marketing Estrategico & Consultoria Hoteleira — Documento confidencial', 105, 290, { align: 'center' });
+                const dataNome = dataHoje.replace(/\//g, '-');
+                const nomeArq = destinoSelecionado ? 'boletim-abr-serras-' + (DESTINOS_INFO[destinoSelecionado.destino_id]?.nome || destinoSelecionado.destino_id).replace(/\s/g, '-').toLowerCase() + '-' + dataNome + '.pdf' : 'boletim-abr-serras-geral-' + dataNome + '.pdf';
+                doc.save(nomeArq);
+            } catch(e) { alert('Erro ao gerar PDF: ' + e.message); }
+        }
+
+        function copiarBoletim() {
+            const content = document.getElementById('boletim-content').innerText;
+            const linhas = content.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const textoFormatado = linhas.join('\n');
+            const assinatura = '\n\n— ABR Consultoria · Inteligência de Demanda Serras';
+            navigator.clipboard.writeText(textoFormatado + assinatura).then(() => { alert('✅ Boletim copiado!'); });
+        }
+
+        function renderizarCalendario() {
+            const ano = mesAtual.getFullYear(); const mes = mesAtual.getMonth();
+            const nomeMes = mesAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            document.getElementById('calendar-month').textContent = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+            const primeiroDia = new Date(ano, mes, 1).getDay(); const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(dia => { const label = document.createElement('div'); label.className = 'calendar-day-label'; label.textContent = dia; grid.appendChild(label); });
+            for (let i = 0; i < primeiroDia; i++) { const empty = document.createElement('div'); empty.className = 'calendar-day disabled'; grid.appendChild(empty); }
+            for (let dia = 1; dia <= ultimoDia; dia++) {
+                const dayEl = document.createElement('div'); dayEl.className = 'calendar-day'; dayEl.textContent = dia;
+                const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                const temDados = dadosGlobais.some(d => d.data_coleta === dataStr);
+                if (temDados) { dayEl.classList.add('has-data'); dayEl.addEventListener('click', () => { document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected')); dayEl.classList.add('selected'); const dadosFiltrados = dadosGlobais.filter(d => d.data_coleta === dataStr); if (dadosFiltrados.length > 0) { renderizarCards(dadosFiltrados.concat(dadosGlobais.filter(d => d.data_coleta !== dataStr))); gerarBoletim(dadosFiltrados, dadosConcorrentes); } }); }
+                grid.appendChild(dayEl);
+            }
+        }
+
+        function navegarMes(direcao) { mesAtual.setMonth(mesAtual.getMonth() + direcao); renderizarCalendario(); }
+        function mostrarEstadoVazio() { document.getElementById('destinations-container').innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">🏔️</div><p>Nenhum dado disponível ainda.<br>Aguardando primeira coleta do Pulse Serras...</p></div>`; }
+        function mostrarErro(msg) { document.getElementById('destinations-container').innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">⚠️</div><p>${msg}</p></div>`; }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Inicializando PULSE SERRAS...');
+            inicializarMapa();
+            atualizarDados();
+        });
+
+        document.getElementById('period-select').addEventListener('change', (e) => {
+            document.getElementById('custom-dates').style.display = e.target.value === 'custom' ? 'flex' : 'none';
+        });
+
+        // ========== FRASES E SELOS ==========
+        const FRASES_VEREDITO = {
+            'agir_ganhando': ['Destino com alta demanda — janela de ação aberta', 'Momentum positivo e competitividade crescente — hora de agir', 'Sinal forte de mercado — posicionamento ativo recomendado'],
+            'agir_estavel': ['Alta demanda com mercado equilibrado — oportunidade consistente', 'Pulso elevado e estável — janela de receita confiável'],
+            'agir_perdendo': ['Demanda alta mas momentum desacelerando — aja antes da virada', 'Alta demanda com momentum negativo — precificação defensiva recomendada'],
+            'monitorar_ganhando': ['Momentum positivo em destino médio — potencial de crescimento', 'Aceleração detectada em patamar moderado — sinal para acompanhar'],
+            'monitorar_estavel': ['Demanda estável — acompanhar próximas análises', 'Mercado equilibrado sem sinais de ruptura — monitoramento padrão'],
+            'monitorar_perdendo': ['Demanda média com desaceleração — atenção nos próximos registros', 'Momentum negativo em destino moderado — vigilância recomendada'],
+            'atencao_ganhando': ['Pulso baixo apesar da aceleração — mercado enviando sinais mistos'],
+            'atencao_estavel': ['Queda relevante — revisar posicionamento e canais', 'Interesse reduzido sem sinais de recuperação'],
+            'atencao_perdendo': ['Queda consistente em destino fragilizado — situação crítica', 'Tendência de queda confirmada — alerta máximo'],
+        };
+        function sortearFrase(selo, momentum) {
+            let chave = 'monitorar_estavel'; const s = (selo || '').toLowerCase(); const m = (momentum || '').toLowerCase();
+            const isAlta = s.includes('explosão') || s.includes('alta'); const isQueda = s.includes('queda') || s.includes('ajuste');
+            const mGanhando = m.includes('forte') || m.includes('🚀'); const mPerdendo = m.includes('perdendo') || m.includes('📉');
+            if (isAlta) { if (mGanhando) chave = 'agir_ganhando'; else if (mPerdendo) chave = 'agir_perdendo'; else chave = 'agir_estavel'; }
+            else if (isQueda) { if (mGanhando) chave = 'atencao_ganhando'; else if (mPerdendo) chave = 'atencao_perdendo'; else chave = 'atencao_estavel'; }
+            else { if (mGanhando) chave = 'monitorar_ganhando'; else if (mPerdendo) chave = 'monitorar_perdendo'; }
+            const arr = FRASES_VEREDITO[chave]; return arr[Math.floor(Math.random() * arr.length)];
+        }
+        function gerarSeloEstrategico(destino) {
+            if (!destino.variacao) return "⚖️ Estável"; const v = parseFloat(destino.variacao);
+            if (v >= 15) return "🚀 Destino em Explosão"; if (v >= 5) return "📈 Tendência de Alta";
+            if (v <= -15) return "⚠️ Queda Relevante"; if (v < 0) return "📉 Ajuste de Demanda"; return "⚖️ Estável";
+        }
+        const _renderizarCardsOriginal = renderizarCards;
+        renderizarCards = function(dados) {
+            _renderizarCardsOriginal(dados);
+            const ultimaData = dados[0].data_coleta; const dadosUltimos = dados.filter(d => d.data_coleta === ultimaData);
+            document.querySelectorAll('.dest-card').forEach((card, index) => {
+                const destino = dadosUltimos.sort((a,b)=>b.interesse-a.interesse)[index]; if (!destino) return;
+                const selo = gerarSeloEstrategico(destino); const frase = sortearFrase(selo, destino.momentum || '');
+                const extraHTML = document.createElement('div'); extraHTML.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05);font-size:0.75rem;opacity:0.85;';
+                extraHTML.innerHTML = `<div style="margin-top:4px;">${selo}</div><div style="margin-top:6px;font-style:italic;color:rgba(0,198,255,0.7);">${frase}</div>`;
+                card.appendChild(extraHTML);
+            });
+        };
+    </script>
+</body>
+</html>
