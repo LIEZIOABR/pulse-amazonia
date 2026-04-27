@@ -238,12 +238,12 @@
                 <div class="btn-kpi" onclick="showKpi('amazonia', event)">Ver Dicionário de KPIs</div>
             </div>
 
-            <!-- CARD 2: PULSE SERRAS -->
-            <div class="card disabled">
+            <!-- CARD 2: PULSE SERRAS — EDIÇÃO 2: active + btn-access -->
+            <div class="card active">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><polyline points="1 20 7 8 12 14 16 6 23 20"/><line x1="1" y1="20" x2="23" y2="20"/></svg>
                 <div class="card-title">Pulse Serras</div>
                 <p class="kpi-desc" style="text-align: center;">Radar de inteligência turística de destinos de serra. Monitoramento de 12 destinos âncora e 12 concorrentes nacionais.</p>
-                <div class="card-status status-homolog">Em Breve</div>
+                <div class="btn-access" onclick="showModal('serras')">Acessar Pulse</div>
                 <div class="btn-kpi" onclick="showKpi('serras', event)">Ver Dicionário de KPIs</div>
             </div>
 
@@ -255,8 +255,6 @@
                 <div class="card-status status-homolog">Sistema em Homologação</div>
                 <div class="btn-kpi" onclick="showKpi('hotel', event)">Ver Dicionário de KPIs</div>
             </div>
-
-
         </div>
 
         <!-- DICIONÁRIO PULSE AMAZÔNIA -->
@@ -502,7 +500,7 @@
                 Sistema Blindado
             </div>
             <div class="footer-line">
-                @ Todos os direitos reservados a ABR Marketing Estratégico & Consultoria Hoteleira.
+                © 2026 ABR Consultoria · abrantes@abrconsult.com.br
             </div>
         </footer>
     </div>
@@ -522,7 +520,7 @@
 
         <div class="modal-content">
             <h3 class="modal-title" id="modal-title">SISTEMA RESTRITO</h3>
-            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso para o Pulse Amazônia.</p>
+            <p class="modal-subtitle" id="modal-subtitle">Insira a chave de acesso.</p>
             <div class="input-group">
                 <input type="password" id="modal-pass" class="modal-input" placeholder="CHAVE DE ACESSO" autofocus>
                 <svg class="toggle-password" id="toggle-pass" viewBox="0 0 24 24" onclick="togglePasswordVisibility()"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -533,10 +531,12 @@
     </div>
 
     <script>
-        const PASSWORDS = ["testecliente", "abrturbo"];
+        // EDIÇÃO 1: senhas abrtotal e testetotal adicionadas
+        const PASSWORDS = ["testecliente", "abrturbo", "abrtotal", "testetotal"];
         let currentSystem = 'municipal';
         let currentKpi = null;
 
+        // EDIÇÃO 3: case serras adicionado no showModal
         function showModal(system) {
             currentSystem = system;
             document.getElementById('custom-modal').style.display = 'flex';
@@ -546,6 +546,9 @@
             if (system === 'amazonia') {
                 document.getElementById('modal-title').textContent = 'PULSE AMAZÔNIA';
                 document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Pulse Amazônia.';
+            } else if (system === 'serras') {
+                document.getElementById('modal-title').textContent = 'PULSE SERRAS';
+                document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o Pulse Serras.';
             } else {
                 document.getElementById('modal-title').textContent = 'SISTEMA RESTRITO';
                 document.getElementById('modal-subtitle').textContent = 'Insira a chave de acesso para o sistema.';
@@ -572,11 +575,14 @@
             setTimeout(() => { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
 
+        // EDIÇÃO 4: case serras → radar-serras.html
         function validateModalPassword() {
             const input = document.getElementById('modal-pass').value.toLowerCase().trim();
             if (PASSWORDS.includes(input)) {
                 if (currentSystem === 'amazonia') {
                     window.location.href = 'radar-amazonia.html';
+                } else if (currentSystem === 'serras') {
+                    window.location.href = 'radar-serras.html';
                 } else {
                     window.location.href = 'radar.html';
                 }
