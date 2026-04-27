@@ -349,7 +349,7 @@
             'petropolis_rj':           { nome: 'Petrópolis', tipo: 'ancora', emoji: '🏰', lat: -22.5050, lng: -43.1789 },
             'visconde_de_maua':        { nome: 'Visconde de Mauá', tipo: 'ancora', emoji: '🏕️', lat: -22.3447, lng: -44.4528 },
             'passa_quatro_mg':         { nome: 'Passa Quatro', tipo: 'ancora', emoji: '🏔️', lat: -22.3883, lng: -45.1736 },
-            'nova_friburgo':           { nome: 'Nova Friburgo', tipo: 'ancora', emoji: '🇨🇭', lat: -22.2822, lng: -42.5311 },
+            'nova_friburgo':           { nome: 'Nova Friburgo', tipo: 'ancora', emoji: '🌄', lat: -22.2822, lng: -42.5311 },
             // CONCORRENTES
             'penedo_rj':               { nome: 'Penedo', tipo: 'concorrente', emoji: '🏡', lat: -22.4058, lng: -44.5086 },
             'teresopolis':             { nome: 'Teresópolis', tipo: 'concorrente', emoji: '🌿', lat: -22.4122, lng: -42.9733 },
@@ -589,7 +589,7 @@
                 if (mapInstance) { mapInstance.remove(); }
                 const mapElement = document.getElementById('map');
                 if (!mapElement) return;
-                mapInstance = L.map('map', { center: [-22.5, -44.5], zoom: 6, zoomControl: true, scrollWheelZoom: true });
+                mapInstance = L.map('map', { center: [-24.0, -46.5], zoom: 5, zoomControl: true, scrollWheelZoom: true });
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(mapInstance);
                 mapElement.style.filter = 'brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) invert(1)';
             } catch (error) { console.error('Erro ao inicializar mapa:', error); }
