@@ -536,6 +536,29 @@
             } catch (error) { return "N/A"; }
         }
 
+        /**
+         * IAE — Índice ABR de Atração Externa
+         * Mede a proporção da demanda online que vem de fora do estado dominante.
+         * Fórmula: (origem_2_pct + origem_3_pct) / (origem_1_pct + origem_2_pct + origem_3_pct)
+         * Auditável: os valores são idênticos aos retornados pelo Google Trends por sub-região.
+         */
+        function calcularIAE(destino) {
+            try {
+                const o1 = Number(destino.origem_1_pct) || 0;
+                const o2 = Number(destino.origem_2_pct) || 0;
+                const o3 = Number(destino.origem_3_pct) || 0;
+                const total = o1 + o2 + o3;
+                if (total === 0 || !destino.origem_1) return null;
+                const externo = o2 + o3;
+                const iae = Math.round((externo / total) * 100);
+                let nivel, classe;
+                if (iae >= 40) { nivel = 'Alta'; classe = 'positive'; }
+                else if (iae >= 20) { nivel = 'Moderada'; classe = 'neutral'; }
+                else { nivel = 'Baixa'; classe = 'negative'; }
+                return { valor: iae, nivel, classe };
+            } catch (e) { return null; }
+        }
+
         function calcularIPCR(destinoSerras, dadosConcorrentesNacionais) {
             try {
                 const variacaoSerras = parseFloat(destinoSerras.variacao);
@@ -684,7 +707,8 @@
                 const oportunidade = calcularOportunidade(dest, destinosProcessados);
                 const risco = calcularRisco(dest);
                 const ipcr_final = calcularIPCRFinal({ ...dest, ipd, momentum }, dados, destinosProcessados);
-                return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final };
+                const iae = calcularIAE(dest);
+                return { ...dest, nowcasting, confiabilidade, ipd, momentum, oportunidade, risco, ipcr_final, iae };
             });
             const destinosOrdenados = destinosComIndices.sort((a, b) => ordemAtual === 'ipcr' ? (b.ipcr_final || 0) - (a.ipcr_final || 0) : b.interesse - a.interesse);
             container.innerHTML = destinosOrdenados.map((dest, index) => {
@@ -703,6 +727,11 @@
                     <div class="metric-row"><div class="metric-label">Risco de Mercado</div><div class="metric-value">${dest.risco}</div></div>
                     <div class="metric-row"><div class="metric-label">Share Serras</div><div class="metric-value">${dest.share}%</div></div>
                     ${dest.origem_1 ? `<div class="origins-list"><div class="origin-item"><span class="origin-name">🥇 ${dest.origem_1}</span><span class="origin-pct">${dest.origem_1_pct}%</span></div>${dest.origem_2 ? `<div class="origin-item"><span class="origin-name">🥈 ${dest.origem_2}</span><span class="origin-pct">${dest.origem_2_pct}%</span></div>` : ''}${dest.origem_3 ? `<div class="origin-item"><span class="origin-name">🥉 ${dest.origem_3}</span><span class="origin-pct">${dest.origem_3_pct}%</span></div>` : ''}</div>` : ''}
+                    ${dest.iae !== null && dest.iae !== undefined ? `<div class="indice-destaque" style="margin-top:10px;">
+                        <div class="indice-titulo">🌍 IAE — Índice ABR de Atração Externa</div>
+                        <div class="indice-valor ${dest.iae.classe}">${dest.iae.valor}% — ${dest.iae.nivel}</div>
+                        <div class="indice-descricao">${dest.iae.valor}% da demanda online vem de fora do estado dominante. Quanto maior, mais o destino atrai turistas externos.</div>
+                    </div>` : ''}
                 </div>`;
             }).join('');
             setTimeout(() => {
@@ -773,7 +802,15 @@
                     <li>Share Serras: ${destino.share}%</li>
                 </ul></div>
                 ${destino.origem_1 ? `<div class="boletim-section"><div class="boletim-section-title">Top 3 Origens</div><ul class="boletim-list"><li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}${destino.origem_3 ? `<li>🥉 ${destino.origem_3} (${destino.origem_3_pct}%)</li>` : ''}</ul></div>` : ''}
-                ${camada2HTML}${ipcrHTML}`;
+                ${destino.origem_1 && (() => {
+                    const o1 = Number(destino.origem_1_pct)||0, o2 = Number(destino.origem_2_pct)||0, o3 = Number(destino.origem_3_pct)||0;
+                    const total = o1+o2+o3;
+                    if (!total) return '';
+                    const iae = Math.round(((o2+o3)/total)*100);
+                    const nivel = iae >= 40 ? '🟢 Alta' : iae >= 20 ? '🟡 Moderada' : '🔴 Baixa';
+                    return `<div class="boletim-section"><div class="boletim-section-title">🌍 IAE — Índice ABR de Atração Externa</div><ul class="boletim-list"><li>${iae}% da demanda vem de fora do estado dominante — Atração ${nivel}</li><li>Fórmula: (${destino.origem_2||'—'} ${o2}% + ${destino.origem_3||'—'} ${o3}%) / total ${total}</li></ul></div>`;
+                })()}
+                ${camada2HTML}${ipcrHTML}\`;
         }
 
         function limparEmojis(texto) { return texto.replace(/[^\u0000-\u00FF\u0100-\u024F\u1E00-\u1EFF\n\r\t .,;:!?()\[\]{}<>\/\\@#$%^&*_+=|~\`"'0-9A-Za-záàãâäéèêëíìîïóòõôöúùûüçñÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ-]/g, ''); }
