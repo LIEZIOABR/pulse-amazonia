@@ -238,7 +238,16 @@
                 <div class="btn-kpi" onclick="showKpi('amazonia', event)">Ver Dicionário de KPIs</div>
             </div>
 
-            <!-- CARD 2: HOTEL PULSE -->
+            <!-- CARD 2: PULSE SERRAS -->
+            <div class="card disabled">
+                <svg class="card-icon-svg" viewBox="0 0 24 24"><polyline points="1 20 7 8 12 14 16 6 23 20"/><line x1="1" y1="20" x2="23" y2="20"/></svg>
+                <div class="card-title">Pulse Serras</div>
+                <p class="kpi-desc" style="text-align: center;">Radar de inteligência turística de destinos de serra. Monitoramento de 12 destinos âncora e 12 concorrentes nacionais.</p>
+                <div class="card-status status-homolog">Em Breve</div>
+                <div class="btn-kpi" onclick="showKpi('serras', event)">Ver Dicionário de KPIs</div>
+            </div>
+
+            <!-- CARD 3: HOTEL PULSE -->
             <div class="card disabled">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><circle cx="9" cy="7" r="1"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="7" r="1"/><circle cx="15" cy="11" r="1"/></svg>
                 <div class="card-title">Hotel Pulse</div>
@@ -247,7 +256,7 @@
                 <div class="btn-kpi" onclick="showKpi('hotel', event)">Ver Dicionário de KPIs</div>
             </div>
 
-            <!-- CARD 3: RADAR CLUSTER -->
+            <!-- CARD 4: RADAR CLUSTER -->
             <div class="card disabled">
                 <svg class="card-icon-svg" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 18c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6z"/><path d="M12 14c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
                 <div class="card-title">Radar Cluster</div>
@@ -322,6 +331,97 @@
                     <div class="kpi-item">
                         <div class="kpi-name">Nowcasting (Previsão 7 dias)</div>
                         <div class="kpi-desc">Projeção de curto prazo baseada no histórico de coletas. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Risco & Diagnóstico</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Confiabilidade do Sinal</div>
+                        <div class="kpi-desc">Indica o quanto os dados do destino são estatisticamente confiáveis para decisão. Leva em conta volume de coletas, consistência histórica e diversidade de origens. Sinais de baixa confiabilidade devem ser interpretados com cautela.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Risco de Mercado</div>
+                        <div class="kpi-desc">Avalia a vulnerabilidade do destino a reversões bruscas de demanda. Leva em conta concentração de origem, volatilidade histórica e dependência de mercados emissores únicos. Alto risco exige estratégia de diversificação.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Selo Estratégico</div>
+                        <div class="kpi-desc">Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%). Gerado a cada coleta.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Média Histórica (5 coletas)</div>
+                        <div class="kpi-desc">Média do interesse nas últimas 5 coletas do destino. Serve como linha de base para comparação com o interesse atual. Destinos consistentemente acima da própria média indicam tendência estrutural de crescimento.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DICIONÁRIO PULSE SERRAS -->
+        <div class="kpi-section" id="kpi-serras">
+            <span class="section-label">Pulse Serras — Dicionário de KPIs</span>
+            <span class="section-creds">Monitoramento contínuo com atualização a cada 24 horas — 12 destinos âncora + 12 concorrentes nacionais</span>
+            <div class="kpi-grid kpi-grid-4">
+                <div>
+                    <div class="kpi-group-title">Análise de Demanda</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Interesse (0–10) — Índice Proprietário ABR</div>
+                        <div class="kpi-desc">Pulso digital do destino de serra. Mede a força de atração de cada lugar no ambiente online em escala exclusiva ABR de 0 a 10. Quanto maior, mais o destino está sendo buscado por viajantes. 10 representa o pico histórico do período analisado.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Variação Percentual</div>
+                        <div class="kpi-desc">Quanto o interesse cresceu ou caiu em relação à coleta anterior. Indica se o destino está aquecendo ou esfriando no curto prazo.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Share de Mercado Serras</div>
+                        <div class="kpi-desc">Fatia que o destino ocupa dentro dos 12 âncora monitorados. Mostra quem domina e quem está perdendo espaço no portfólio de destinos de serra do Brasil.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Pressão de Demanda</div>
+                        <div class="kpi-desc">Mede a intensidade da demanda em relação à capacidade de resposta do destino. Alta pressão indica risco de concentração e oportunidade de precificação agressiva. Baixa pressão indica demanda estável sem urgência de ação.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Origens & Mercado Emissor</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Top 3 Origens</div>
+                        <div class="kpi-desc">De onde vem o turista de serra. Os três principais estados ou cidades que estão procurando o destino. Orienta campanhas e canais de venda.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
+                        <div class="kpi-desc">Ajuste que reduz o viés local e identifica mercados externos reais. Melhora a leitura de onde vem a demanda de fora da região do destino.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Origens Agregadas</div>
+                        <div class="kpi-desc">Mercados que mais demandam o conjunto dos destinos de serra monitorados. Identifica prioridades para campanhas regionais e nacionais.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Confiabilidade das Origens</div>
+                        <div class="kpi-desc">Avalia se as origens detectadas são estatisticamente representativas. Leva em conta diversidade de estados e dominância de um único mercado. Alta concentração em uma só origem reduz a confiança na leitura.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Viés Endógeno</div>
+                        <div class="kpi-desc">Distorção causada pela demanda local que infla artificialmente as origens do próprio estado do destino. A Camada 2 identifica e neutraliza esse viés, revelando a demanda externa real — o turista que de fato viaja de fora.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="kpi-group-title">Competitividade & Projeção</div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">IPCR — Competitividade Regional</div>
+                        <div class="kpi-desc">Compara o destino âncora com os 12 concorrentes nacionais de serra. Indica se o destino está ganhando ou perdendo mercado em relação ao cluster concorrente. Ex: Monte Verde +5% vs concorrentes +2% = Ganhando Competitividade.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">IPCR Final (0–100)</div>
+                        <div class="kpi-desc">Índice composto que consolida variação, pressão de demanda, share e momentum em uma nota única de 0 a 100. Permite comparação direta entre destinos de serra. Acima de 65 indica destino em janela de oportunidade.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Momentum</div>
+                        <div class="kpi-desc">Velocidade e consistência do movimento da demanda nas últimas coletas. Forte indica crescimento consistente em múltiplas coletas seguidas. Moderado indica estabilidade. Perdendo indica reversão de tendência em curso.</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-name">Nowcasting (Previsão 7 dias)</div>
+                        <div class="kpi-desc">Projeção de curto prazo baseada no histórico de coletas. Indica para onde o interesse tende a ir nos próximos dias. Útil para antecipar campanhas e ajustar tarifas antes do movimento de mercado — especialmente relevante para o pico do inverno.</div>
                     </div>
                 </div>
 
