@@ -536,27 +536,52 @@
             } catch (error) { return "N/A"; }
         }
 
-        /**
-         * IAE — Índice ABR de Atração Externa
-         * Mede a proporção da demanda online que vem de fora do estado dominante.
-         * Fórmula: (origem_2_pct + origem_3_pct) / (origem_1_pct + origem_2_pct + origem_3_pct)
-         * Auditável: os valores são idênticos aos retornados pelo Google Trends por sub-região.
-         */
+
+        // ========== IAE — ÍNDICE ABR DE ATRAÇÃO EXTERNA ==========
+        // Fórmula: (origem_2_pct + origem_3_pct) / (origem_1_pct + origem_2_pct + origem_3_pct)
+        // Auditável: valores idênticos ao Google Trends por sub-região
         function calcularIAE(destino) {
             try {
-                const o1 = Number(destino.origem_1_pct) || 0;
-                const o2 = Number(destino.origem_2_pct) || 0;
-                const o3 = Number(destino.origem_3_pct) || 0;
-                const total = o1 + o2 + o3;
+                var o1 = Number(destino.origem_1_pct) || 0;
+                var o2 = Number(destino.origem_2_pct) || 0;
+                var o3 = Number(destino.origem_3_pct) || 0;
+                var total = o1 + o2 + o3;
                 if (total === 0 || !destino.origem_1) return null;
-                const externo = o2 + o3;
-                const iae = Math.round((externo / total) * 100);
-                let nivel, classe;
+                var iae = Math.round(((o2 + o3) / total) * 100);
+                var nivel, classe;
                 if (iae >= 40) { nivel = 'Alta'; classe = 'positive'; }
                 else if (iae >= 20) { nivel = 'Moderada'; classe = 'neutral'; }
                 else { nivel = 'Baixa'; classe = 'negative'; }
-                return { valor: iae, nivel, classe };
-            } catch (e) { return null; }
+                return { valor: iae, nivel: nivel, classe: classe };
+            } catch(e) { return null; }
+        }
+
+        function gerarIAECardHTML(iae) {
+            if (!iae) return '';
+            return '<div class="indice-destaque" style="margin-top:10px;">' +
+                '<div class="indice-titulo">🌍 IAE — Índice ABR de Atração Externa</div>' +
+                '<div class="indice-valor ' + iae.classe + '">' + iae.valor + '% — ' + iae.nivel + '</div>' +
+                '<div class="indice-descricao">' + iae.valor + '% da demanda vem de fora do estado dominante. Quanto maior, mais o destino atrai visitantes externos.</div>' +
+                '</div>';
+        }
+
+        function gerarIAEBoletimHTML(destino) {
+            if (!destino.origem_1) return '';
+            var o1 = Number(destino.origem_1_pct) || 0;
+            var o2 = Number(destino.origem_2_pct) || 0;
+            var o3 = Number(destino.origem_3_pct) || 0;
+            var total = o1 + o2 + o3;
+            if (!total) return '';
+            var iae = Math.round(((o2 + o3) / total) * 100);
+            var nivel = iae >= 40 ? '🟢 Alta' : iae >= 20 ? '🟡 Moderada' : '🔴 Baixa';
+            var ext1 = destino.origem_2 ? (destino.origem_2 + ' ' + o2 + '%') : '—';
+            var ext2 = destino.origem_3 ? (' + ' + destino.origem_3 + ' ' + o3 + '%') : '';
+            return '<div class="boletim-section">' +
+                '<div class="boletim-section-title">🌍 IAE — Índice ABR de Atração Externa</div>' +
+                '<ul class="boletim-list">' +
+                '<li>' + iae + '% da demanda vem de fora do estado dominante — Atração ' + nivel + '</li>' +
+                '<li>Fórmula auditável: (' + ext1 + ext2 + ') / total ' + total + '</li>' +
+                '</ul></div>';
         }
 
         function calcularIPCR(destinoSerras, dadosConcorrentesNacionais) {
@@ -762,33 +787,6 @@
             document.getElementById('boletim-content').innerHTML = `<div class="boletim-section"><div class="boletim-section-title">Data: ${dataFormatada}</div></div><div class="boletim-section"><div class="boletim-section-title">🏆 Top 3 Destinos Serras</div><ul class="boletim-list">${top3.map(t => `<li>${t}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Top 3 Origens Agregadas</div><ul class="boletim-list">${topOrigens.map(o => `<li>${o}</li>`).join('')}</ul></div><div class="boletim-section"><div class="boletim-section-title">Insights</div><p>Total de ${dadosUltimos.length} destinos âncora monitorados. Clique em um destino para análise detalhada.</p></div>`;
         }
 
-        function gerarIAECardHTML(iae) {
-            if (!iae) return '';
-            return '<div class="indice-destaque" style="margin-top:10px;">' +
-                '<div class="indice-titulo">🌍 IAE — Índice ABR de Atração Externa</div>' +
-                '<div class="indice-valor ' + iae.classe + '">' + iae.valor + '% — ' + iae.nivel + '</div>' +
-                '<div class="indice-descricao">' + iae.valor + '% da demanda vem de fora do estado dominante. Quanto maior, mais o destino atrai turistas externos.</div>' +
-                '</div>';
-        }
-
-        function gerarIAEBoletimHTML(destino) {
-            if (!destino.origem_1) return '';
-            const o1 = Number(destino.origem_1_pct)||0;
-            const o2 = Number(destino.origem_2_pct)||0;
-            const o3 = Number(destino.origem_3_pct)||0;
-            const total = o1 + o2 + o3;
-            if (!total) return '';
-            const iae = Math.round(((o2 + o3) / total) * 100);
-            const nivel = iae >= 40 ? '🟢 Alta' : iae >= 20 ? '🟡 Moderada' : '🔴 Baixa';
-            const ext1 = destino.origem_2 ? (destino.origem_2 + ' ' + o2 + '%') : '—';
-            const ext2 = destino.origem_3 ? (' + ' + destino.origem_3 + ' ' + o3 + '%') : '';
-            return '<div class="boletim-section"><div class="boletim-section-title">🌍 IAE — Índice ABR de Atração Externa</div>' +
-                '<ul class="boletim-list">' +
-                '<li>' + iae + '% da demanda vem de fora do estado dominante — Atração ' + nivel + '</li>' +
-                '<li>Fórmula: (' + ext1 + ext2 + ') / total ' + total + '</li>' +
-                '</ul></div>';
-        }
-
         function gerarBoletimDestino(destino, todosDestinos, concorrentes) {
             const info = DESTINOS_INFO[destino.destino_id] || { nome: destino.destino_id, emoji: '📍' };
             const dataFormatada = new Date(destino.data_coleta).toLocaleDateString('pt-BR');
@@ -826,7 +824,7 @@
                 </ul></div>
                 ${destino.origem_1 ? `<div class="boletim-section"><div class="boletim-section-title">Top 3 Origens</div><ul class="boletim-list"><li>🥇 ${destino.origem_1} (${destino.origem_1_pct}%)</li>${destino.origem_2 ? `<li>🥈 ${destino.origem_2} (${destino.origem_2_pct}%)</li>` : ''}${destino.origem_3 ? `<li>🥉 ${destino.origem_3} (${destino.origem_3_pct}%)</li>` : ''}</ul></div>` : ''}
                 ${gerarIAEBoletimHTML(destino)}
-                ${camada2HTML}${ipcrHTML}\`;
+                ${camada2HTML}${ipcrHTML}`;
         }
 
         function limparEmojis(texto) { return texto.replace(/[^\u0000-\u00FF\u0100-\u024F\u1E00-\u1EFF\n\r\t .,;:!?()\[\]{}<>\/\\@#$%^&*_+=|~\`"'0-9A-Za-záàãâäéèêëíìîïóòõôöúùûüçñÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ-]/g, ''); }
