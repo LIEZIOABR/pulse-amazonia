@@ -231,17 +231,19 @@ def coletar_cesta_intencao(destino_nome, termos_busca):
     interesse_intencao_media = interesse_intencao_total // len(termos_busca) if termos_busca else 0
     interesse_final = int(0.4 * interesse_bruto + 0.6 * interesse_intencao_media)
 
-    # 5. Top 3 origens qualificadas
+    # 5. Top 3 origens qualificadas — normalizado para escala 0-100
     if origens_intencao:
         sorted_origens = sorted(origens_intencao.items(), key=lambda x: x[1], reverse=True)[:3]
         while len(sorted_origens) < 3:
             sorted_origens.append(("none", 0))
+        # Normalizar: estado #1 = 100, demais proporcionais
+        max_val = sorted_origens[0][1] if sorted_origens[0][1] > 0 else 1
         o1 = sorted_origens[0][0].lower().replace(" ", "_")
-        p1 = sorted_origens[0][1]
+        p1 = 100
         o2 = sorted_origens[1][0].lower().replace(" ", "_")
-        p2 = sorted_origens[1][1]
+        p2 = int(round(sorted_origens[1][1] / max_val * 100)) if sorted_origens[1][1] > 0 else 0
         o3 = sorted_origens[2][0].lower().replace(" ", "_")
-        p3 = sorted_origens[2][1]
+        p3 = int(round(sorted_origens[2][1] / max_val * 100)) if sorted_origens[2][1] > 0 else 0
     else:
         o1, p1, o2, p2, o3, p3 = o1_bruto, p1_bruto, o2_bruto, p2_bruto, o3_bruto, p3_bruto
 
