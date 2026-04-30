@@ -177,7 +177,7 @@
             </div>
             <h1>DEMAND PULSE SERRAS</h1>
             <p class="subtitle">
-                Radar de Inteligência Turística de Destinos de Serra - Monitoramento de 10 destinos âncora + 10 concorrentes nacionais
+                Radar de Inteligência Turística de Destinos de Serra - Monitoramento de 9 destinos âncora + 9 concorrentes nacionais
             </p>
         </header>
         
@@ -264,7 +264,7 @@
     </div>
     <div class="kpi-item">
         <div class="kpi-name">Share de Mercado Serras</div>
-        <div class="kpi-desc">Fatia que o destino ocupa dentro dos 10 âncora monitorados. Mostra quem domina e quem está perdendo espaço no portfólio de serras. Útil para comparar posicionamento relativo entre destinos concorrentes.</div>
+        <div class="kpi-desc">Fatia que o destino ocupa dentro dos 9 âncora monitorados. Mostra quem domina e quem está perdendo espaço no portfólio de serras. Útil para comparar posicionamento relativo entre destinos concorrentes.</div>
     </div>
     <div class="kpi-item">
         <div class="kpi-name">Pressão de Demanda</div>
@@ -292,7 +292,7 @@
     </div>
     <div class="kpi-item">
         <div class="kpi-name">IPCR – Competitividade Regional</div>
-        <div class="kpi-desc">Compara o desempenho do destino âncora com os 10 concorrentes nacionais de serra. Indica se o destino está ganhando ou perdendo mercado. Ex: Monte Verde MG +5% vs concorrentes +2% = Ganhando Competitividade.</div>
+        <div class="kpi-desc">Compara o desempenho do destino âncora com os 9 concorrentes nacionais de serra. Indica se o destino está ganhando ou perdendo mercado. Ex: Monte Verde MG +5% vs concorrentes +2% = Ganhando Competitividade.</div>
     </div>
     <div class="kpi-item">
         <div class="kpi-name">Mercado Emissor (Camada 2)</div>
@@ -341,7 +341,6 @@
             'campos_do_jordao':        { nome: 'Campos do Jordão', tipo: 'ancora', emoji: '🏔️', lat: -22.7394, lng: -45.5919 },
             'gramado_rs':              { nome: 'Gramado', tipo: 'ancora', emoji: '🌲', lat: -29.3789, lng: -50.8728 },
             'canela_rs':               { nome: 'Canela', tipo: 'ancora', emoji: '🌲', lat: -29.3647, lng: -50.8142 },
-            'sao_bento_do_sapucai':    { nome: 'São Bento do Sapucaí', tipo: 'ancora', emoji: '⛰️', lat: -22.6922, lng: -45.7311 },
             'santo_antonio_do_pinhal': { nome: 'Santo Antônio do Pinhal', tipo: 'ancora', emoji: '⛰️', lat: -22.8239, lng: -45.6611 },
             'serra_negra_sp':          { nome: 'Serra Negra', tipo: 'ancora', emoji: '🌿', lat: -22.6106, lng: -46.6997 },
             'petropolis_rj':           { nome: 'Petrópolis', tipo: 'ancora', emoji: '🏰', lat: -22.5050, lng: -43.1789 },
@@ -357,7 +356,6 @@
             'miguel_pereira_rj':       { nome: 'Miguel Pereira', tipo: 'concorrente', emoji: '🌲', lat: -22.4533, lng: -43.4769 },
             'sao_joaquim_sc':          { nome: 'São Joaquim', tipo: 'concorrente', emoji: '🍎', lat: -28.2947, lng: -49.9319 },
             'ouro_preto':              { nome: 'Ouro Preto', tipo: 'concorrente', emoji: '🏛️', lat: -20.3856, lng: -43.5036 },
-            'guaramiranga':            { nome: 'Guaramiranga', tipo: 'concorrente', emoji: '🌿', lat: -4.2672, lng: -38.9289 },
         };
 
         // MAPEAMENTO DE CONCORRÊNCIA — 10 âncora vs 10 concorrentes
@@ -366,9 +364,8 @@
             'campos_do_jordao':        ['monte_verde_mg', 'gramado_rs', 'canela_rs', 'penedo_rj', 'teresopolis'],
             'gramado_rs':              ['canela_rs', 'campos_do_jordao', 'nova_friburgo', 'urubici', 'sao_joaquim_sc'],
             'canela_rs':               ['gramado_rs', 'campos_do_jordao', 'urubici', 'sao_joaquim_sc'],
-            'sao_bento_do_sapucai':    ['campos_do_jordao', 'monte_verde_mg', 'santo_antonio_do_pinhal', 'tiradentes_mg'],
-            'santo_antonio_do_pinhal': ['sao_bento_do_sapucai', 'campos_do_jordao', 'monte_verde_mg'],
-            'serra_negra_sp':          ['campos_do_jordao', 'monte_verde_mg', 'sao_bento_do_sapucai'],
+            'santo_antonio_do_pinhal': ['campos_do_jordao', 'monte_verde_mg'],
+            'serra_negra_sp':          ['campos_do_jordao', 'monte_verde_mg'],
             'petropolis_rj':           ['nova_friburgo', 'teresopolis', 'itaipava_rj', 'miguel_pereira_rj'],
             'visconde_de_maua':        ['penedo_rj', 'monte_verde_mg', 'itaipava_rj', 'lavras_novas'],
             'nova_friburgo':           ['teresopolis', 'petropolis_rj', 'itaipava_rj', 'miguel_pereira_rj'],
@@ -384,19 +381,17 @@
             'miguel_pereira_rj': { nome: 'Miguel Pereira (RJ)' },
             'sao_joaquim_sc':    { nome: 'São Joaquim (SC)' },
             'ouro_preto':        { nome: 'Ouro Preto (MG)' },
-            'guaramiranga':      { nome: 'Guaramiranga (CE)' },
         };
 
         // CAMADA 2 — config local UF por destino
         const PULSE_LOCAL_UF_BY_DESTINO = {
             'monte_verde_mg': 'MG', 'campos_do_jordao': 'SP', 'gramado_rs': 'RS',
-            'canela_rs': 'RS', 'sao_bento_do_sapucai': 'SP',
+            'canela_rs': 'RS',
             'santo_antonio_do_pinhal': 'SP', 'serra_negra_sp': 'SP', 'petropolis_rj': 'RJ',
             'visconde_de_maua': 'MG', 'nova_friburgo': 'RJ',
             'penedo_rj': 'RJ', 'teresopolis': 'RJ', 'tiradentes_mg': 'MG',
             'itaipava_rj': 'RJ', 'lavras_novas': 'MG', 'urubici': 'SC',
             'miguel_pereira_rj': 'RJ', 'sao_joaquim_sc': 'SC', 'ouro_preto': 'MG',
-            'guaramiranga': 'CE',
         };
 
         const PULSE_IS_CAPITAL_OR_HUB = {};
@@ -657,7 +652,7 @@
         async function buscarDados() {
             try {
                 const dataInicio = calcularDataInicio(); const dataFim = calcularDataFim();
-                const limitDinamico = calcularLimitDinamico(20);
+                const limitDinamico = calcularLimitDinamico(18);
                 let query = supabaseClient.from('pulse_serras').select('*').eq('tipo', 'ancora').order('data_coleta', { ascending: false }).limit(limitDinamico);
                 if (dataInicio) query = query.gte('data_coleta', dataInicio);
                 if (dataFim) query = query.lte('data_coleta', dataFim);
@@ -672,7 +667,7 @@
         async function buscarDadosConcorrentes() {
             try {
                 const dataInicio = calcularDataInicio(); const dataFim = calcularDataFim();
-                const limitConcorrentes = calcularLimitDinamico(10);
+                const limitConcorrentes = calcularLimitDinamico(9);
                 let query = supabaseClient.from('pulse_serras').select('*').eq('tipo', 'concorrente').order('data_coleta', { ascending: false }).limit(limitConcorrentes);
                 if (dataInicio) query = query.gte('data_coleta', dataInicio);
                 if (dataFim) query = query.lte('data_coleta', dataFim);
