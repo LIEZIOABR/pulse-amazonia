@@ -295,12 +295,16 @@
         <div class="kpi-desc">Compara o desempenho do destino âncora com os 9 concorrentes nacionais de serra. Indica se o destino está ganhando ou perdendo mercado. Ex: Monte Verde MG +5% vs concorrentes +2% = Ganhando Competitividade.</div>
     </div>
     <div class="kpi-item">
-        <div class="kpi-name">Mercado Emissor (Camada 2)</div>
+        <div class="kpi-name">Mercado Emissor</div>
         <div class="kpi-desc">Identifica de onde realmente vem a demanda, removendo o viés do turista local. Revela os mercados externos recorrentes e ajuda a direcionar campanhas.</div>
     </div>
     <div class="kpi-item">
         <div class="kpi-name">Selo Estratégico</div>
         <div class="kpi-desc">Síntese automática do momento do destino: 🚀 Explosão (variação acima de +15%), 📈 Alta (acima de +5%), ⚖️ Estável (entre -5% e +5%), 📉 Ajuste (abaixo de -5%), ⚠️ Queda Relevante (abaixo de -15%).</div>
+    </div>
+    <div class="kpi-item">
+        <div class="kpi-name">IAE — Índice ABR de Atração Externa</div>
+        <div class="kpi-desc">Mede a fatia da demanda que vem de fora do estado sede do destino. Quanto maior, mais o destino atrai visitantes externos — indicador de apelo turístico real além do mercado local. Baixa (&lt;25%): demanda predominantemente local. Moderada (25–49%): mix equilibrado. Alta (≥50%): destino de apelo nacional.</div>
     </div>
 </section>
             </aside>
@@ -790,7 +794,7 @@
             const historico = todosDestinos.filter(d => d.destino_id === destino.destino_id);
             const camada2 = pulseCamada2Compute(destino.destino_id, historico);
             let camada2HTML = '';
-            if (camada2.mode === 'observada' || camada2.mode === 'inferida') { camada2HTML = `<div class="boletim-section"><div class="boletim-section-title">🎯 Mercado Emissor (Camada 2)</div><div class="ipcr-item"><div class="ipcr-status ${camada2.mode === 'observada' ? 'ganhando' : 'perdendo'}" style="font-size:0.75rem;margin-bottom:8px;">${camada2.badge}</div><div class="ipcr-comparacao" style="font-size:0.75rem;">${camada2.text}</div></div></div>`; }
+            if (camada2.mode === 'observada' || camada2.mode === 'inferida') { camada2HTML = `<div class="boletim-section"><div class="boletim-section-title">🎯 Mercado Emissor</div><div class="ipcr-item"><div class="ipcr-status ${camada2.mode === 'observada' ? 'ganhando' : 'perdendo'}" style="font-size:0.75rem;margin-bottom:8px;">${camada2.badge}</div><div class="ipcr-comparacao" style="font-size:0.75rem;">${camada2.text}</div></div></div>`; }
             document.getElementById('boletim-content').innerHTML = `
                 <div class="boletim-section"><div class="boletim-section-title">${info.emoji} ${info.nome}</div><p style="font-size:0.75rem;color:var(--text-dim);">${dataFormatada}</p>${rankingAtual > 0 ? `<p style="font-size:0.75rem;color:var(--accent);font-weight:700;">🏆 #${rankingAtual} de ${ultimosDestinos.length} destinos Serras</p>` : ''}</div>
                 <div class="boletim-section"><div class="boletim-section-title">Métricas Principais</div><ul class="boletim-list">
